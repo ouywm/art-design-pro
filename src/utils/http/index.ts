@@ -20,7 +20,6 @@ import { ApiStatus } from './status'
 import { HttpError, handleError, showError, showSuccess } from './error'
 import { $t } from '@/locales'
 import { BaseResponse } from '@/types'
-import dayjs from 'dayjs'
 
 /** 请求配置常量 */
 const REQUEST_TIMEOUT = 15000
@@ -32,44 +31,6 @@ const UNAUTHORIZED_DEBOUNCE_TIME = 3000
 /** 401防抖状态 */
 let isUnauthorizedErrorShown = false
 let unauthorizedTimer: NodeJS.Timeout | null = null
-
-/**
- * 递归转换响应数据中的时间字段
- * 将 ISO 8601 格式的时间字符串转换为本地时区的格式化字符串
- * @param data 响应数据
- * @returns 转换后的数据
- */
-function convertTimeFields(data: any): any {
-  if (!data || typeof data !== 'object') return data
-
-  if (Array.isArray(data)) {
-    return data.map((item) => convertTimeFields(item))
-  }
-
-  const converted: any = {}
-  for (const key in data) {
-    if (!Object.prototype.hasOwnProperty.call(data, key)) continue
-
-    const value = data[key]
-
-    // 检测时间字段：Time 结尾（Date、At 暂时注释，可按需启用）
-    const isTimeField = key.endsWith('Time') // || key.endsWith('Date') || key.endsWith('At')
-
-    if (isTimeField && typeof value === 'string' && value) {
-      // 验证是否为有效的 ISO 8601 时间格式
-      const parsed = dayjs(value)
-      if (parsed.isValid()) {
-        converted[key] = parsed.format('YYYY-MM-DD HH:mm:ss')
-        continue
-      }
-    }
-
-    // 递归处理嵌套对象和数组
-    converted[key] = convertTimeFields(value)
-  }
-
-  return converted
-}
 
 /** 扩展 AxiosRequestConfig */
 interface ExtendedAxiosRequestConfig extends AxiosRequestConfig {
@@ -126,12 +87,6 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse<BaseResponse>) => {
     const { code, msg } = response.data
-
-    // 转换时间字段
-    if (response.data.data) {
-      response.data.data = convertTimeFields(response.data.data)
-    }
-
     if (code === ApiStatus.success) return response
     if (code === ApiStatus.unauthorized) handleUnauthorizedError(msg)
     throw createHttpError(msg || $t('httpMsg.requestFailed'), code)
