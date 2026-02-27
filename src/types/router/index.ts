@@ -46,10 +46,7 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
   /** 是否缓存 */
   keepAlive?: boolean
   /** 操作权限 */
-  authList?: Array<{
-    title: string
-    authMark: string
-  }>
+  authList?: Api.SystemManage.AuthItem[]
   /** 是否为一级菜单 */
   isFirstLevel?: boolean
   /** 角色权限 */
@@ -66,6 +63,10 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
   authMark?: string
   /** 父级路径 */
   parentPath?: string
+  /** 排序号 */
+  sort?: number
+  /** 是否启用 */
+  enabled?: boolean
 }
 
 /**
@@ -74,7 +75,11 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
  */
 export interface AppRouteRecord extends Omit<RouteRecordRaw, 'meta' | 'children' | 'component'> {
   id?: number
+  parentId?: number
+  menuType?: Api.SystemManage.MenuType
   meta: RouteMeta
   children?: AppRouteRecord[]
   component?: string | (() => Promise<any>)
+  createTime?: string
+  updateTime?: string
 }

@@ -12,7 +12,7 @@
         ref="treeRef"
         :data="processedMenuList"
         show-checkbox
-        node-key="name"
+        node-key="id"
         :default-expand-all="isExpandAll"
         :default-checked-keys="[1, 2, 3]"
         :props="defaultProps"
@@ -41,8 +41,13 @@
 </template>
 
 <script setup lang="ts">
-  import { useMenuStore } from '@/store/modules/menu'
   import { formatMenuTitle } from '@/utils/router'
+  import {
+    fetchGetRolePermissions,
+    fetchSaveRolePermissions,
+    fetchGetAllMenuList
+  } from '@/api/system-manage'
+  import type { AppRouteRecord } from '@/types/router'
 
   type RoleListItem = Api.SystemManage.RoleListItem
 
@@ -63,7 +68,7 @@
 
   const emit = defineEmits<Emits>()
 
-  const { menuList } = storeToRefs(useMenuStore())
+  const menuList = ref<AppRouteRecord[]>([])
   const treeRef = ref()
   const isExpandAll = ref(true)
   const isSelectAll = ref(false)
@@ -86,6 +91,7 @@
     meta?: {
       title?: string
       authList?: Array<{
+        id: number
         authMark: string
         title: string
         checked?: boolean
@@ -106,7 +112,7 @@
       // 如果有 authList，将其转换为子节点
       if (node.meta?.authList?.length) {
         const authNodes = node.meta.authList.map((auth) => ({
-          id: `${node.id}_${auth.authMark}`,
+          id: auth.id,
           name: `${node.name}_${auth.authMark}`,
           label: auth.title,
           authMark: auth.authMark,
@@ -141,13 +147,52 @@
    */
   watch(
     () => props.modelValue,
-    (newVal) => {
-      if (newVal && props.roleData) {
-        // TODO: 根据角色加载对应的权限数据
-        console.log('设置权限:', props.roleData)
+    async (newVal) => {
+      if (newVal) {
+        await loadAllMenus()
+        if (props.roleData) {
+          await loadRolePermissions()
+        }
       }
     }
   )
+
+  /**
+   * 加载所有菜单列表
+   */
+  const loadAllMenus = async () => {
+    try {
+      menuList.value = await fetchGetAllMenuList()
+    } catch (error) {
+      console.error('加载菜单列表失败:', error)
+      ElMessage.error('加载菜单列表失败')
+    }
+  }
+
+  /**
+   * 加载角色权限数据
+   */
+  const loadRolePermissions = async () => {
+    if (!props.roleData?.roleId) return
+
+    try {
+      const res = await fetchGetRolePermissions(props.roleData.roleId)
+      const { checkedKeys } = res
+
+      // 直接使用 ID 设置选中的节点（只设置叶子节点，半选中状态会自动计算）
+      nextTick(() => {
+        treeRef.value?.setCheckedKeys(checkedKeys)
+
+        // 检查是否全选
+        const allKeys = getAllNodeKeys(processedMenuList.value)
+        const currentCheckedKeys = treeRef.value?.getCheckedKeys() || []
+        isSelectAll.value = currentCheckedKeys.length === allKeys.length && allKeys.length > 0
+      })
+    } catch (error) {
+      console.error('加载角色权限失败:', error)
+      ElMessage.error('加载权限数据失败')
+    }
+  }
 
   /**
    * 关闭弹窗并清空选中状态
@@ -160,11 +205,32 @@
   /**
    * 保存权限配置
    */
-  const savePermission = () => {
-    // TODO: 调用保存权限接口
-    ElMessage.success('权限保存成功')
-    emit('success')
-    handleClose()
+  const savePermission = async () => {
+    if (!props.roleData?.roleId) return
+
+    try {
+      const tree = treeRef.value
+      if (!tree) return
+
+      // 获取选中的节点（包括半选中的父节点）
+      const checkedNodes = tree.getCheckedNodes()
+      const halfCheckedNodes = tree.getHalfCheckedNodes()
+      const allSelectedNodes = [...checkedNodes, ...halfCheckedNodes]
+
+      // 直接从节点中提取 id
+      const menuIds = allSelectedNodes
+        .map((node: any) => Number(node.id))
+        .filter((id: number) => !isNaN(id))
+
+      await fetchSaveRolePermissions(props.roleData.roleId, { menuIds })
+
+      ElMessage.success('权限保存成功')
+      emit('success')
+      handleClose()
+    } catch (error) {
+      console.error('保存权限失败:', error)
+      ElMessage.error('保存权限失败')
+    }
   }
 
   /**
@@ -205,11 +271,11 @@
    * @param nodes 节点列表
    * @returns 所有节点的 key 数组
    */
-  const getAllNodeKeys = (nodes: MenuNode[]): string[] => {
-    const keys: string[] = []
+  const getAllNodeKeys = (nodes: MenuNode[]): number[] => {
+    const keys: number[] = []
     const traverse = (nodeList: MenuNode[]): void => {
       nodeList.forEach((node) => {
-        if (node.name) keys.push(node.name)
+        if (node.id) keys.push(Number(node.id))
         if (node.children?.length) traverse(node.children)
       })
     }
