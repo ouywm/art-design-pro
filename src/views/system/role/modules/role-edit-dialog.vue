@@ -33,14 +33,15 @@
 </template>
 
 <script setup lang="ts">
+  import { fetchCreateRole, fetchUpdateRole } from '@/api/system-manage'
   import type { FormInstance, FormRules } from 'element-plus'
 
-  type RoleListItem = Api.SystemManage.RoleListItem
+  type RoleVo = Api.SystemManage.RoleVo
 
   interface Props {
     modelValue: boolean
     dialogType: 'add' | 'edit'
-    roleData?: RoleListItem
+    roleData?: RoleVo
   }
 
   interface Emits {
@@ -57,6 +58,7 @@
   const emit = defineEmits<Emits>()
 
   const formRef = ref<FormInstance>()
+  const submitLoading = ref(false)
 
   /**
    * 弹窗显示状态双向绑定
@@ -72,24 +74,22 @@
   const rules = reactive<FormRules>({
     roleName: [
       { required: true, message: '请输入角色名称', trigger: 'blur' },
-      { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
+      { min: 1, max: 64, message: '长度在 1 到 64 个字符', trigger: 'blur' }
     ],
     roleCode: [
       { required: true, message: '请输入角色编码', trigger: 'blur' },
-      { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+      { min: 1, max: 32, message: '长度在 1 到 32 个字符', trigger: 'blur' }
     ],
-    description: [{ required: true, message: '请输入角色描述', trigger: 'blur' }]
+    description: [{ max: 512, message: '描述长度不能超过512', trigger: 'blur' }]
   })
 
   /**
    * 表单数据
    */
-  const form = reactive<RoleListItem>({
-    roleId: 0,
+  const form = reactive({
     roleName: '',
     roleCode: '',
     description: '',
-    createTime: '',
     enabled: true
   })
 
@@ -120,14 +120,17 @@
    */
   const initForm = () => {
     if (props.dialogType === 'edit' && props.roleData) {
-      Object.assign(form, props.roleData)
+      Object.assign(form, {
+        roleName: props.roleData.roleName,
+        roleCode: props.roleData.roleCode,
+        description: props.roleData.description,
+        enabled: props.roleData.enabled
+      })
     } else {
       Object.assign(form, {
-        roleId: 0,
         roleName: '',
         roleCode: '',
         description: '',
-        createTime: '',
         enabled: true
       })
     }
@@ -150,13 +153,33 @@
 
     try {
       await formRef.value.validate()
-      // TODO: 调用新增/编辑接口
+      submitLoading.value = true
+
+      if (props.dialogType === 'add') {
+        await fetchCreateRole({
+          roleName: form.roleName,
+          roleCode: form.roleCode,
+          description: form.description || undefined,
+          enabled: form.enabled
+        })
+      } else {
+        const roleId = props.roleData?.roleId
+        if (!roleId) return
+        await fetchUpdateRole(roleId, {
+          roleName: form.roleName,
+          description: form.description || undefined,
+          enabled: form.enabled
+        })
+      }
+
       const message = props.dialogType === 'add' ? '新增成功' : '修改成功'
       ElMessage.success(message)
       emit('success')
       handleClose()
     } catch (error) {
       console.log('表单验证失败:', error)
+    } finally {
+      submitLoading.value = false
     }
   }
 </script>

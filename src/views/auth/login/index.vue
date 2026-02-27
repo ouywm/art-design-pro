@@ -18,18 +18,18 @@
             @keyup.enter="handleSubmit"
             style="margin-top: 25px"
           >
-            <ElFormItem prop="account">
-              <ElSelect v-model="formData.account" @change="setupAccount">
-                <ElOption
-                  v-for="account in accounts"
-                  :key="account.key"
-                  :label="account.label"
-                  :value="account.key"
-                >
-                  <span>{{ account.label }}</span>
-                </ElOption>
-              </ElSelect>
-            </ElFormItem>
+            <!--            <ElFormItem prop="account">-->
+            <!--              <ElSelect v-model="formData.account" @change="setupAccount">-->
+            <!--                <ElOption-->
+            <!--                  v-for="account in accounts"-->
+            <!--                  :key="account.key"-->
+            <!--                  :label="account.label"-->
+            <!--                  :value="account.key"-->
+            <!--                >-->
+            <!--                  <span>{{ account.label }}</span>-->
+            <!--                </ElOption>-->
+            <!--              </ElSelect>-->
+            <!--            </ElFormItem>-->
             <ElFormItem prop="username">
               <ElInput
                 class="custom-height"
