@@ -21,7 +21,7 @@ declare namespace Api {
     /** 分页参数 */
     interface PaginationParams {
       /** 当前页码 */
-      current: number
+      page: number
       /** 每页条数 */
       size: number
       /** 总条数 */
@@ -29,14 +29,20 @@ declare namespace Api {
     }
 
     /** 通用搜索参数 */
-    type CommonSearchParams = Pick<PaginationParams, 'current' | 'size'>
+    type CommonSearchParams = Pick<PaginationParams, 'page' | 'size'>
 
     /** 分页响应基础结构 */
     interface PaginatedResponse<T = any> {
-      records: T[]
-      current: number
+      /** 数据列表 */
+      content: T[]
+      /** 每页条数 */
       size: number
-      total: number
+      /** 当前页码 */
+      page: number
+      /** 总元素数 */
+      totalElements: number
+      /** 总页数 */
+      totalPages: number
     }
 
     /** 启用状态 */

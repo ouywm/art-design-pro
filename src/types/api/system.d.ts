@@ -71,6 +71,16 @@ declare namespace Api {
       roleIds?: number[]
     }
 
+    /** 重置密码参数（对应后端 ResetPasswordDto） */
+    interface ResetPasswordParams {
+      newPassword: string
+    }
+
+    /** 更新用户状态参数（对应后端 UpdateUserStatusDto） */
+    interface UpdateUserStatusParams {
+      status: UserStatus
+    }
+
     /** 角色列表 */
     type RoleList = Api.Common.PaginatedResponse<RoleVo>
 

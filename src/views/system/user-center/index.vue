@@ -43,6 +43,13 @@
               </div>
             </div>
           </div>
+
+          <div class="mt-8">
+            <ElButton type="primary" plain @click="router.push('/system/my-login-log')" v-ripple>
+              <ArtSvgIcon icon="ri:file-list-3-line" class="mr-1" />
+              查看登录日志
+            </ElButton>
+          </div>
         </div>
       </div>
       <div class="flex-1 overflow-hidden max-md:w-full max-md:mt-3.5">
@@ -152,6 +159,7 @@
 
   defineOptions({ name: 'UserCenter' })
 
+  const router = useRouter()
   const userStore = useUserStore()
   const userInfo = computed(() => userStore.getUserInfo)
 

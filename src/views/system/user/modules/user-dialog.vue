@@ -157,9 +157,9 @@
   const loadRoleList = async () => {
     roleListLoading.value = true
     try {
-      const res = await fetchGetRoleList({ current: 1, size: 100 })
+      const res = await fetchGetRoleList({ page: 1, size: 100 })
       // 显示所有角色，包括禁用的角色
-      roleList.value = res.records
+      roleList.value = res.content
     } catch (error) {
       console.error('加载角色列表失败:', error)
       ElMessage.error('加载角色列表失败')

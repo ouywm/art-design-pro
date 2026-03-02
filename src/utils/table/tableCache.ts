@@ -46,14 +46,13 @@ export enum CacheInvalidationStrategy {
   KEEP_ALL = 'keep_all'
 }
 
-// 通用 API 响应接口（兼容不同的后端响应格式）
+// 通用 API 响应接口（对应后端 Page<T> 结构）
 export interface ApiResponse<T = unknown> {
-  records?: T[]
-  data?: T[]
-  total?: number
-  current?: number
-  size?: number
-  [key: string]: unknown
+  content: T[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
 }
 
 // 缓存存储接口

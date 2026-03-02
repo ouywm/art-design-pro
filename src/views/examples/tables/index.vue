@@ -458,7 +458,7 @@
   // 缓存调试状态
   const cacheDebugLogs = ref<string[]>([])
   const requestParams = ref<any>({
-    current: 1,
+    page: 1,
     size: 20,
     name: '',
     phone: '',
@@ -693,7 +693,7 @@
         return fetchGetUserList(params)
       },
       apiParams: {
-        current: 1,
+        page: 1,
         size: 20,
         ...searchFormState.value
       },
@@ -813,7 +813,7 @@
         console.log('📊 响应详情:', response)
         addCacheLog(`✅ 网络请求成功: ${data.length} 条数据`)
         addCacheLog(
-          `📝 响应信息: total=${response.total}, current=${response.current}, size=${response.size}`
+          `📝 响应信息: total=${response.totalElements}, page=${response.page}, size=${response.size}`
         )
       },
       onError: (error) => {
@@ -825,7 +825,7 @@
         console.log('🎯 缓存命中:', data.length, '条')
         console.log('🔑 缓存来源:', response)
         addCacheLog(
-          `🎯 缓存命中: ${data.length} 条数据 (current=${response.current}, size=${response.size})`
+          `🎯 缓存命中: ${data.length} 条数据 (page=${response.page}, size=${response.size})`
         )
         ElMessage.info('数据来自缓存')
       },
@@ -947,7 +947,7 @@
       数据条数: data.value.length,
       选中条数: selectedRows.value.length,
       列数: columns?.value?.length ?? 0,
-      当前页: pagination.current,
+      当前页: pagination.page,
       每页大小: pagination.size,
       总条数: pagination.total
     }
@@ -1177,11 +1177,11 @@
 
   // 监听分页和搜索状态变化
   watch(
-    () => [pagination.current, pagination.size, searchFormState.value],
-    ([current, size, search]) => {
+    () => [pagination.page, pagination.size, searchFormState.value],
+    ([page, size, search]) => {
       requestParams.value = {
         ...(search as any),
-        current,
+        page,
         size
       }
     },

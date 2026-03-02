@@ -121,15 +121,16 @@
     enabled: true
   })
 
-  const rules = reactive<FormRules>({
+  const rules = computed<FormRules>(() => ({
     title: [
-      { required: true, message: '请输入菜单名称', trigger: 'blur' },
-      { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
+      { required: true, message: '请输入菜单标题', trigger: 'blur' },
+      { min: 2, max: 30, message: '长度在 2 到 30 个字符', trigger: 'blur' }
     ],
+    name: [{ required: true, message: '请输入路由名称', trigger: 'blur' }],
     path: [{ required: true, message: '请输入路由地址', trigger: 'blur' }],
     authName: [{ required: true, message: '请输入权限名称', trigger: 'blur' }],
     authMark: [{ required: true, message: '请输入权限标识', trigger: 'blur' }]
-  })
+  }))
 
   /**
    * 表单项配置
@@ -143,7 +144,15 @@
     if (form.menuType === 1) {
       return [
         ...baseItems,
-        { label: '菜单名称', key: 'title', type: 'input', props: { placeholder: '菜单名称' } },
+        {
+          label: createLabelTooltip(
+            '菜单标题',
+            '可直接填写文本（如：用户管理）\n或使用国际化键名（如：menus.system.user）'
+          ),
+          key: 'title',
+          type: 'input',
+          props: { placeholder: '如：用户管理 或 menus.system.user' }
+        },
         { label: '路由名称', key: 'name', type: 'input', props: { placeholder: '如：SystemUser' } },
         {
           label: createLabelTooltip(
@@ -246,7 +255,32 @@
    */
   const resetForm = (): void => {
     formRef.value?.reset()
-    form.menuType = 1
+    // 手动重置所有字段为初始值，避免 undefined 导致字段不发送
+    Object.assign(form, {
+      menuType: 1,
+      parentId: 0,
+      name: '',
+      path: '',
+      component: '',
+      redirect: '',
+      icon: '',
+      title: '',
+      link: '',
+      isIframe: false,
+      isHide: false,
+      isHideTab: false,
+      isFullPage: false,
+      isFirstLevel: false,
+      keepAlive: false,
+      fixedTab: false,
+      showBadge: false,
+      showTextBadge: '',
+      activePath: '',
+      authName: '',
+      authMark: '',
+      sort: 1,
+      enabled: true
+    })
   }
 
   /**

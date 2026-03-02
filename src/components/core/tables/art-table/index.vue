@@ -66,7 +66,7 @@
         :total="pagination?.total"
         :disabled="loading"
         :page-size="pagination?.size"
-        :current-page="pagination?.current"
+        :current-page="pagination?.page"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
       />
@@ -96,7 +96,7 @@
   /** 分页配置接口 */
   interface PaginationConfig {
     /** 当前页码 */
-    current: number
+    page: number
     /** 每页显示条目个数 */
     size: number
     /** 总条目数 */
@@ -287,8 +287,8 @@
   // 全局序号
   const getGlobalIndex = (index: number) => {
     if (!props.pagination) return index + 1
-    const { current, size } = props.pagination
-    return (current - 1) * size + index + 1
+    const { page, size } = props.pagination
+    return (page - 1) * size + index + 1
   }
 
   const emit = defineEmits<{

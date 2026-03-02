@@ -39,6 +39,22 @@ export function fetchDeleteUser(id: number) {
   })
 }
 
+/** 重置用户密码 */
+export function fetchResetUserPassword(id: number, params: Api.SystemManage.ResetPasswordParams) {
+  return request.put<null>({
+    url: `/api/user/${id}/reset-password`,
+    params
+  })
+}
+
+/** 更新用户状态 */
+export function fetchUpdateUserStatus(id: number, params: Api.SystemManage.UpdateUserStatusParams) {
+  return request.put<null>({
+    url: `/api/user/${id}/status`,
+    params
+  })
+}
+
 /** 获取角色列表 */
 export function fetchGetRoleList(params: Api.SystemManage.RoleSearchParams) {
   return request.get<Api.SystemManage.RoleList>({

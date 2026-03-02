@@ -37,6 +37,14 @@
         :user-data="currentUserData"
         @submit="handleDialogSubmit"
       />
+
+      <!-- 重置密码弹窗 -->
+      <ResetPasswordDialog
+        v-model:visible="resetPasswordDialogVisible"
+        :user-id="resetPasswordUserId"
+        :user-name="resetPasswordUserName"
+        @submit="handleResetPasswordSubmit"
+      />
     </ElCard>
   </div>
 </template>
@@ -45,20 +53,29 @@
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { ACCOUNT_TABLE_DATA } from '@/mock/temp/formData'
   import { useTable } from '@/hooks/core/useTable'
-  import { fetchGetUserList, fetchDeleteUser } from '@/api/system-manage'
+  import { fetchGetUserList, fetchDeleteUser, fetchResetUserPassword } from '@/api/system-manage'
   import UserSearch from './modules/user-search.vue'
   import UserDialog from './modules/user-dialog.vue'
+  import ResetPasswordDialog from './modules/reset-password-dialog.vue'
   import { ElTag, ElMessageBox, ElImage } from 'element-plus'
   import { DialogType } from '@/types'
+  import { useAuth } from '@/hooks'
 
   defineOptions({ name: 'User' })
 
   type UserListItem = Api.SystemManage.UserListItem
 
+  const { hasAuth } = useAuth()
+
   // 弹窗相关
   const dialogType = ref<DialogType>('add')
   const dialogVisible = ref(false)
   const currentUserData = ref<Partial<UserListItem>>({})
+
+  // 重置密码弹窗相关
+  const resetPasswordDialogVisible = ref(false)
+  const resetPasswordUserId = ref(0)
+  const resetPasswordUserName = ref('')
 
   // 选中行
   const selectedRows = ref<UserListItem[]>([])
@@ -74,16 +91,16 @@
 
   // 用户状态配置
   const USER_STATUS_CONFIG = {
-    '1': { type: 'success' as const, text: '在线' },
-    '2': { type: 'info' as const, text: '离线' },
-    '3': { type: 'warning' as const, text: '异常' },
-    '4': { type: 'danger' as const, text: '注销' }
+    1: { type: 'success' as const, text: '在线' },
+    2: { type: 'info' as const, text: '离线' },
+    3: { type: 'warning' as const, text: '异常' },
+    4: { type: 'danger' as const, text: '注销' }
   } as const
 
   /**
    * 获取用户状态配置
    */
-  const getUserStatusConfig = (status: string) => {
+  const getUserStatusConfig = (status: number) => {
     return (
       USER_STATUS_CONFIG[status as keyof typeof USER_STATUS_CONFIG] || {
         type: 'info' as const,
@@ -112,7 +129,7 @@
     core: {
       apiFn: fetchGetUserList,
       apiParams: {
-        current: 1,
+        page: 1,
         size: 20,
         ...searchForm.value
       },
@@ -168,14 +185,21 @@
         {
           prop: 'operation',
           label: '操作',
-          width: 120,
+          width: 180,
           fixed: 'right', // 固定列
           formatter: (row) =>
-            h('div', [
+            h('div', { style: 'display: flex; gap: 4px; align-items: center;' }, [
               h(ArtButtonTable, {
                 type: 'edit',
                 onClick: () => showDialog('edit', row)
               }),
+              hasAuth('reset-password') &&
+                h(ArtButtonTable, {
+                  type: 'delete',
+                  icon: 'ri-key-2-line',
+                  title: '重置密码',
+                  onClick: () => handleResetPassword(row)
+                }),
               h(ArtButtonTable, {
                 type: 'delete',
                 onClick: () => deleteUser(row)
@@ -252,6 +276,28 @@
       refreshCreate()
     } else {
       refreshUpdate()
+    }
+  }
+
+  /**
+   * 重置用户密码
+   */
+  const handleResetPassword = (row: UserListItem): void => {
+    resetPasswordUserId.value = row.id
+    resetPasswordUserName.value = row.userName
+    resetPasswordDialogVisible.value = true
+  }
+
+  /**
+   * 处理重置密码提交
+   */
+  const handleResetPasswordSubmit = async (userId: number, newPassword: string): Promise<void> => {
+    try {
+      await fetchResetUserPassword(userId, { newPassword })
+      ElMessage.success('密码重置成功')
+      resetPasswordDialogVisible.value = false
+    } catch {
+      // 错误已经在 http 拦截器中处理
     }
   }
 

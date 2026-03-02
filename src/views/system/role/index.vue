@@ -101,7 +101,7 @@
     core: {
       apiFn: fetchGetRoleList,
       apiParams: {
-        current: 1,
+        page: 1,
         size: 20
       },
       // 排除 apiParams 中的属性
