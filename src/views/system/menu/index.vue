@@ -43,6 +43,7 @@
         :type="dialogType"
         :editData="editData"
         :lockType="lockMenuType"
+        :menuTree="tableData"
         @submit="handleSubmit"
       />
     </ElCard>
@@ -201,7 +202,7 @@
     {
       prop: 'operation',
       label: '操作',
-      width: 180,
+      width: 220,
       align: 'right',
       formatter: (row: AppRouteRecord) => {
         const buttonStyle = { style: 'text-align: right' }
@@ -220,6 +221,12 @@
         }
 
         return h('div', buttonStyle, [
+          h(ArtButtonTable, {
+            type: 'add',
+            icon: 'ri:menu-add-line',
+            onClick: () => handleAddChildMenu(row),
+            title: '新增子菜单'
+          }),
           h(ArtButtonTable, {
             type: 'add',
             onClick: () => handleAddAuth(row),
@@ -384,6 +391,13 @@
   const handleAddMenu = (): void => openDialog(1, null, true)
 
   /**
+   * 添加子菜单
+   * @param row 父菜单行数据
+   */
+  const handleAddChildMenu = (row: AppRouteRecord): void =>
+    openDialog(1, { parentId: row.id }, true)
+
+  /**
    * 添加权限按钮
    * @param row 父菜单行数据
    */
@@ -447,7 +461,6 @@
       getMenuList()
     } catch (error) {
       console.error('保存菜单失败:', error)
-      ElMessage.error(editData.value?.id ? '更新失败' : '创建失败')
     }
   }
 
@@ -475,7 +488,6 @@
     } catch (error) {
       if (error !== 'cancel') {
         console.error(`删除${label}失败:`, error)
-        ElMessage.error('删除失败')
       }
     }
   }

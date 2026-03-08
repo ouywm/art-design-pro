@@ -287,14 +287,21 @@
         "pageVisibility": "Super Admin Visibility"
       }
     },
+    "file": {
+      "title": "File Management",
+      "manage": "File Manage",
+      "examples": "Component Demo"
+    },
     "system": {
       "title": "System Settings",
       "user": "User Manage",
       "role": "Role Manage",
       "userCenter": "User Center",
       "menu": "Menu Manage",
+      "dict": "Dictionary Manage",
       "loginLog": "Login Log",
       "operationLog": "Operation Log",
+      "logManage": "Log Manage",
       "myLoginLog": "My Login Log",
       "nested": "Nested Menu",
       "menu1": "Menu 1",
@@ -308,6 +315,11 @@
     "safeguard": {
       "title": "Safeguard",
       "server": "Server"
+    },
+    "monitor": {
+      "title": "Monitor",
+      "server": "Server Monitor",
+      "cache": "Cache Monitor"
     },
     "plan": {
       "title": "Version Plan",

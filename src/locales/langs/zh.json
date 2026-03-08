@@ -287,14 +287,21 @@
         "pageVisibility": "超级管理员可见"
       }
     },
+    "file": {
+      "title": "文件管理",
+      "manage": "文件管理",
+      "examples": "组件示例"
+    },
     "system": {
       "title": "系统管理",
       "user": "用户管理",
       "role": "角色管理",
       "userCenter": "个人中心",
       "menu": "菜单管理",
+      "dict": "字典管理",
       "loginLog": "登录日志",
       "operationLog": "操作日志",
+      "logManage": "日志管理",
       "myLoginLog": "我的登录日志",
       "nested": "嵌套菜单",
       "menu1": "菜单1",
@@ -308,6 +315,11 @@
     "safeguard": {
       "title": "运维管理",
       "server": "服务器管理"
+    },
+    "monitor": {
+      "title": "监控管理",
+      "server": "服务监控",
+      "cache": "缓存监控"
     },
     "plan": {
       "title": "版本计划",

@@ -165,7 +165,6 @@
       menuList.value = await fetchGetAllMenuList()
     } catch (error) {
       console.error('加载菜单列表失败:', error)
-      ElMessage.error('加载菜单列表失败')
     }
   }
 
@@ -190,7 +189,6 @@
       })
     } catch (error) {
       console.error('加载角色权限失败:', error)
-      ElMessage.error('加载权限数据失败')
     }
   }
 
@@ -229,7 +227,6 @@
       handleClose()
     } catch (error) {
       console.error('保存权限失败:', error)
-      ElMessage.error('保存权限失败')
     }
   }
 

@@ -32,10 +32,12 @@
       </ElFormItem>
       <ElFormItem v-if="dialogType === 'edit'" label="状态" prop="status">
         <ElSelect v-model="formData.status" placeholder="请选择状态">
-          <ElOption label="在线" :value="1" />
-          <ElOption label="离线" :value="2" />
-          <ElOption label="异常" :value="3" />
-          <ElOption label="注销" :value="4" />
+          <ElOption
+            v-for="item in statusOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="Number(item.value)"
+          />
         </ElSelect>
       </ElFormItem>
       <ElFormItem label="角色" prop="role">
@@ -73,6 +75,7 @@
   } from '@/api/system-manage'
   import type { FormInstance, FormRules } from 'element-plus'
   import { DialogType } from '@/types'
+  import { useDict } from '@/utils/dict'
 
   interface Props {
     visible: boolean
@@ -88,9 +91,15 @@
   const props = defineProps<Props>()
   const emit = defineEmits<Emits>()
 
+  // 字典工具
+  const { getDict } = useDict()
+
   // 角色列表数据
   const roleList = ref<Api.SystemManage.RoleVo[]>([])
   const roleListLoading = ref(false)
+
+  // 状态选项（从字典获取）
+  const statusOptions = computed(() => getDict('user_status'))
 
   // 对话框显示控制
   const dialogVisible = computed({
@@ -162,7 +171,6 @@
       roleList.value = res.content
     } catch (error) {
       console.error('加载角色列表失败:', error)
-      ElMessage.error('加载角色列表失败')
     } finally {
       roleListLoading.value = false
     }

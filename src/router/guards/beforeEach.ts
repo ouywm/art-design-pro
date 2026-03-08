@@ -41,6 +41,7 @@ import NProgress from 'nprogress'
 import { useSettingStore } from '@/store/modules/setting'
 import { useUserStore } from '@/store/modules/user'
 import { useMenuStore } from '@/store/modules/menu'
+import { useDictStore } from '@/store/modules/dict'
 import { setWorktab } from '@/utils/navigation'
 import { setPageTitle } from '@/utils/router'
 import { RoutesAlias } from '../routesAlias'
@@ -49,6 +50,7 @@ import { loadingService } from '@/utils/ui'
 import { useCommon } from '@/hooks/core/useCommon'
 import { useWorktabStore } from '@/store/modules/worktab'
 import { fetchGetUserInfo } from '@/api/auth'
+import { fetchGetAllDictData } from '@/api/dict-manage'
 import { ApiStatus } from '@/utils/http/status'
 import { isHttpError } from '@/utils/http/error'
 import { RouteRegistry, MenuProcessor, IframeRouteManager, RoutePermissionValidator } from '../core'
@@ -263,10 +265,13 @@ async function handleDynamicRoutes(
     // 1. 获取用户信息
     await fetchUserInfo()
 
-    // 2. 获取菜单数据
+    // 2. 加载字典数据
+    await loadDictData()
+
+    // 3. 获取菜单数据
     const menuList = await menuProcessor.getMenuList()
 
-    // 3. 验证菜单数据
+    // 4. 验证菜单数据
     if (!menuProcessor.validateMenuList(menuList)) {
       throw new Error('获取菜单列表失败，请重新登录')
     }
@@ -358,6 +363,18 @@ async function fetchUserInfo(): Promise<void> {
 }
 
 /**
+ * 加载字典数据
+ */
+async function loadDictData(): Promise<void> {
+  const dictStore = useDictStore()
+  // 如果已经初始化，跳过
+  if (dictStore.initialized) return
+
+  const data = await fetchGetAllDictData()
+  dictStore.setDictData(data)
+}
+
+/**
  * 重置路由相关状态
  */
 export function resetRouterState(delay: number): void {
@@ -368,6 +385,10 @@ export function resetRouterState(delay: number): void {
     const menuStore = useMenuStore()
     menuStore.removeAllDynamicRoutes()
     menuStore.setMenuList([])
+
+    // 清空字典数据
+    const dictStore = useDictStore()
+    dictStore.clearDict()
 
     // 重置路由初始化状态，允许重新登录后再次初始化
     resetRouteInitState()

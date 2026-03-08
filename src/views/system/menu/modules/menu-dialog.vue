@@ -43,6 +43,7 @@
   import type { AppRouteRecord } from '@/types/router'
   import type { FormItem } from '@/components/core/forms/art-form/index.vue'
   import ArtForm from '@/components/core/forms/art-form/index.vue'
+  import { formatMenuTitle } from '@/utils/router'
   import { useWindowSize } from '@vueuse/core'
 
   const { width } = useWindowSize()
@@ -73,6 +74,7 @@
     editData?: AppRouteRecord | any
     type?: Api.SystemManage.MenuType
     lockType?: boolean
+    menuTree?: AppRouteRecord[]
   }
 
   interface Emits {
@@ -87,13 +89,34 @@
   const props = withDefaults(defineProps<Props>(), {
     visible: false,
     type: 1,
-    lockType: false
+    lockType: false,
+    menuTree: () => []
   })
 
   const emit = defineEmits<Emits>()
 
   const formRef = ref()
   const isEdit = ref(false)
+
+  /**
+   * 将菜单树转为 ElTreeSelect 数据格式
+   * 编辑时排除自身及其子菜单（避免循环引用）
+   */
+  const parentTreeData = computed(() => {
+    const currentId = isEdit.value ? props.editData?.id : null
+
+    const convert = (items: AppRouteRecord[]): any[] => {
+      return items
+        .filter((item) => !item.meta?.isAuthButton && item.id !== currentId)
+        .map((item) => ({
+          value: item.id,
+          label: formatMenuTitle(item.meta?.title || item.name || ''),
+          children: item.children?.length ? convert(item.children) : undefined
+        }))
+    }
+
+    return [{ value: 0, label: '顶级菜单（无父级）', children: convert(props.menuTree) }]
+  })
 
   const form = reactive<Api.SystemManage.MenuFormData>({
     menuType: 1,
@@ -136,7 +159,22 @@
    * 表单项配置
    */
   const formItems = computed<FormItem[]>(() => {
-    const baseItems: FormItem[] = [{ label: '菜单类型', key: 'menuType', span: 24 }]
+    const baseItems: FormItem[] = [
+      { label: '菜单类型', key: 'menuType', span: 24 },
+      {
+        label: '父级菜单',
+        key: 'parentId',
+        type: 'treeselect',
+        props: {
+          data: parentTreeData.value,
+          checkStrictly: true,
+          renderAfterExpand: false,
+          defaultExpandedKeys: [0],
+          placeholder: '请选择父级菜单',
+          style: { width: '100%' }
+        }
+      }
+    ]
 
     // Switch 组件的 span：小屏幕 12，大屏幕 6
     const switchSpan = width.value < 640 ? 12 : 6
@@ -198,8 +236,7 @@
           label: '外部链接',
           key: 'link',
           type: 'input',
-          props: { placeholder: '如：https://www.example.com' },
-          span: 24
+          props: { placeholder: '如：https://www.example.com' }
         },
         { label: '是否启用', key: 'enabled', type: 'switch', span: switchSpan },
         { label: '页面缓存', key: 'keepAlive', type: 'switch', span: switchSpan },

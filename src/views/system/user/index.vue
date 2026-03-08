@@ -50,8 +50,8 @@
 </template>
 
 <script setup lang="ts">
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { ACCOUNT_TABLE_DATA } from '@/mock/temp/formData'
+  import ArtButtonMore from '@/components/core/forms/art-button-more/index.vue'
+  import { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import { fetchGetUserList, fetchDeleteUser, fetchResetUserPassword } from '@/api/system-manage'
   import UserSearch from './modules/user-search.vue'
@@ -59,13 +59,15 @@
   import ResetPasswordDialog from './modules/reset-password-dialog.vue'
   import { ElTag, ElMessageBox, ElImage } from 'element-plus'
   import { DialogType } from '@/types'
-  import { useAuth } from '@/hooks'
+  import { useDict, dictClassToTagType } from '@/utils/dict'
+  import defaultAvatar from '@imgs/user/avatar.webp'
 
   defineOptions({ name: 'User' })
 
   type UserListItem = Api.SystemManage.UserListItem
 
-  const { hasAuth } = useAuth()
+  // 字典工具
+  const { getDictLabel, getDictClass } = useDict()
 
   // 弹窗相关
   const dialogType = ref<DialogType>('add')
@@ -89,24 +91,14 @@
     status: undefined as Api.SystemManage.UserStatus | undefined
   })
 
-  // 用户状态配置
-  const USER_STATUS_CONFIG = {
-    1: { type: 'success' as const, text: '在线' },
-    2: { type: 'info' as const, text: '离线' },
-    3: { type: 'warning' as const, text: '异常' },
-    4: { type: 'danger' as const, text: '注销' }
-  } as const
-
   /**
-   * 获取用户状态配置
+   * 获取用户状态配置（使用字典）
    */
   const getUserStatusConfig = (status: number) => {
-    return (
-      USER_STATUS_CONFIG[status as keyof typeof USER_STATUS_CONFIG] || {
-        type: 'info' as const,
-        text: '未知'
-      }
-    )
+    const label = getDictLabel('user_status', status)
+    const listClass = getDictClass('user_status', status)
+    const type = dictClassToTagType(listClass)
+    return { type, text: label }
   }
 
   const {
@@ -147,11 +139,12 @@
           width: 280,
           // visible: false, // 默认是否显示列
           formatter: (row) => {
+            const avatarSrc = row.avatar || defaultAvatar
             return h('div', { class: 'user flex-c' }, [
               h(ElImage, {
                 class: 'size-9.5 rounded-md',
-                src: row.avatar,
-                previewSrcList: [row.avatar],
+                src: avatarSrc,
+                previewSrcList: row.avatar ? [row.avatar] : undefined,
                 // 图片预览是否插入至 body 元素上，用于解决表格内部图片预览样式异常
                 previewTeleported: true
               }),
@@ -185,47 +178,35 @@
         {
           prop: 'operation',
           label: '操作',
-          width: 180,
-          fixed: 'right', // 固定列
+          width: 80,
+          fixed: 'right',
           formatter: (row) =>
-            h('div', { style: 'display: flex; gap: 4px; align-items: center;' }, [
-              h(ArtButtonTable, {
-                type: 'edit',
-                onClick: () => showDialog('edit', row)
-              }),
-              hasAuth('reset-password') &&
-                h(ArtButtonTable, {
-                  type: 'delete',
-                  icon: 'ri-key-2-line',
-                  title: '重置密码',
-                  onClick: () => handleResetPassword(row)
-                }),
-              h(ArtButtonTable, {
-                type: 'delete',
-                onClick: () => deleteUser(row)
+            h('div', [
+              h(ArtButtonMore, {
+                list: [
+                  {
+                    key: 'edit',
+                    label: '编辑用户',
+                    icon: 'ri:edit-2-line'
+                  },
+                  {
+                    key: 'reset-password',
+                    label: '重置密码',
+                    icon: 'ri:key-2-line',
+                    auth: 'reset-password'
+                  },
+                  {
+                    key: 'delete',
+                    label: '注销用户',
+                    icon: 'ri:delete-bin-4-line',
+                    color: '#f56c6c'
+                  }
+                ],
+                onClick: (item: ButtonMoreItem) => handleMoreClick(item, row)
               })
             ])
         }
       ]
-    },
-    // 数据处理
-    transform: {
-      // 数据转换器 - 替换头像
-      dataTransformer: (records) => {
-        // 类型守卫检查
-        if (!Array.isArray(records)) {
-          console.warn('数据转换器: 期望数组类型，实际收到:', typeof records)
-          return []
-        }
-
-        // 使用本地头像替换接口返回的头像
-        return records.map((item, index: number) => {
-          return {
-            ...item,
-            avatar: ACCOUNT_TABLE_DATA[index % ACCOUNT_TABLE_DATA.length].avatar
-          }
-        })
-      }
     }
   })
 
@@ -265,6 +246,23 @@
       ElMessage.success('注销成功')
       refreshRemove()
     })
+  }
+
+  /**
+   * 更多操作按钮点击
+   */
+  const handleMoreClick = (item: ButtonMoreItem, row: UserListItem) => {
+    switch (item.key) {
+      case 'edit':
+        showDialog('edit', row)
+        break
+      case 'reset-password':
+        handleResetPassword(row)
+        break
+      case 'delete':
+        deleteUser(row)
+        break
+    }
   }
 
   /**

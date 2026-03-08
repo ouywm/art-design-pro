@@ -514,10 +514,9 @@
 
   // 用户状态配置
   const USER_STATUS_CONFIG = {
-    '1': { type: 'success' as const, text: '在线' },
-    '2': { type: 'info' as const, text: '离线' },
-    '3': { type: 'warning' as const, text: '异常' },
-    '4': { type: 'danger' as const, text: '注销' }
+    '1': { type: 'success' as const, text: '启用' },
+    '2': { type: 'warning' as const, text: '禁用' },
+    '3': { type: 'danger' as const, text: '注销' }
   } as const
 
   // 搜索表单配置
@@ -546,10 +545,9 @@
       type: 'select',
       options: [
         { label: '全部', value: '' },
-        { label: '在线', value: '1' },
-        { label: '离线', value: '2' },
-        { label: '异常', value: '3' },
-        { label: '注销', value: '4' }
+        { label: '启用', value: '1' },
+        { label: '禁用', value: '2' },
+        { label: '注销', value: '3' }
       ]
     },
     {
@@ -784,7 +782,7 @@
             Math.floor(Math.random() * 5)
           ],
           score: Math.floor(Math.random() * 5) + 1,
-          status: ['1', '2', '3', '4'][Math.floor(Math.random() * 4)]
+          status: ['1', '2', '3'][Math.floor(Math.random() * 3)]
         }))
       }
       // 自定义响应适配器，处理后端特殊的返回格式

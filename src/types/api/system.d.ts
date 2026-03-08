@@ -4,8 +4,8 @@ declare namespace Api {
     /** 性别（对应后端 Gender 枚举：0=未知, 1=男, 2=女） */
     type Gender = 0 | 1 | 2
 
-    /** 用户状态（对应后端 UserStatus 枚举：1=在线, 2=离线, 3=异常, 4=注销） */
-    type UserStatus = 1 | 2 | 3 | 4
+    /** 用户状态（对应后端 UserStatus 枚举：1=启用, 2=禁用, 3=注销） */
+    type UserStatus = 1 | 2 | 3
 
     /** 用户列表 */
     type UserList = Api.Common.PaginatedResponse<UserListItem>
@@ -281,5 +281,112 @@ declare namespace Api {
     /** 菜单对话框表单数据（合并菜单和按钮的所有字段） */
     type MenuFormData = { menuType: MenuType } & Partial<CreateMenuParams> &
       Partial<CreateButtonParams>
+
+    // ============================================================
+    // 字典管理类型
+    // ============================================================
+
+    /** 字典状态（对应后端 DictStatus 枚举：1=启用, 2=禁用） */
+    type DictStatus = 1 | 2
+
+    /** 字典类型列表 */
+    type DictTypeList = Api.Common.PaginatedResponse<DictTypeVo>
+
+    /** 字典类型列表项（对应后端 DictTypeVo） */
+    interface DictTypeVo {
+      id: number
+      dictName: string
+      dictType: string
+      status: DictStatus
+      isSystem: boolean
+      remark: string
+      createBy: string
+      createTime: string
+      updateBy: string
+      updateTime: string
+    }
+
+    /** 字典类型查询参数（对应后端 DictTypeQueryDto） */
+    interface DictTypeSearchParams extends Api.Common.CommonSearchParams {
+      dictName?: string
+      dictType?: string
+      status?: DictStatus
+    }
+
+    /** 创建字典类型参数（对应后端 CreateDictTypeDto） */
+    interface CreateDictTypeParams {
+      dictName: string
+      dictType: string
+      status?: DictStatus
+      remark?: string
+    }
+
+    /** 更新字典类型参数（对应后端 UpdateDictTypeDto） */
+    interface UpdateDictTypeParams {
+      dictName?: string
+      status?: DictStatus
+      remark?: string
+    }
+
+    /** 字典数据列表 */
+    type DictDataList = Api.Common.PaginatedResponse<DictDataVo>
+
+    /** 字典数据列表项（对应后端 DictDataVo） */
+    interface DictDataVo {
+      id: number
+      dictType: string
+      dictLabel: string
+      dictValue: string
+      dictSort: number
+      cssClass: string
+      listClass: string
+      isDefault: boolean
+      status: DictStatus
+      isSystem: boolean
+      remark: string
+      createBy: string
+      createTime: string
+      updateBy: string
+      updateTime: string
+    }
+
+    /** 简化的字典数据（对应后端 DictDataSimpleVo，用于前端下拉框） */
+    interface DictDataSimpleVo {
+      label: string
+      value: string
+      listClass: string
+    }
+
+    /** 字典数据查询参数（对应后端 DictDataQueryDto） */
+    interface DictDataSearchParams extends Api.Common.CommonSearchParams {
+      dictType?: string
+      dictLabel?: string
+      status?: DictStatus
+    }
+
+    /** 创建字典数据参数（对应后端 CreateDictDataDto） */
+    interface CreateDictDataParams {
+      dictType: string
+      dictLabel: string
+      dictValue: string
+      dictSort?: number
+      cssClass?: string
+      listClass?: string
+      isDefault?: boolean
+      status?: DictStatus
+      remark?: string
+    }
+
+    /** 更新字典数据参数（对应后端 UpdateDictDataDto） */
+    interface UpdateDictDataParams {
+      dictLabel?: string
+      dictValue?: string
+      dictSort?: number
+      cssClass?: string
+      listClass?: string
+      isDefault?: boolean
+      status?: DictStatus
+      remark?: string
+    }
   }
 }
