@@ -13,6 +13,18 @@ export function fetchLogin(params: Api.Auth.LoginParams) {
 }
 
 /**
+ * 刷新 Token
+ * @param refreshToken 刷新令牌
+ * @returns 新的登录响应（包含新的 accessToken 和 refreshToken）
+ */
+export function fetchRefreshToken(refreshToken: string) {
+  return request.post<Api.Auth.LoginResponse>({
+    url: '/api/auth/refresh',
+    params: { refreshToken }
+  })
+}
+
+/**
  * 获取用户信息
  * @returns 用户信息
  */
