@@ -44,8 +44,5 @@ declare namespace Api {
       /** 总页数 */
       totalPages: number
     }
-
-    /** 启用状态 */
-    type EnableStatus = '1' | '2'
   }
 }
