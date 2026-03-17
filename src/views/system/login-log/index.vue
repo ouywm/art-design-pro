@@ -36,6 +36,12 @@
   defineOptions({ name: 'LoginLog' })
 
   type LoginLogListItem = Api.LoginLog.LoginLogListItem
+  type LoginLogSearchFormParams = Omit<
+    Api.LoginLog.LoginLogSearchFilters,
+    'startTime' | 'endTime'
+  > & {
+    loginTimeRange?: [string, string]
+  }
 
   // 登录状态标签样式
   const STATUS_TAG_TYPE: Record<number, 'success' | 'danger' | 'info'> = {
@@ -44,7 +50,7 @@
   }
 
   // 搜索表单
-  const searchForm = ref({
+  const searchForm = ref<LoginLogSearchFormParams>({
     userName: undefined,
     loginIp: undefined,
     status: undefined as Api.LoginLog.LoginStatus | undefined,
@@ -131,17 +137,15 @@
   /**
    * 搜索处理
    */
-  const handleSearch = (params: Record<string, any>) => {
-    const searchData: Record<string, any> = { ...params }
+  const handleSearch = (params: LoginLogSearchFormParams) => {
+    const { loginTimeRange, ...filters } = params
 
     // 处理时间范围
-    if (params.loginTimeRange && params.loginTimeRange.length === 2) {
-      searchData.startTime = params.loginTimeRange[0]
-      searchData.endTime = params.loginTimeRange[1]
-    }
-    delete searchData.loginTimeRange
+    const [startTime, endTime] = Array.isArray(loginTimeRange)
+      ? loginTimeRange
+      : [undefined, undefined]
 
-    Object.assign(searchParams, searchData)
+    Object.assign(searchParams, filters, { startTime, endTime })
     getData()
   }
 </script>

@@ -41,6 +41,12 @@
   defineOptions({ name: 'OperationLog' })
 
   type OperationLogListItem = Api.OperationLog.OperationLogListItem
+  type OperationLogSearchFormParams = Omit<
+    Api.OperationLog.OperationLogSearchFilters,
+    'startTime' | 'endTime'
+  > & {
+    operationTimeRange?: [string, string]
+  }
 
   // 业务类型标签样式
   const BUSINESS_TYPE_TAG: Record<number, 'primary' | 'success' | 'warning' | 'danger' | 'info'> = {
@@ -66,7 +72,7 @@
   const currentLogId = ref<number>()
 
   // 搜索表单
-  const searchForm = ref({
+  const searchForm = ref<OperationLogSearchFormParams>({
     userName: undefined,
     module: undefined,
     businessType: undefined as Api.OperationLog.BusinessType | undefined,
@@ -188,17 +194,18 @@
   /**
    * 搜索处理
    */
-  const handleSearch = (params: Record<string, any>) => {
-    const searchData: Record<string, any> = { ...params }
+  const handleSearch = (params: OperationLogSearchFormParams) => {
+    const { operationTimeRange, ...filters } = params
 
     // 处理时间范围
-    if (params.operationTimeRange && params.operationTimeRange.length === 2) {
-      searchData.startTime = params.operationTimeRange[0]
-      searchData.endTime = params.operationTimeRange[1]
-    }
-    delete searchData.operationTimeRange
+    const [startTime, endTime] = Array.isArray(operationTimeRange)
+      ? operationTimeRange
+      : [undefined, undefined]
 
-    Object.assign(searchParams, searchData)
+    Object.assign(searchParams, filters, {
+      startTime,
+      endTime
+    })
     getData()
   }
 

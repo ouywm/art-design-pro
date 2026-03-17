@@ -10,12 +10,19 @@
 </template>
 
 <script setup lang="ts">
+  type MyLoginLogSearchFormParams = Omit<
+    Api.LoginLog.LoginLogSearchFilters,
+    'userName' | 'loginIp' | 'startTime' | 'endTime'
+  > & {
+    loginTimeRange?: [string, string]
+  }
+
   interface Props {
-    modelValue: Record<string, any>
+    modelValue: MyLoginLogSearchFormParams
   }
   interface Emits {
-    (e: 'update:modelValue', value: Record<string, any>): void
-    (e: 'search', params: Record<string, any>): void
+    (e: 'update:modelValue', value: MyLoginLogSearchFormParams): void
+    (e: 'search', params: MyLoginLogSearchFormParams): void
     (e: 'reset'): void
   }
   const props = defineProps<Props>()
@@ -25,7 +32,7 @@
   const searchBarRef = ref()
   const formData = computed({
     get: () => props.modelValue,
-    set: (val) => emit('update:modelValue', val)
+    set: (val: MyLoginLogSearchFormParams) => emit('update:modelValue', val)
   })
 
   // 表单配置（个人登录日志不需要用户名搜索）
@@ -105,8 +112,8 @@
     emit('reset')
   }
 
-  async function handleSearch() {
+  async function handleSearch(params: MyLoginLogSearchFormParams) {
     await searchBarRef.value.validate()
-    emit('search', formData.value)
+    emit('search', params)
   }
 </script>

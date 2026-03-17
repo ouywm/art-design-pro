@@ -43,8 +43,8 @@ declare namespace Api {
     /** 系统参数配置详情 */
     type ConfigDetailVo = ConfigVo
 
-    /** 系统参数配置查询参数（对应后端 ConfigQueryDto） */
-    interface ConfigSearchParams extends Api.Common.CommonSearchParams {
+    /** 系统参数配置筛选字段（不包含分页） */
+    interface ConfigSearchFilters {
       /** 配置ID */
       id?: number
       /** 配置名称 */
@@ -86,6 +86,9 @@ declare namespace Api {
       /** 更新时间结束 */
       updateTimeEnd?: string
     }
+
+    /** 系统参数配置查询参数（对应后端 ConfigQueryDto） */
+    interface ConfigSearchParams extends Api.Common.CommonSearchParams, ConfigSearchFilters {}
 
     /** 创建系统参数配置参数（对应后端 CreateConfigDto） */
     interface CreateConfigParams {

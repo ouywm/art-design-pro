@@ -57,8 +57,8 @@ declare namespace Api {
     /** 展示档案详情 */
     type ShowcaseProfileDetailVo = ShowcaseProfileVo
 
-    /** 展示档案查询参数（对应后端 ShowcaseProfileQueryDto） */
-    interface ShowcaseProfileSearchParams extends Api.Common.CommonSearchParams {
+    /** 展示档案筛选字段（不包含分页） */
+    interface ShowcaseProfileSearchFilters {
       /** 主键 */
       id?: number
       /** 展示编码 */
@@ -122,6 +122,11 @@ declare namespace Api {
       /** 更新时间结束 */
       updatedAtEnd?: string
     }
+
+    /** 展示档案查询参数（对应后端 ShowcaseProfileQueryDto） */
+    interface ShowcaseProfileSearchParams
+      extends Api.Common.CommonSearchParams,
+        ShowcaseProfileSearchFilters {}
 
     /** 创建展示档案参数（对应后端 CreateShowcaseProfileDto） */
     interface CreateShowcaseProfileParams {

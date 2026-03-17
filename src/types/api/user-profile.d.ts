@@ -51,11 +51,14 @@ declare namespace Api {
     /** 登录状态 */
     type LoginStatus = 1 | 2 // 1=成功, 2=失败
 
-    /** 登录日志查询参数 */
-    interface LoginLogQueryParams extends Api.Common.CommonSearchParams {
+    /** 登录日志筛选字段（不包含分页） */
+    interface LoginLogQueryFilters {
       startTime?: string
       endTime?: string
       status?: LoginStatus
     }
+
+    /** 登录日志查询参数 */
+    interface LoginLogQueryParams extends Api.Common.CommonSearchParams, LoginLogQueryFilters {}
   }
 }

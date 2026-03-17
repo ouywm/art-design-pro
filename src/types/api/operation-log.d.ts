@@ -57,8 +57,8 @@ declare namespace Api {
       errorMsg: string
     }
 
-    /** 操作日志查询参数（对应后端 OperationLogQueryDto） */
-    interface OperationLogSearchParams extends Api.Common.CommonSearchParams {
+    /** 操作日志筛选字段（不包含分页） */
+    interface OperationLogSearchFilters {
       userName?: string
       module?: string
       action?: string
@@ -71,5 +71,10 @@ declare namespace Api {
       startTime?: string
       endTime?: string
     }
+
+    /** 操作日志查询参数（对应后端 OperationLogQueryDto） */
+    interface OperationLogSearchParams
+      extends Api.Common.CommonSearchParams,
+        OperationLogSearchFilters {}
   }
 }

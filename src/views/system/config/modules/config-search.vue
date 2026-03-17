@@ -97,8 +97,8 @@
     emit('reset')
   }
 
-  const handleSearch = async () => {
+  const handleSearch = async (params: SearchFormModel) => {
     await searchBarRef.value?.validate?.()
-    emit('search', formData.value)
+    emit('search', params)
   }
 </script>

@@ -1,7 +1,6 @@
 export type ShowcaseProfileListItem = Api.ShowcaseProfile.ShowcaseProfileVo
 export type ShowcaseProfileListItemDetail = Api.ShowcaseProfile.ShowcaseProfileDetailVo
 
-type SearchSystemParamKeys = keyof Api.Common.CommonSearchParams
 type SearchRangeParamKeys =
   | 'createdAtStart'
   | 'createdAtEnd'
@@ -13,24 +12,24 @@ type SearchRangeParamKeys =
   | 'updatedAtEnd'
 
 export type SearchFormModel = Omit<
-  Api.ShowcaseProfile.ShowcaseProfileSearchParams,
-  SearchSystemParamKeys | SearchRangeParamKeys
+  Api.ShowcaseProfile.ShowcaseProfileSearchFilters,
+  SearchRangeParamKeys
 > & {
   createdAtRange?: [
-    Api.ShowcaseProfile.ShowcaseProfileSearchParams['createdAtStart'],
-    Api.ShowcaseProfile.ShowcaseProfileSearchParams['createdAtEnd']
+    Api.ShowcaseProfile.ShowcaseProfileSearchFilters['createdAtStart'],
+    Api.ShowcaseProfile.ShowcaseProfileSearchFilters['createdAtEnd']
   ]
   launchAtRange?: [
-    Api.ShowcaseProfile.ShowcaseProfileSearchParams['launchAtStart'],
-    Api.ShowcaseProfile.ShowcaseProfileSearchParams['launchAtEnd']
+    Api.ShowcaseProfile.ShowcaseProfileSearchFilters['launchAtStart'],
+    Api.ShowcaseProfile.ShowcaseProfileSearchFilters['launchAtEnd']
   ]
   publishDateRange?: [
-    Api.ShowcaseProfile.ShowcaseProfileSearchParams['publishDateStart'],
-    Api.ShowcaseProfile.ShowcaseProfileSearchParams['publishDateEnd']
+    Api.ShowcaseProfile.ShowcaseProfileSearchFilters['publishDateStart'],
+    Api.ShowcaseProfile.ShowcaseProfileSearchFilters['publishDateEnd']
   ]
   updatedAtRange?: [
-    Api.ShowcaseProfile.ShowcaseProfileSearchParams['updatedAtStart'],
-    Api.ShowcaseProfile.ShowcaseProfileSearchParams['updatedAtEnd']
+    Api.ShowcaseProfile.ShowcaseProfileSearchFilters['updatedAtStart'],
+    Api.ShowcaseProfile.ShowcaseProfileSearchFilters['updatedAtEnd']
   ]
 }
 

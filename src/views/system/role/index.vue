@@ -64,7 +64,7 @@
   defineOptions({ name: 'Role' })
 
   type RoleListItem = Api.SystemManage.RoleListItem
-  type RoleSearchFormParams = Api.SystemManage.RoleSearchParams & {
+  type RoleSearchFormParams = Api.SystemManage.RoleSearchFilters & {
     daterange?: string[]
   }
 

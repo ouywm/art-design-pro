@@ -110,7 +110,9 @@
         .filter((item) => !item.meta?.isAuthButton && item.id !== currentId)
         .map((item) => ({
           value: item.id,
-          label: formatMenuTitle(item.meta?.title || item.name || ''),
+          label: formatMenuTitle(
+            item.meta?.title || (typeof item.name === 'string' ? item.name : '')
+          ),
           children: item.children?.length ? convert(item.children) : undefined
         }))
     }

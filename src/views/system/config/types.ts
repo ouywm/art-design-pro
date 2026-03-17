@@ -1,8 +1,7 @@
 export type ConfigListItem = Api.Config.ConfigVo
 export type ConfigListItemDetail = Api.Config.ConfigDetailVo
 
-type SearchSystemParamKeys = keyof Api.Common.CommonSearchParams
-export type SearchFormModel = Omit<Api.Config.ConfigSearchParams, SearchSystemParamKeys>
+export type SearchFormModel = Api.Config.ConfigSearchFilters
 
 type FormBase = Api.Config.CreateConfigParams & Api.Config.UpdateConfigParams
 type FormUndefinedKeys = 'valueType'

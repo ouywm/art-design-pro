@@ -65,6 +65,7 @@
   defineOptions({ name: 'User' })
 
   type UserListItem = Api.SystemManage.UserListItem
+  type UserSearchFormParams = Api.SystemManage.UserSearchFilters
 
   // 字典工具
   const { getDictLabel, getDictClass } = useDict()
@@ -83,11 +84,11 @@
   const selectedRows = ref<UserListItem[]>([])
 
   // 搜索表单
-  const searchForm = ref({
+  const searchForm = ref<UserSearchFormParams>({
     userName: undefined,
-    userGender: undefined as Api.SystemManage.Gender | undefined,
-    userPhone: undefined,
-    userEmail: undefined,
+    gender: undefined as Api.SystemManage.Gender | undefined,
+    phone: undefined,
+    email: undefined,
     status: undefined as Api.SystemManage.UserStatus | undefined
   })
 
@@ -214,7 +215,7 @@
    * 搜索处理
    * @param params 参数
    */
-  const handleSearch = (params: Api.SystemManage.UserSearchParams) => {
+  const handleSearch = (params: UserSearchFormParams) => {
     console.log(params)
     // 搜索参数赋值
     Object.assign(searchParams, params)

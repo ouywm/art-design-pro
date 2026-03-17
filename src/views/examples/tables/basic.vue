@@ -31,8 +31,8 @@
         page: 1,
         size: 20,
         userName: '',
-        userPhone: '',
-        userEmail: ''
+        phone: '',
+        email: ''
       },
       columnsFactory: () => [
         {

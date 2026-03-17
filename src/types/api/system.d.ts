@@ -39,14 +39,17 @@ declare namespace Api {
       roles: RoleDetailVo[]
     }
 
-    /** 用户查询参数（对应后端 UserQueryDto） */
-    interface UserSearchParams extends Api.Common.CommonSearchParams {
+    /** 用户筛选字段（不包含分页） */
+    interface UserSearchFilters {
       userName?: string
       phone?: string
       email?: string
       status?: UserStatus
       gender?: Gender
     }
+
+    /** 用户查询参数（对应后端 UserQueryDto） */
+    interface UserSearchParams extends Api.Common.CommonSearchParams, UserSearchFilters {}
 
     /** 创建用户参数（对应后端 CreateUserDto） */
     interface CreateUserParams {
@@ -97,8 +100,8 @@ declare namespace Api {
     /** 角色列表项别名 */
     type RoleListItem = RoleVo
 
-    /** 角色搜索参数（对应后端 RoleQueryDto） */
-    interface RoleSearchParams extends Api.Common.CommonSearchParams {
+    /** 角色筛选字段（不包含分页） */
+    interface RoleSearchFilters {
       roleName?: string
       roleCode?: string
       description?: string
@@ -106,6 +109,9 @@ declare namespace Api {
       startTime?: string
       endTime?: string
     }
+
+    /** 角色搜索参数（对应后端 RoleQueryDto） */
+    interface RoleSearchParams extends Api.Common.CommonSearchParams, RoleSearchFilters {}
 
     /** 创建角色参数（对应后端 CreateRoleDto） */
     interface CreateRoleParams {
@@ -306,12 +312,15 @@ declare namespace Api {
       updateTime: string
     }
 
-    /** 字典类型查询参数（对应后端 DictTypeQueryDto） */
-    interface DictTypeSearchParams extends Api.Common.CommonSearchParams {
+    /** 字典类型筛选字段（不包含分页） */
+    interface DictTypeSearchFilters {
       dictName?: string
       dictType?: string
       status?: DictStatus
     }
+
+    /** 字典类型查询参数（对应后端 DictTypeQueryDto） */
+    interface DictTypeSearchParams extends Api.Common.CommonSearchParams, DictTypeSearchFilters {}
 
     /** 创建字典类型参数（对应后端 CreateDictTypeDto） */
     interface CreateDictTypeParams {
@@ -357,12 +366,15 @@ declare namespace Api {
       listClass: string
     }
 
-    /** 字典数据查询参数（对应后端 DictDataQueryDto） */
-    interface DictDataSearchParams extends Api.Common.CommonSearchParams {
+    /** 字典数据筛选字段（不包含分页） */
+    interface DictDataSearchFilters {
       dictType?: string
       dictLabel?: string
       status?: DictStatus
     }
+
+    /** 字典数据查询参数（对应后端 DictDataQueryDto） */
+    interface DictDataSearchParams extends Api.Common.CommonSearchParams, DictDataSearchFilters {}
 
     /** 创建字典数据参数（对应后端 CreateDictDataDto） */
     interface CreateDictDataParams {

@@ -154,6 +154,7 @@
 
   type DictTypeVo = Api.SystemManage.DictTypeVo
   type DictDataVo = Api.SystemManage.DictDataVo
+  type DictDataSearchFormParams = Api.SystemManage.DictDataSearchFilters
 
   const { getDictLabel, getDictClass } = useDict()
 
@@ -245,7 +246,7 @@
   const dictDataDialogType = ref<'add' | 'edit'>('add')
   const currentDictData = ref<DictDataVo | undefined>(undefined)
 
-  const dataSearchForm = ref({
+  const dataSearchForm = ref<DictDataSearchFormParams>({
     dictType: '',
     dictLabel: undefined,
     status: undefined
@@ -389,7 +390,7 @@
   }
 
   // 搜索字典数据
-  const handleDataSearch = (params: Record<string, any>) => {
+  const handleDataSearch = (params: DictDataSearchFormParams) => {
     Object.assign(dataSearchParams, params)
     getDataTableData()
   }

@@ -58,6 +58,8 @@
   import { fetchGetUserList } from '@/api/system-manage'
   import UserSearch from '@/views/system/user/modules/user-search.vue'
 
+  type UserSearchFormParams = Api.SystemManage.UserSearchFilters
+
   defineOptions({ name: 'TreeTable' })
 
   const showButtons = ref(false)
@@ -177,11 +179,11 @@
   }
 
   // 表单搜索初始值
-  const defaultFilter = ref<Api.SystemManage.UserSearchParams>({
+  const defaultFilter = ref<UserSearchFormParams>({
     userName: undefined,
-    userGender: undefined,
-    userPhone: undefined,
-    userEmail: undefined,
+    gender: undefined,
+    phone: undefined,
+    email: undefined,
     status: undefined
   })
 
@@ -201,8 +203,8 @@
         page: 1,
         size: 20,
         userName: '',
-        userPhone: '',
-        userEmail: ''
+        phone: '',
+        email: ''
       },
       columnsFactory: () => [
         {

@@ -13,12 +13,14 @@
 <script setup lang="ts">
   import { useDict } from '@/utils/dict'
 
+  type UserSearchFormParams = Api.SystemManage.UserSearchFilters
+
   interface Props {
-    modelValue: Api.SystemManage.UserSearchParams
+    modelValue: UserSearchFormParams
   }
   interface Emits {
-    (e: 'update:modelValue', value: Api.SystemManage.UserSearchParams): void
-    (e: 'search', params: Api.SystemManage.UserSearchParams): void
+    (e: 'update:modelValue', value: UserSearchFormParams): void
+    (e: 'search', params: UserSearchFormParams): void
     (e: 'reset'): void
   }
   const props = defineProps<Props>()
@@ -50,13 +52,13 @@
     },
     {
       label: '手机号',
-      key: 'userPhone',
+      key: 'phone',
       type: 'input',
       props: { placeholder: '请输入手机号', maxlength: '11' }
     },
     {
       label: '邮箱',
-      key: 'userEmail',
+      key: 'email',
       type: 'input',
       props: { placeholder: '请输入邮箱' }
     },
@@ -68,18 +70,18 @@
         placeholder: '请选择状态',
         options: getDict('user_status').map((item) => ({
           label: item.label,
-          value: item.value
+          value: Number(item.value)
         }))
       }
     },
     {
       label: '性别',
-      key: 'userGender',
+      key: 'gender',
       type: 'radiogroup',
       props: {
         options: [
-          { label: '男', value: '1' },
-          { label: '女', value: '2' }
+          { label: '男', value: 1 },
+          { label: '女', value: 2 }
         ]
       }
     }
@@ -91,7 +93,7 @@
     emit('reset')
   }
 
-  async function handleSearch(params: Api.SystemManage.UserSearchParams) {
+  async function handleSearch(params: UserSearchFormParams) {
     await searchBarRef.value.validate()
     emit('search', params)
     console.log('表单数据', params)

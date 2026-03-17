@@ -11,12 +11,14 @@
 <script setup lang="ts">
   import { useDict } from '@/utils/dict'
 
+  type DictDataSearchFormParams = Api.SystemManage.DictDataSearchFilters
+
   interface Props {
-    modelValue: Record<string, any>
+    modelValue: DictDataSearchFormParams
   }
   interface Emits {
-    (e: 'update:modelValue', value: Record<string, any>): void
-    (e: 'search', params: Record<string, any>): void
+    (e: 'update:modelValue', value: DictDataSearchFormParams): void
+    (e: 'search', params: DictDataSearchFormParams): void
     (e: 'reset'): void
   }
 
@@ -28,7 +30,7 @@
   const searchBarRef = ref()
   const formData = computed({
     get: () => props.modelValue,
-    set: (val) => emit('update:modelValue', val)
+    set: (val: DictDataSearchFormParams) => emit('update:modelValue', val)
   })
 
   const formItems = computed(() => [
@@ -48,7 +50,7 @@
         placeholder: '请选择状态',
         options: getDict('sys_status').map((item) => ({
           label: item.label,
-          value: item.value
+          value: Number(item.value)
         }))
       }
     }
@@ -58,8 +60,8 @@
     emit('reset')
   }
 
-  async function handleSearch() {
+  async function handleSearch(params: DictDataSearchFormParams) {
     await searchBarRef.value.validate()
-    emit('search', formData.value)
+    emit('search', params)
   }
 </script>

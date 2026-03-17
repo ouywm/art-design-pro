@@ -10,12 +10,19 @@
 </template>
 
 <script setup lang="ts">
+  type OperationLogSearchFormParams = Omit<
+    Api.OperationLog.OperationLogSearchFilters,
+    'startTime' | 'endTime'
+  > & {
+    operationTimeRange?: [string, string]
+  }
+
   interface Props {
-    modelValue: Record<string, any>
+    modelValue: OperationLogSearchFormParams
   }
   interface Emits {
-    (e: 'update:modelValue', value: Record<string, any>): void
-    (e: 'search', params: Record<string, any>): void
+    (e: 'update:modelValue', value: OperationLogSearchFormParams): void
+    (e: 'search', params: OperationLogSearchFormParams): void
     (e: 'reset'): void
   }
   const props = defineProps<Props>()
@@ -25,7 +32,7 @@
   const searchBarRef = ref()
   const formData = computed({
     get: () => props.modelValue,
-    set: (val) => emit('update:modelValue', val)
+    set: (val: OperationLogSearchFormParams) => emit('update:modelValue', val)
   })
 
   // 表单配置
@@ -169,8 +176,8 @@
     emit('reset')
   }
 
-  async function handleSearch() {
+  async function handleSearch(params: OperationLogSearchFormParams) {
     await searchBarRef.value.validate()
-    emit('search', formData.value)
+    emit('search', params)
   }
 </script>

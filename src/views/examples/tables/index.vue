@@ -512,6 +512,17 @@
   // 搜索表单状态
   // const searchFormState = ref({ ...defaultFilter.value })
 
+  const fetchUserListWithDebug = (
+    params: Record<string, any>
+  ): Promise<Api.SystemManage.UserList> => {
+    const requestKey = JSON.stringify(params)
+    console.log('🚀 API 请求参数:', params)
+    addCacheLog(`🚀 API 请求: page=${params.page}, size=${params.size}`)
+    addCacheLog(`🔑 请求键: ${requestKey.substring(0, 100)}...`)
+    updateCacheKeys(requestKey)
+    return fetchGetUserList(params as Api.SystemManage.UserSearchParams)
+  }
+
   // 用户状态配置
   const USER_STATUS_CONFIG = {
     '1': { type: 'success' as const, text: '启用' },
@@ -678,18 +689,7 @@
   } = useTable({
     // 核心配置
     core: {
-      apiFn: (params) => {
-        // 在API调用前添加调试信息
-        const requestKey = JSON.stringify(params)
-        console.log('🚀 API 请求参数:', params)
-        addCacheLog(`🚀 API 请求: current=${params.current}, size=${params.size}`)
-        addCacheLog(`🔑 请求键: ${requestKey.substring(0, 100)}...`)
-
-        // 记录缓存键（这里假设会被缓存）
-        updateCacheKeys(requestKey)
-
-        return fetchGetUserList(params)
-      },
+      apiFn: fetchUserListWithDebug,
       apiParams: {
         page: 1,
         size: 20,
@@ -782,7 +782,7 @@
             Math.floor(Math.random() * 5)
           ],
           score: Math.floor(Math.random() * 5) + 1,
-          status: ['1', '2', '3'][Math.floor(Math.random() * 3)]
+          status: ([1, 2, 3] as const)[Math.floor(Math.random() * 3)]
         }))
       }
       // 自定义响应适配器，处理后端特殊的返回格式

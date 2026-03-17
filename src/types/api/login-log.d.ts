@@ -40,13 +40,16 @@ declare namespace Api {
       failReason: string
     }
 
-    /** 登录日志查询参数（对应后端 LoginLogQueryDto） */
-    interface LoginLogSearchParams extends Api.Common.CommonSearchParams {
+    /** 登录日志筛选字段（不包含分页） */
+    interface LoginLogSearchFilters {
       userName?: string
       loginIp?: string
       status?: LoginStatus
       startTime?: string
       endTime?: string
     }
+
+    /** 登录日志查询参数（对应后端 LoginLogQueryDto） */
+    interface LoginLogSearchParams extends Api.Common.CommonSearchParams, LoginLogSearchFilters {}
   }
 }

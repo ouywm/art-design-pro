@@ -42,7 +42,7 @@
   import { fetchGetFileList, fetchDeleteFile, fetchPresignDownload } from '@/api/file-upload'
   import { formatFileSize } from '@/utils/format'
   import { isImageFile, canBrowserPreview, downloadFileByUrl } from '@/utils/file'
-  import type { SearchFormItem } from '@/components/core/forms/art-search-bar/index.vue'
+  import type { SearchFormItem } from '@/components/core/forms/art-search-bar/types'
 
   defineOptions({ name: 'FileManage' })
 

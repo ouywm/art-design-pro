@@ -102,11 +102,11 @@
   </section>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends object">
   import { ArrowUpBold, ArrowDownBold } from '@element-plus/icons-vue'
   import { useWindowSize } from '@vueuse/core'
   import { useI18n } from 'vue-i18n'
-  import { toRaw, type Component } from 'vue'
+  import { toRaw } from 'vue'
   import {
     ElCascader,
     ElCheckbox,
@@ -126,6 +126,7 @@
     type FormInstance
   } from 'element-plus'
   import { calculateResponsiveSpan, type ResponsiveBreakpoint } from '@/utils/form/responsive'
+  import type { SearchFormItem } from './types'
 
   defineOptions({ name: 'ArtSearchBar' })
 
@@ -155,33 +156,6 @@
   const isMobile = computed(() => width.value < 500)
 
   const formInstance = useTemplateRef<FormInstance>('formRef')
-
-  // 表单项配置
-  export interface SearchFormItem {
-    /** 表单项的唯一标识 */
-    key: string
-    /** 表单项的标签文本或自定义渲染函数 */
-    label: string | (() => VNode) | Component
-    /** 表单项标签的宽度，会覆盖 Form 的 labelWidth */
-    labelWidth?: string | number
-    /** 表单项类型，支持预定义的组件类型 */
-    type?: keyof typeof componentMap | string
-    /** 自定义渲染函数或组件，用于渲染自定义组件（优先级高于 type） */
-    render?: (() => VNode) | Component
-    /** 是否隐藏该表单项 */
-    hidden?: boolean
-    /** 表单项占据的列宽，基于24格栅格系统 */
-    span?: number
-    /** 选项数据，用于 select、checkbox-group、radio-group 等 */
-    options?: Record<string, any>
-    /** 传递给表单项组件的属性 */
-    props?: Record<string, any>
-    /** 表单项的插槽配置 */
-    slots?: Record<string, (() => any) | undefined>
-    /** 表单项的占位符文本 */
-    placeholder?: string
-    /** 更多属性配置请参考 ElementPlus 官方文档 */
-  }
 
   // 表单配置
   interface SearchBarProps {
@@ -246,35 +220,17 @@
 
   interface SearchBarEmits {
     reset: []
-    search: [Record<string, any>]
+    search: [T]
   }
 
   const emit = defineEmits<SearchBarEmits>()
 
-  const modelValue = defineModel<Record<string, any>>({ default: {} })
-  const initialModelValue = ref<Record<string, any>>({})
+  const modelValue = defineModel<T>({ required: true })
+  const initialModelValue = ref<T>()
 
   // 保存组件初始化时的表单快照，用于 reset 时恢复默认筛选条件。
-  const cloneModelValue = (value: Record<string, any> | undefined) => {
-    if (!value) return {}
-
-    const deepClone = (source: unknown): unknown => {
-      if (Array.isArray(source)) {
-        return source.map((item) => deepClone(item))
-      }
-
-      if (source && typeof source === 'object') {
-        const rawSource = toRaw(source)
-        return Object.keys(rawSource).reduce<Record<string, unknown>>((accumulator, key) => {
-          accumulator[key] = deepClone((rawSource as Record<string, unknown>)[key])
-          return accumulator
-        }, {})
-      }
-
-      return source
-    }
-
-    return deepClone(toRaw(value)) as Record<string, any>
+  const cloneModelValue = (value: T): T => {
+    return structuredClone(toRaw(value))
   }
 
   initialModelValue.value = cloneModelValue(modelValue.value)
@@ -328,17 +284,17 @@
     return value === '' ? undefined : value
   }
 
-  const getFieldValue = (key: string) => modelValue.value[key]
+  const getFieldValue = (key: string) => Reflect.get(modelValue.value, key)
 
   const setFieldValue = (key: string, value: unknown) => {
     const normalizedValue = normalizeFieldValue(value)
 
     if (normalizedValue === undefined) {
-      delete modelValue.value[key]
+      Reflect.deleteProperty(modelValue.value, key)
       return
     }
 
-    modelValue.value[key] = normalizedValue
+    Reflect.set(modelValue.value, key, normalizedValue)
   }
 
   const isRichTextEmpty = (value: string) => {
@@ -356,7 +312,6 @@
     )
   }
 
-  // 搜索时按配置清洗空值，但保留 0 和 false 这类有效筛选条件。
   const sanitizeOutputValue = (value: unknown): unknown => {
     const options = sanitizeOutputOptions.value
 
@@ -405,8 +360,15 @@
     return value ?? undefined
   }
 
-  const getSanitizedOutput = () => {
-    return (sanitizeOutputValue(cloneModelValue(modelValue.value)) || {}) as Record<string, any>
+  const sanitizeModelValue = (value: T): T | undefined => {
+    return sanitizeOutputValue(value) as T | undefined
+  }
+
+  const getSanitizedOutput = (): T => {
+    return (
+      sanitizeModelValue(cloneModelValue(modelValue.value)) ??
+      cloneModelValue(initialModelValue.value!)
+    )
   }
 
   // 组件
@@ -477,9 +439,9 @@
 
     // 恢复初始表单值，保留默认搜索条件而不是简单清空。
     Object.keys(modelValue.value).forEach((key) => {
-      delete modelValue.value[key]
+      Reflect.deleteProperty(modelValue.value, key)
     })
-    Object.assign(modelValue.value, cloneModelValue(initialModelValue.value))
+    Object.assign(modelValue.value, cloneModelValue(initialModelValue.value!))
 
     // 触发 reset 事件
     emit('reset')
