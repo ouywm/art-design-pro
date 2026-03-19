@@ -29,10 +29,7 @@
       apiFn: fetchGetUserList,
       apiParams: {
         page: 1,
-        size: 20,
-        userName: '',
-        phone: '',
-        email: ''
+        size: 20
       },
       columnsFactory: () => [
         {

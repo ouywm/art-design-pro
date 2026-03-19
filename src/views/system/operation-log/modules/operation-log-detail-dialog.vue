@@ -84,6 +84,7 @@
     ElDescriptionsItem,
     ElTag,
     ElButton,
+    ElMessage,
     ElInput
   } from 'element-plus'
   import { fetchGetOperationLogDetail } from '@/api/operation-log'
@@ -132,12 +133,8 @@
   })
 
   async function loadDetail(id: number) {
-    try {
-      const res = await fetchGetOperationLogDetail(id)
-      detail.value = res as unknown as Api.OperationLog.OperationLogDetail
-    } catch {
-      // 错误已在 http 拦截器中处理
-    }
+    const res = await fetchGetOperationLogDetail(id)
+    detail.value = res as unknown as Api.OperationLog.OperationLogDetail
   }
 
   /**

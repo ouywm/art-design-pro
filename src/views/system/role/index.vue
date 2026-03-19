@@ -59,7 +59,7 @@
   import RoleSearch from './modules/role-search.vue'
   import RoleEditDialog from './modules/role-edit-dialog.vue'
   import RolePermissionDialog from './modules/role-permission-dialog.vue'
-  import { ElTag, ElMessageBox } from 'element-plus'
+  import { ElTag, ElMessage, ElMessageBox } from 'element-plus'
 
   defineOptions({ name: 'Role' })
 
@@ -228,18 +228,10 @@
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
+    }).then(async () => {
+      await fetchDeleteRole(row.roleId)
+      ElMessage.success('删除成功')
+      refreshData()
     })
-      .then(async () => {
-        try {
-          await fetchDeleteRole(row.roleId)
-          ElMessage.success('删除成功')
-          refreshData()
-        } catch (error) {
-          console.error('删除角色失败:', error)
-        }
-      })
-      .catch(() => {
-        ElMessage.info('已取消删除')
-      })
   }
 </script>

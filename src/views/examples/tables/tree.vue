@@ -21,7 +21,7 @@
       </div>
 
       <div class="flex flex-col flex-grow min-w-0">
-        <UserSearch v-model="defaultFilter" />
+        <UserSearch v-model="defaultFilter" @search="handleSearch" @reset="handleReset" />
 
         <ElCard class="flex flex-col flex-1 min-h-0 art-table-card">
           <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
@@ -193,6 +193,9 @@
     columnChecks,
     loading,
     pagination,
+    getData,
+    searchParams,
+    resetSearchParams,
     refreshData,
     handleSizeChange,
     handleCurrentChange
@@ -201,10 +204,7 @@
       apiFn: fetchGetUserList,
       apiParams: {
         page: 1,
-        size: 20,
-        userName: '',
-        phone: '',
-        email: ''
+        size: 20
       },
       columnsFactory: () => [
         {
@@ -232,6 +232,15 @@
       ]
     }
   })
+
+  const handleSearch = (params: UserSearchFormParams) => {
+    Object.assign(searchParams, params)
+    getData()
+  }
+
+  const handleReset = () => {
+    resetSearchParams()
+  }
 </script>
 
 <style scoped>

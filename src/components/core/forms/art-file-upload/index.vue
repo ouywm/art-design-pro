@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed } from 'vue'
+  import { ref, computed, watch, nextTick } from 'vue'
   import { ElMessage } from 'element-plus'
   import { UploadFilled } from '@element-plus/icons-vue'
   import type {
@@ -148,6 +148,22 @@
     fileList.value.filter((f) => f.url || f.raw).map((f) => f.url || URL.createObjectURL(f.raw!))
   )
 
+  const createUploadFile = (file: Api.FileUpload.FileUploadVo): UploadFile => ({
+    name: file.originalName,
+    url: file.url,
+    status: 'success',
+    uid: file.fileId,
+    response: file
+  })
+
+  watch(
+    modelValue,
+    (files) => {
+      fileList.value = files.map(createUploadFile)
+    },
+    { immediate: true, deep: true }
+  )
+
   function handlePreview(uploadFile: UploadFile) {
     const idx = fileList.value.findIndex((f) => f.uid === uploadFile.uid)
     previewIndex.value = Math.max(idx, 0)
@@ -170,7 +186,7 @@
 
   function handleSuccess(response: any, uploadFile: UploadFile) {
     const result = response as Api.FileUpload.FileUploadVo
-    modelValue.value = [...modelValue.value, result]
+    modelValue.value = props.maxCount === 1 ? [result] : [...modelValue.value, result]
     emit('upload-success', result, uploadFile.raw!)
   }
 
@@ -181,10 +197,16 @@
   function handleExceed(files: File[]) {
     // 单文件模式：自动替换旧文件
     if (props.maxCount === 1) {
+      modelValue.value = []
       uploadRef.value?.clearFiles()
       const rawFile = files[0] as UploadRawFile
       rawFile.uid = Date.now()
       uploadRef.value?.handleStart(rawFile)
+      if (props.autoUpload) {
+        nextTick(() => {
+          uploadRef.value?.submit()
+        })
+      }
       return
     }
     ElMessage.warning(`最多只能上传 ${props.maxCount} 个文件`)
@@ -192,10 +214,19 @@
   }
 
   function handleRemove(uploadFile: UploadFile) {
-    if (uploadFile.status === 'success' && uploadFile.response) {
-      const response = uploadFile.response as Api.FileUpload.FileUploadVo
-      modelValue.value = modelValue.value.filter((f) => f.fileId !== response.fileId)
-    }
+    const response = uploadFile.response as Api.FileUpload.FileUploadVo | undefined
+    const fileId = response?.fileId ?? Number(uploadFile.uid)
+    const fileUrl = response?.url ?? uploadFile.url
+
+    modelValue.value = modelValue.value.filter((file) => {
+      if (Number.isFinite(fileId) && file.fileId === fileId) {
+        return false
+      }
+      if (fileUrl && file.url === fileUrl) {
+        return false
+      }
+      return true
+    })
   }
 
   // ==================== 公开方法 ====================
@@ -209,6 +240,7 @@
   function clear() {
     uploadRef.value?.clearFiles()
     fileList.value = []
+    modelValue.value = []
   }
 
   /** 中止上传 */

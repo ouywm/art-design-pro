@@ -1,119 +1,133 @@
 <!-- 字典管理页面 - 左侧字典类型，右侧字典数据 -->
 <template>
-  <div class="dict-manage-container">
-    <!-- 左侧：字典类型列表 -->
-    <div class="dict-type-panel">
-      <ElCard shadow="never" class="dict-type-card">
-        <template #header>
-          <div class="card-header">
-            <span class="title">字典类型</span>
-            <ElButton type="primary" size="small" @click="showDictTypeDialog('add')">
-              新增
-            </ElButton>
-          </div>
-        </template>
-
-        <!-- 搜索框 -->
-        <div class="search-box">
-          <ElInput
-            v-model="typeSearchKeyword"
-            placeholder="搜索字典类型"
-            clearable
-            @input="handleTypeSearch"
-          >
-            <template #prefix>
-              <ArtSvgIcon icon="ri:search-line" />
-            </template>
-          </ElInput>
-        </div>
-
-        <!-- 字典类型列表 -->
-        <div v-loading="typeLoading" class="type-list">
-          <div
-            v-for="item in filteredDictTypes"
-            :key="item.id"
-            class="type-item"
-            :class="{ active: selectedDictType?.id === item.id }"
-            @click="handleSelectType(item)"
-          >
-            <div class="type-info">
-              <div class="type-name">{{ item.dictName }}</div>
-              <div class="type-code">{{ item.dictType }}</div>
+  <div class="art-full-height dict-page">
+    <ElCard class="art-table-card dict-page-card" shadow="never" style="margin-top: 0">
+      <div class="dict-page-body">
+        <aside class="dict-type-panel">
+          <section class="dict-section dict-type-section">
+            <div class="section-header">
+              <div class="section-heading">
+                <h3 class="section-title">字典类型</h3>
+                <p class="section-subtitle">管理字典分类与类型编码</p>
+              </div>
+              <ElSpace wrap>
+                <ElTag effect="plain" round type="info">{{ dictTypes.length }} 项</ElTag>
+                <ElButton circle :loading="typeLoading" size="small" @click="loadDictTypes">
+                  <template #icon>
+                    <ArtSvgIcon icon="ri:refresh-line" />
+                  </template>
+                </ElButton>
+                <ElButton type="primary" size="small" @click="showDictTypeDialog('add')">
+                  新增
+                </ElButton>
+              </ElSpace>
             </div>
-            <div class="type-actions">
-              <ElButton
-                link
-                type="primary"
-                size="small"
-                @click.stop="showDictTypeDialog('edit', item)"
+
+            <div class="search-box">
+              <ElInput
+                v-model="typeSearchKeyword"
+                placeholder="搜索字典类型"
+                clearable
+                @input="handleTypeSearch"
               >
-                <ArtSvgIcon icon="ri:edit-2-line" />
-              </ElButton>
-              <ElButton
-                link
-                type="danger"
-                size="small"
-                :disabled="item.isSystem"
-                @click.stop="handleDeleteDictType(item)"
+                <template #prefix>
+                  <ArtSvgIcon icon="ri:search-line" />
+                </template>
+              </ElInput>
+            </div>
+
+            <div v-loading="typeLoading" class="type-list">
+              <div
+                v-for="item in filteredDictTypes"
+                :key="item.id"
+                class="type-item"
+                :class="{ active: selectedDictType?.id === item.id }"
+                @click="handleSelectType(item)"
               >
-                <ArtSvgIcon icon="ri:delete-bin-4-line" />
-              </ElButton>
+                <div class="type-info">
+                  <div class="type-name">{{ item.dictName }}</div>
+                  <div class="type-code">{{ item.dictType }}</div>
+                </div>
+                <div class="type-actions">
+                  <ElButton
+                    link
+                    type="primary"
+                    size="small"
+                    @click.stop="showDictTypeDialog('edit', item)"
+                  >
+                    <ArtSvgIcon icon="ri:edit-2-line" />
+                  </ElButton>
+                  <ElButton
+                    link
+                    type="danger"
+                    size="small"
+                    :disabled="item.isSystem"
+                    @click.stop="handleDeleteDictType(item)"
+                  >
+                    <ArtSvgIcon icon="ri:delete-bin-4-line" />
+                  </ElButton>
+                </div>
+              </div>
+              <ElEmpty v-if="filteredDictTypes.length === 0" description="暂无数据" />
+            </div>
+          </section>
+        </aside>
+
+        <section class="dict-data-panel">
+          <div class="dict-section dict-data-section">
+            <div class="section-header">
+              <div class="section-heading">
+                <h3 class="section-title">
+                  {{ selectedDictType ? selectedDictType.dictName : '字典数据' }}
+                </h3>
+                <p class="section-subtitle">
+                  {{ selectedDictType ? selectedDictType.dictType : '请先从左侧选择一个字典类型' }}
+                </p>
+              </div>
+              <ElTag v-if="selectedDictType" effect="plain" round type="info">
+                {{ dataPagination.total || 0 }} 项
+              </ElTag>
+            </div>
+
+            <div v-if="!selectedDictType" class="empty-state">
+              <ElEmpty description="请先选择左侧的字典类型" />
+            </div>
+
+            <div v-else class="table-container">
+              <DictDataSearch
+                v-show="showSearchBar"
+                v-model="dataSearchForm"
+                @search="handleDataSearch"
+                @reset="handleDataReset"
+              />
+
+              <ArtTableHeader
+                v-model:columns="dataColumnChecks"
+                v-model:showSearchBar="showSearchBar"
+                :loading="dataLoading"
+                :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+                @refresh="refreshDataTable"
+              >
+                <template #left>
+                  <ElButton type="primary" @click="showDictDataDialog('add')" v-ripple>
+                    新增字典数据
+                  </ElButton>
+                </template>
+              </ArtTableHeader>
+
+              <ArtTable
+                :loading="dataLoading"
+                :data="dataTableData"
+                :columns="dataColumns"
+                :pagination="dataPagination"
+                @pagination:size-change="handleDataSizeChange"
+                @pagination:current-change="handleDataCurrentChange"
+              />
             </div>
           </div>
-          <ElEmpty v-if="filteredDictTypes.length === 0" description="暂无数据" />
-        </div>
-      </ElCard>
-    </div>
-
-    <!-- 右侧：字典数据表格 -->
-    <div class="dict-data-panel">
-      <ElCard shadow="never" class="dict-data-card">
-        <template #header>
-          <div class="card-header">
-            <span class="title">
-              {{ selectedDictType ? `${selectedDictType.dictName} - 字典数据` : '字典数据' }}
-            </span>
-          </div>
-        </template>
-
-        <div v-if="!selectedDictType" class="empty-state">
-          <ElEmpty description="请先选择左侧的字典类型" />
-        </div>
-
-        <div v-else class="table-container">
-          <!-- 搜索栏 -->
-          <DictDataSearch
-            v-show="showSearchBar"
-            v-model="dataSearchForm"
-            @search="handleDataSearch"
-            @reset="resetDataSearchParams"
-          />
-
-          <!-- 表格工具栏 -->
-          <ArtTableHeader
-            v-model:columns="dataColumnChecks"
-            v-model:showSearchBar="showSearchBar"
-            :loading="dataLoading"
-            :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-            @refresh="refreshDataTable"
-          >
-            <template #left>
-              <ElButton @click="showDictDataDialog('add')" v-ripple>新增字典数据</ElButton>
-            </template>
-          </ArtTableHeader>
-
-          <!-- 数据表格 -->
-          <ArtTable
-            :loading="dataLoading"
-            :data="dataTableData"
-            :columns="dataColumns"
-            :pagination="dataPagination"
-            @pagination:size-change="handleDataSizeChange"
-            @pagination:current-change="handleDataCurrentChange"
-          />
-        </div>
-      </ElCard>
-    </div>
+        </section>
+      </div>
+    </ElCard>
 
     <!-- 字典类型编辑弹窗 -->
     <DictTypeDialog
@@ -147,7 +161,7 @@
   import DictTypeDialog from './modules/dict-type-dialog.vue'
   import DictDataDialog from './modules/dict-data-dialog.vue'
   import DictDataSearch from './modules/dict-data-search.vue'
-  import { ElTag, ElMessageBox } from 'element-plus'
+  import { ElTag, ElMessage, ElMessageBox } from 'element-plus'
   import { useDict, dictClassToTagType } from '@/utils/dict'
 
   defineOptions({ name: 'DictManage' })
@@ -157,6 +171,12 @@
   type DictDataSearchFormParams = Api.SystemManage.DictDataSearchFilters
 
   const { getDictLabel, getDictClass } = useDict()
+
+  const createDataSearchForm = (dictType = ''): DictDataSearchFormParams => ({
+    dictType,
+    dictLabel: undefined,
+    status: undefined
+  })
 
   // ========== 左侧：字典类型 ==========
   const typeLoading = ref(false)
@@ -184,8 +204,20 @@
     try {
       const res = await fetchGetDictTypeList({ page: 1, size: 1000 })
       dictTypes.value = res.content || []
-      // 如果有数据且没有选中项，默认选中第一个并加载数据
-      if (dictTypes.value.length > 0 && !selectedDictType.value) {
+      if (dictTypes.value.length === 0) {
+        selectedDictType.value = null
+        return
+      }
+
+      if (!selectedDictType.value) {
+        handleSelectType(dictTypes.value[0])
+        return
+      }
+
+      const matchedDictType = dictTypes.value.find((item) => item.id === selectedDictType.value?.id)
+      if (matchedDictType) {
+        selectedDictType.value = matchedDictType
+      } else {
         handleSelectType(dictTypes.value[0])
       }
     } finally {
@@ -201,13 +233,8 @@
   // 选择字典类型
   const handleSelectType = (item: DictTypeVo) => {
     selectedDictType.value = item
-    // 重置搜索条件并加载数据
-    dataSearchForm.value = {
-      dictType: item.dictType,
-      dictLabel: undefined,
-      status: undefined
-    }
-    Object.assign(dataSearchParams, { dictType: item.dictType })
+    dataSearchForm.value = createDataSearchForm(item.dictType)
+    Object.assign(dataSearchParams, createDataSearchForm(item.dictType))
     getDataTableData()
   }
 
@@ -247,9 +274,7 @@
   const currentDictData = ref<DictDataVo | undefined>(undefined)
 
   const dataSearchForm = ref<DictDataSearchFormParams>({
-    dictType: '',
-    dictLabel: undefined,
-    status: undefined
+    ...createDataSearchForm()
   })
 
   const {
@@ -260,7 +285,6 @@
     pagination: dataPagination,
     getData: getDataTableData,
     searchParams: dataSearchParams,
-    resetSearchParams: resetDataSearchParams,
     handleSizeChange: handleDataSizeChange,
     handleCurrentChange: handleDataCurrentChange,
     refreshData: refreshDataTable
@@ -395,6 +419,14 @@
     getDataTableData()
   }
 
+  const handleDataReset = () => {
+    const dictType = selectedDictType.value?.dictType || ''
+    const nextSearchForm = createDataSearchForm(dictType)
+    dataSearchForm.value = nextSearchForm
+    Object.assign(dataSearchParams, nextSearchForm)
+    getDataTableData()
+  }
+
   // 初始化
   onMounted(() => {
     loadDictTypes()
@@ -402,133 +434,197 @@
 </script>
 
 <style scoped lang="scss">
-  .dict-manage-container {
-    display: flex;
-    gap: 12px;
-    height: 100%;
+  .dict-page {
+    min-height: 0;
+
+    .dict-page-card {
+      min-height: 0;
+
+      :deep(.el-card__body) {
+        display: flex;
+        min-height: 0;
+        padding: 0;
+      }
+    }
+
+    .dict-page-body {
+      display: flex;
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+    }
 
     .dict-type-panel {
       flex-shrink: 0;
       width: 320px;
-
-      .dict-type-card {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-
-        :deep(.el-card__body) {
-          display: flex;
-          flex: 1;
-          flex-direction: column;
-          overflow: hidden;
-        }
-      }
-
-      .card-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-
-        .title {
-          font-size: 16px;
-          font-weight: 600;
-        }
-      }
-
-      .search-box {
-        margin-bottom: 12px;
-      }
-
-      .type-list {
-        flex: 1;
-        overflow-y: auto;
-
-        .type-item {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 12px;
-          margin-bottom: 8px;
-          cursor: pointer;
-          border: 1px solid var(--el-border-color-light);
-          border-radius: 4px;
-          transition: all 0.3s;
-
-          &:hover {
-            background-color: var(--el-color-primary-light-9);
-            border-color: var(--el-color-primary);
-          }
-
-          &.active {
-            background-color: var(--el-color-primary-light-9);
-            border-color: var(--el-color-primary);
-          }
-
-          .type-info {
-            flex: 1;
-            min-width: 0;
-
-            .type-name {
-              margin-bottom: 4px;
-              overflow: hidden;
-              font-weight: 500;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            }
-
-            .type-code {
-              overflow: hidden;
-              font-size: 12px;
-              color: var(--el-text-color-secondary);
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            }
-          }
-
-          .type-actions {
-            display: flex;
-            gap: 4px;
-          }
-        }
-      }
+      min-height: 0;
+      padding: 18px 16px 18px 18px;
+      border-right: 1px solid var(--default-border);
     }
 
     .dict-data-panel {
       flex: 1;
       min-width: 0;
+      min-height: 0;
+      padding: 18px;
+    }
 
-      .dict-data-card {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
+    .dict-section {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
 
+    .section-header {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--default-border);
+    }
+
+    .section-heading {
+      min-width: 0;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.4;
+      color: var(--el-text-color-primary);
+    }
+
+    .section-subtitle {
+      margin: 6px 0 0;
+      font-family: 'JetBrains Mono', SFMono-Regular, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--el-text-color-secondary);
+      word-break: break-word;
+    }
+
+    .search-box {
+      margin-bottom: 14px;
+    }
+
+    .type-list {
+      flex: 1;
+      min-height: 0;
+      padding-right: 4px;
+      overflow-y: auto;
+    }
+
+    .type-item {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      background-color: var(--default-box-color);
+      border: 1px solid var(--default-border);
+      border-radius: calc(var(--custom-radius) / 2 + 2px);
+      transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
+
+      &:hover {
+        background-color: var(--el-fill-color-light);
+        border-color: var(--el-color-primary-light-5);
+      }
+
+      &.active {
+        background-color: var(--el-color-primary-light-9);
+        border-color: var(--el-color-primary);
+        box-shadow: inset 0 0 0 1px var(--el-color-primary-light-5);
+      }
+    }
+
+    .type-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .type-name {
+      margin-bottom: 4px;
+      overflow: hidden;
+      font-weight: 600;
+      line-height: 1.5;
+      color: var(--el-text-color-primary);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .type-code {
+      overflow: hidden;
+      font-family: 'JetBrains Mono', SFMono-Regular, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--el-text-color-secondary);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .type-actions {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .empty-state {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    .table-container {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+
+      :deep(.art-table) {
+        flex: 1;
+        min-height: 0;
+      }
+    }
+  }
+
+  @media (width <= 992px) {
+    .dict-page {
+      .dict-page-card {
         :deep(.el-card__body) {
-          display: flex;
-          flex: 1;
-          flex-direction: column;
-          overflow: hidden;
+          padding: 0;
         }
       }
 
-      .card-header {
-        .title {
-          font-size: 16px;
-          font-weight: 600;
-        }
-      }
-
-      .empty-state {
-        display: flex;
-        flex: 1;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .table-container {
-        display: flex;
-        flex: 1;
+      .dict-page-body,
+      .section-header {
         flex-direction: column;
-        overflow: hidden;
+      }
+
+      .dict-type-panel {
+        width: 100%;
+        padding: 16px;
+        border-right: 0;
+        border-bottom: 1px solid var(--default-border);
+      }
+
+      .dict-data-panel {
+        padding: 16px;
+      }
+
+      .dict-type-section {
+        max-height: 360px;
       }
     }
   }

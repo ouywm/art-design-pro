@@ -133,15 +133,14 @@
     emit('download', file)
   }
 
-  async function handleDelete(file: Api.FileUpload.FileUploadVo) {
+  function handleDelete(file: Api.FileUpload.FileUploadVo) {
     if (props.confirmDelete) {
-      try {
-        await ElMessageBox.confirm(`确定删除文件 "${file.originalName}"？`, '确认删除', {
-          type: 'warning'
-        })
-      } catch {
-        return
-      }
+      ElMessageBox.confirm(`确定删除文件 "${file.originalName}"？`, '确认删除', {
+        type: 'warning'
+      }).then(() => {
+        emit('delete', file)
+      })
+      return
     }
     emit('delete', file)
   }

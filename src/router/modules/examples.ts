@@ -129,6 +129,16 @@ export const examplesRoutes: AppRouteRecord = {
         icon: 'ri:shake-hands-line',
         keepAlive: true
       }
+    },
+    {
+      path: 'socket-io',
+      name: 'SocketIO',
+      component: '/examples/socket-io',
+      meta: {
+        title: 'menus.examples.socketIO',
+        icon: 'ri:flashlight-line',
+        keepAlive: true
+      }
     }
   ]
 }

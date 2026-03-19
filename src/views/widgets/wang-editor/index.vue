@@ -135,15 +135,12 @@
 
         <ElCollapseItem title="自定义配置" name="config">
           <pre><code class="language-vue">&lt;template&gt;
+          &lt;!-- 图片/视频上传开箱即用，无需额外传上传配置 --&gt;
           &lt;ArtWangEditor
           v-model="content"
           height="600px"
           placeholder="请输入您的内容..."
           :exclude-keys="['fontFamily', 'fontSize']"
-          :upload-config="{
-          maxFileSize: 5 * 1024 * 1024,
-          maxNumberOfFiles: 5
-          }"
           /&gt;
           &lt;/template&gt;</code></pre>
         </ElCollapseItem>
@@ -211,6 +208,8 @@
 </template>
 
 <script setup lang="ts">
+  import { ElMessage } from 'element-plus'
+
   defineOptions({ name: 'WidgetsWangEditor' })
 
   const fullEditorRef = ref()

@@ -64,7 +64,7 @@
     fetchUpdateMenu,
     fetchUpdateButton
   } from '@/api/system-manage'
-  import { ElMessageBox, ElTag } from 'element-plus'
+  import { ElTag, ElMessage, ElMessageBox } from 'element-plus'
 
   defineOptions({ name: 'Menus' })
 
@@ -469,27 +469,21 @@
    * @param row 行数据
    * @param label 类型标签（菜单/权限）
    */
-  const handleDelete = async (row: AppRouteRecord, label = '菜单'): Promise<void> => {
+  const handleDelete = (row: AppRouteRecord, label = '菜单'): void => {
     if (!row.id) {
       ElMessage.error(`${label} ID 不存在`)
       return
     }
 
-    try {
-      await ElMessageBox.confirm(`确定要删除该${label}吗？删除后无法恢复`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-
+    ElMessageBox.confirm(`确定要删除该${label}吗？删除后无法恢复`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(async () => {
       await fetchDeleteMenu(Number(row.id))
       ElMessage.success('删除成功')
       getMenuList()
-    } catch (error) {
-      if (error !== 'cancel') {
-        console.error(`删除${label}失败:`, error)
-      }
-    }
+    })
   }
 
   /**

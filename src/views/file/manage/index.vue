@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
   import { h } from 'vue'
-  import { ElTag, ElButton, ElMessageBox, ElMessage, ElImage } from 'element-plus'
+  import { ElTag, ElButton, ElMessage, ElMessageBox, ElImage } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
   import { fetchGetFileList, fetchDeleteFile, fetchPresignDownload } from '@/api/file-upload'
   import { formatFileSize } from '@/utils/format'
@@ -200,13 +200,9 @@
 
   // ==================== 操作处理 ====================
   async function handleDownload(row: FileDetailVo) {
-    try {
-      const res = await fetchPresignDownload(row.id)
-      await downloadFileByUrl(res.downloadUrl, row.originalName)
-      ElMessage.success('下载完成')
-    } catch {
-      // 拦截器已处理错误提示
-    }
+    const res = await fetchPresignDownload(row.id)
+    await downloadFileByUrl(res.downloadUrl, row.originalName)
+    ElMessage.success('下载完成')
   }
 
   function handleDelete(row: FileDetailVo) {

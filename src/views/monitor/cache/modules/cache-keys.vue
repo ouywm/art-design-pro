@@ -178,7 +178,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ElMessageBox, ElMessage } from 'element-plus'
+  import { ElMessage, ElMessageBox } from 'element-plus'
   import {
     fetchGetCacheKeys,
     fetchGetCacheKeyDetail,

@@ -435,7 +435,7 @@
     QuestionFilled,
     ArrowDown
   } from '@element-plus/icons-vue'
-  import { ElMessageBox } from 'element-plus'
+  import { ElMessage, ElMessageBox } from 'element-plus'
   import { useTable, CacheInvalidationStrategy } from '@/hooks/core/useTable'
   import { fetchGetUserList } from '@/api/system-manage'
   import { ACCOUNT_TABLE_DATA } from '@/mock/temp/formData'
@@ -999,47 +999,35 @@
     }, 1000)
   }
 
-  const handleDelete = async (row: UserListItem) => {
-    try {
-      await ElMessageBox.confirm(`确定要删除用户 ${row.userName} 吗？`, '警告', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-
+  const handleDelete = (row: UserListItem) => {
+    ElMessageBox.confirm(`确定要删除用户 ${row.userName} 吗？`, '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(() => {
       ElMessage.success('删除成功')
       setTimeout(() => {
         refreshRemove()
       }, 1000)
-    } catch {
-      ElMessage.info('已取消删除')
-    }
+    })
   }
 
   const handleView = (row: UserListItem) => {
     ElMessage.info(`查看用户 ${row.userName}`)
   }
 
-  const handleBatchDelete = async () => {
-    try {
-      await ElMessageBox.confirm(
-        `确定要删除选中的 ${selectedRows.value.length} 个用户吗？`,
-        '警告',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }
-      )
-
+  const handleBatchDelete = () => {
+    ElMessageBox.confirm(`确定要删除选中的 ${selectedRows.value.length} 个用户吗？`, '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(() => {
       ElMessage.success(`批量删除 ${selectedRows.value.length} 个用户成功`)
       selectedRows.value = []
       setTimeout(() => {
         refreshRemove()
       }, 1000)
-    } catch {
-      ElMessage.info('已取消删除')
-    }
+    })
   }
 
   // 导入导出
