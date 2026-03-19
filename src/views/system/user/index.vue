@@ -57,7 +57,7 @@
   import UserSearch from './modules/user-search.vue'
   import UserDialog from './modules/user-dialog.vue'
   import ResetPasswordDialog from './modules/reset-password-dialog.vue'
-  import { ElTag, ElMessageBox, ElImage } from 'element-plus'
+  import { ElTag, ElImage, ElMessage, ElMessageBox } from 'element-plus'
   import { DialogType } from '@/types'
   import { useDict, dictClassToTagType } from '@/utils/dict'
   import defaultAvatar from '@imgs/user/avatar.webp'
@@ -198,7 +198,7 @@
                   },
                   {
                     key: 'delete',
-                    label: '注销用户',
+                    label: '删除用户',
                     icon: 'ri:delete-bin-4-line',
                     color: '#f56c6c'
                   }
@@ -238,13 +238,13 @@
    * 删除用户
    */
   const deleteUser = (row: UserListItem): void => {
-    ElMessageBox.confirm(`确定要注销该用户吗？`, '注销用户', {
+    ElMessageBox.confirm(`确定要删除该用户吗？`, '删除用户', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'error'
     }).then(async () => {
       await fetchDeleteUser(row.id)
-      ElMessage.success('注销成功')
+      ElMessage.success('删除成功')
       refreshRemove()
     })
   }
@@ -291,13 +291,9 @@
    * 处理重置密码提交
    */
   const handleResetPasswordSubmit = async (userId: number, newPassword: string): Promise<void> => {
-    try {
-      await fetchResetUserPassword(userId, { newPassword })
-      ElMessage.success('密码重置成功')
-      resetPasswordDialogVisible.value = false
-    } catch {
-      // 错误已经在 http 拦截器中处理
-    }
+    await fetchResetUserPassword(userId, { newPassword })
+    ElMessage.success('密码重置成功')
+    resetPasswordDialogVisible.value = false
   }
 
   /**

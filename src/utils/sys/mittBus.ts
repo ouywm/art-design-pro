@@ -55,6 +55,10 @@ type Events = {
   openChat: void
   // 打开锁屏事件 - 无参数
   openLockScreen: void
+  // 刷新未读通知事件 - 无参数
+  refreshNoticeUnread: void
+  // Socket.IO 桥接事件 - 使用 socket: 前缀，支持任意服务端事件转发
+  [key: `socket:${string}`]: any
 }
 
 // 创建类型安全的事件总线实例

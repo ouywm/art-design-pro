@@ -235,10 +235,13 @@ async function request<T = any>(config: ExtendedAxiosRequestConfig): Promise<T> 
   try {
     const res = await axiosInstance.request<T>(config)
 
-    // 后端成功响应直接返回业务数据，不再有 .data.data 包装
+    // 后端成功响应直接返回业务数据
     return res.data as T
   } catch (error) {
-    if (error instanceof HttpError && error.code !== ApiStatus.unauthorized) {
+    if (
+      error instanceof HttpError &&
+      (error.code !== ApiStatus.unauthorized || config._isRefreshRequest)
+    ) {
       const showMsg = config.showErrorMessage !== false
       showError(error, showMsg)
     }

@@ -19,18 +19,31 @@
 
 <script setup lang="ts">
   import '@wangeditor/editor/dist/css/style.css'
-  import { onBeforeUnmount, onMounted, shallowRef, computed } from 'vue'
+  import { computed, onBeforeUnmount, shallowRef } from 'vue'
   import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
-  import { useUserStore } from '@/store/modules/user'
+  import { ElMessage } from 'element-plus'
+  import { fetchUploadFile } from '@/api/file-upload'
   import EmojiText from '@/utils/ui/emojo'
   import { IDomEditor, IToolbarConfig, IEditorConfig } from '@wangeditor/editor'
-  import request from '@/utils/http'
 
   defineOptions({ name: 'ArtWangEditor' })
 
-  type InsertFnType = (url: string, alt: string, href: string) => void
+  type InsertImageFn = (url: string, alt?: string, href?: string) => void
+  type InsertVideoFn = (url: string, poster?: string) => void
 
-  const { VITE_API_URL } = import.meta.env
+  const UPLOAD_SERVER = '/api/file/upload'
+  const DEFAULT_IMAGE_UPLOAD_CONFIG = {
+    fieldName: 'file',
+    maxFileSize: 10 * 1024 * 1024,
+    maxNumberOfFiles: 10,
+    allowedFileTypes: ['image/*']
+  } as const
+  const DEFAULT_VIDEO_UPLOAD_CONFIG = {
+    fieldName: 'file',
+    maxFileSize: 200 * 1024 * 1024,
+    maxNumberOfFiles: 3,
+    allowedFileTypes: ['video/*']
+  } as const
 
   // Props 定义
   interface Props {
@@ -46,48 +59,19 @@
     mode?: 'default' | 'simple'
     /** 占位符文本 */
     placeholder?: string
-    /** 上传配置 */
-    uploadConfig?: {
-      maxFileSize?: number
-      maxNumberOfFiles?: number
-      server?: string
-      // 是否开启自定义上传
-      isCustomUpload?: boolean
-    }
   }
 
   const props = withDefaults(defineProps<Props>(), {
     height: '500px',
     mode: 'default',
     placeholder: '请输入内容...',
-    excludeKeys: () => ['fontFamily'],
-    isCustomUpload: false
+    excludeKeys: () => ['fontFamily']
   })
 
   const modelValue = defineModel<string>({ required: true })
 
   // 编辑器实例
   const editorRef = shallowRef<IDomEditor>()
-  const userStore = useUserStore()
-
-  // 常量配置
-  const DEFAULT_UPLOAD_CONFIG = {
-    maxFileSize: 3 * 1024 * 1024, // 3MB
-    maxNumberOfFiles: 10,
-    fieldName: 'file',
-    allowedFileTypes: ['image/*']
-  } as const
-
-  // 计算属性：上传服务器地址
-  const uploadServer = computed(
-    () => props.uploadConfig?.server || `${VITE_API_URL}/api/common/upload/wangeditor`
-  )
-
-  // 合并上传配置
-  const mergedUploadConfig = computed(() => ({
-    ...DEFAULT_UPLOAD_CONFIG,
-    ...props.uploadConfig
-  }))
 
   // 工具栏配置
   const toolbarConfig = computed((): Partial<IToolbarConfig> => {
@@ -111,63 +95,59 @@
     return config
   })
 
-  // 编辑器配置
-  const editorConfig: Partial<IEditorConfig> = {
+  const createMenuUploadConfig = (
+    kind: '图片' | '视频',
+    config: {
+      fieldName: string
+      maxFileSize: number
+      maxNumberOfFiles: number
+      allowedFileTypes: readonly string[]
+    },
+    insertFile: (
+      uploadedFile: Api.FileUpload.FileUploadVo,
+      insertFn: InsertImageFn | InsertVideoFn
+    ) => void
+  ) => ({
+    server: UPLOAD_SERVER,
+    fieldName: config.fieldName,
+    maxFileSize: config.maxFileSize,
+    maxNumberOfFiles: config.maxNumberOfFiles,
+    allowedFileTypes: config.allowedFileTypes,
+    async customUpload(file: File, insertFn: InsertImageFn | InsertVideoFn) {
+      try {
+        const uploadedFile = await fetchUploadFile(file)
+        insertFile(uploadedFile, insertFn)
+        ElMessage.success(`${kind}上传成功 ${EmojiText[200]}`)
+      } catch (error) {
+        console.error(`${kind}上传失败:`, error)
+        ElMessage.error(`${kind}上传失败 ${EmojiText[500]}`)
+      }
+    },
+    onError(file: File, err: unknown, response: unknown) {
+      console.error(`${kind}上传失败:`, err, response)
+      ElMessage.error(`${kind}上传失败 ${EmojiText[500]}`)
+    }
+  })
+
+  const editorConfig = computed<Partial<IEditorConfig>>(() => ({
     placeholder: props.placeholder,
     MENU_CONF: {
-      uploadImage: {
-        fieldName: mergedUploadConfig.value.fieldName,
-        maxFileSize: mergedUploadConfig.value.maxFileSize,
-        maxNumberOfFiles: mergedUploadConfig.value.maxNumberOfFiles,
-        allowedFileTypes: mergedUploadConfig.value.allowedFileTypes,
-        server: uploadServer.value,
-        headers: {
-          Authorization: userStore.accessToken
-        },
-        onSuccess() {
-          ElMessage.success(`图片上传成功 ${EmojiText[200]}`)
-        },
-        onError(file: File, err: any, res: any) {
-          console.error('图片上传失败:', err, res)
-          ElMessage.error(`图片上传失败 ${EmojiText[500]}`)
+      uploadImage: createMenuUploadConfig(
+        '图片',
+        DEFAULT_IMAGE_UPLOAD_CONFIG,
+        (uploadedFile, insertFn) => {
+          ;(insertFn as InsertImageFn)(uploadedFile.url, uploadedFile.originalName || '', '')
         }
-      }
-    }
-  }
-
-  // 自定义上传
-  if (props.uploadConfig?.isCustomUpload && props.uploadConfig?.server && editorConfig.MENU_CONF) {
-    editorConfig.MENU_CONF.uploadImage.customUpload = async (
-      file: File,
-      insertFn: InsertFnType
-    ) => {
-      try {
-        const formData = new FormData()
-        formData.append(mergedUploadConfig.value.fieldName, file)
-
-        const response = await request.post<{ url: string; alt: string; href: string }>({
-          url: props.uploadConfig?.server,
-          data: formData,
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: userStore.accessToken
-          }
-        })
-
-        const { url, alt, href } = response
-
-        if (!url) {
-          throw new Error('上传失败，请检查服务端配置')
+      ),
+      uploadVideo: createMenuUploadConfig(
+        '视频',
+        DEFAULT_VIDEO_UPLOAD_CONFIG,
+        (uploadedFile, insertFn) => {
+          ;(insertFn as InsertVideoFn)(uploadedFile.url, '')
         }
-
-        insertFn(url, alt, href)
-        ElMessage.success(`图片上传成功 ${EmojiText[200]}`)
-      } catch (error) {
-        console.error('图片上传失败:', error)
-        ElMessage.error(`图片上传失败 ${EmojiText[500]}`)
-      }
+      )
     }
-  }
+  }))
 
   // 编辑器创建回调
   const onCreateEditor = (editor: IDomEditor) => {
@@ -240,11 +220,6 @@
     clear: () => editorRef.value?.clear(),
     /** 聚焦编辑器 */
     focus: () => editorRef.value?.focus()
-  })
-
-  // 生命周期
-  onMounted(() => {
-    // 图标替换已在 onCreateEditor 中处理
   })
 
   onBeforeUnmount(() => {

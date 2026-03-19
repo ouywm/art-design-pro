@@ -61,6 +61,59 @@ export const systemRoutes: AppRouteRecord = {
       }
     },
     {
+      path: 'config',
+      name: 'Config',
+      component: '/system/config',
+      meta: {
+        title: 'menus.system.config',
+        icon: 'ri:settings-3-line',
+        keepAlive: true,
+        roles: ['R_SUPER', 'R_ADMIN']
+      }
+    },
+    {
+      path: 'notice',
+      name: 'Notice',
+      component: '/system/notice',
+      meta: {
+        title: 'menus.system.notice',
+        icon: 'ri:notification-3-line',
+        keepAlive: true,
+        roles: ['R_SUPER', 'R_ADMIN']
+      }
+    },
+    {
+      path: 'notice-center',
+      name: 'UserNotice',
+      component: '/system/user-notice',
+      meta: {
+        title: 'menus.system.noticeCenter',
+        isHide: true,
+        keepAlive: true
+      }
+    },
+    {
+      path: 'notice-center/:id',
+      name: 'UserNoticeDetail',
+      component: '/system/user-notice/detail',
+      meta: {
+        title: 'menus.system.noticeDetail',
+        isHide: true,
+        activePath: '/system/notice-center'
+      }
+    },
+    {
+      path: 'online',
+      name: 'Online',
+      component: '/system/online',
+      meta: {
+        title: 'menus.system.online',
+        icon: 'ri:user-shared-line',
+        keepAlive: true,
+        roles: ['R_SUPER', 'R_ADMIN']
+      }
+    },
+    {
       path: 'login-log',
       name: 'LoginLog',
       component: '/system/login-log',

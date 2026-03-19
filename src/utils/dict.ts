@@ -26,6 +26,14 @@
 import { useDictStore } from '@/store/modules/dict'
 import { storeToRefs } from 'pinia'
 
+export type DictTagType = 'success' | 'warning' | 'danger' | 'info'
+
+export interface DictMeta {
+  label: string
+  listClass: string
+  tagType: DictTagType
+}
+
 /**
  * 字典工具函数
  * 提供便捷的字典数据访问方法
@@ -33,6 +41,19 @@ import { storeToRefs } from 'pinia'
 export function useDict() {
   const dictStore = useDictStore()
   const { initialized } = storeToRefs(dictStore)
+  const getDictTagType = (dictType: string, value: string | number): DictTagType => {
+    return dictClassToTagType(dictStore.getDictClass(dictType, value))
+  }
+  const getDictMeta = (dictType: string, value: string | number): DictMeta => {
+    const label = dictStore.getDictLabel(dictType, value)
+    const listClass = dictStore.getDictClass(dictType, value)
+
+    return {
+      label,
+      listClass,
+      tagType: dictClassToTagType(listClass)
+    }
+  }
 
   return {
     // 状态
@@ -47,6 +68,12 @@ export function useDict() {
     // 获取样式类名
     getDictClass: dictStore.getDictClass,
 
+    // 获取标签类型
+    getDictTagType,
+
+    // 获取字典展示元信息
+    getDictMeta,
+
     // 检查字典类型是否存在
     hasDictType: dictStore.hasDictType,
 
@@ -60,8 +87,8 @@ export function useDict() {
  * @param listClass 字典的 listClass（如 success, warning, danger）
  * @returns Element Plus Tag 的 type
  */
-export function dictClassToTagType(listClass: string): 'success' | 'warning' | 'danger' | 'info' {
-  const typeMap: Record<string, 'success' | 'warning' | 'danger' | 'info'> = {
+export function dictClassToTagType(listClass: string): DictTagType {
+  const typeMap: Record<string, DictTagType> = {
     success: 'success',
     warning: 'warning',
     danger: 'danger',

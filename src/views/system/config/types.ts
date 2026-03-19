@@ -1,11 +1,50 @@
-export type ConfigListItem = Api.Config.ConfigVo
+export interface ConfigListItem extends Api.Config.ConfigGroupItemVo {
+  configGroupId: number
+  configGroupName: string
+  configGroupCode: string
+}
+
 export type ConfigListItemDetail = Api.Config.ConfigDetailVo
+export type ConfigValueType = Api.Config.ConfigValueType
 
-export type SearchFormModel = Api.Config.ConfigSearchFilters
+export type SearchFormModel = Pick<
+  Api.Config.ConfigGroupedQueryParams,
+  | 'configName'
+  | 'configKey'
+  | 'configGroupId'
+  | 'valueType'
+  | 'optionDictType'
+  | 'enabled'
+  | 'isSystem'
+>
 
-type FormBase = Api.Config.CreateConfigParams & Api.Config.UpdateConfigParams
-type FormUndefinedKeys = 'valueType'
+export interface ConfigGroupSection {
+  groupId: number
+  groupName: string
+  groupCode: string
+  groupSort: number
+  items: ConfigListItem[]
+}
 
-export type FormModel = FormBase & {
-  [K in FormUndefinedKeys]-?: FormBase[K] | undefined
+export interface FormModel {
+  configName: string
+  configKey: string
+  configValue: string
+  defaultValue: string
+  valueType: ConfigValueType
+  configGroupId: number | undefined
+  optionDictType: string
+  configSort: number | undefined
+  enabled: boolean
+  isSystem: boolean
+  remark: string
+}
+
+export interface ConfigGroupFormModel {
+  groupName: string
+  groupCode: string
+  groupSort: number | undefined
+  enabled: boolean
+  isSystem: boolean
+  remark: string
 }
