@@ -115,7 +115,6 @@
     fetchReadUserNotice
   } from '@/api/user-notice'
   import { useDict } from '@/utils/dict'
-  import { mittBus } from '@/utils/sys'
   import type { UserNoticeListItem, UserNoticeSearchFormModel } from './types'
   import UserNoticeSearch from './modules/user-notice-search.vue'
 
@@ -170,7 +169,6 @@
 
   const handleRead = async (row: UserNoticeListItem) => {
     await fetchReadUserNotice(row.id)
-    mittBus.emit('refreshNoticeUnread')
     ElMessage.success('已标记为已读')
     await refreshData()
   }
@@ -180,7 +178,6 @@
 
     try {
       await fetchReadAllUserNotice()
-      mittBus.emit('refreshNoticeUnread')
       ElMessage.success('已全部标记为已读')
       await refreshData()
     } finally {

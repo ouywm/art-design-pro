@@ -78,7 +78,6 @@
   import { useRouter } from 'vue-router'
   import { fetchGetUserNoticeDetail, fetchReadUserNotice } from '@/api/user-notice'
   import { useDict } from '@/utils/dict'
-  import { mittBus } from '@/utils/sys'
 
   defineOptions({ name: 'UserNoticeDetail' })
 
@@ -122,7 +121,6 @@
 
     try {
       await fetchReadUserNotice(noticeId.value)
-      mittBus.emit('refreshNoticeUnread')
       ElMessage.success('已标记为已读')
       await loadDetail()
     } finally {

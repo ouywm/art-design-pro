@@ -63,7 +63,6 @@
   } from '@/api/notice'
   import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
   import { useDict } from '@/utils/dict'
-  import { mittBus } from '@/utils/sys'
   import type { NoticeListItem, NoticeSearchFormModel } from './types'
   import NoticeDetailDialog from './modules/notice-detail-dialog.vue'
   import NoticeFormPanel from './modules/notice-form-panel.vue'
@@ -330,7 +329,6 @@
       type: 'warning'
     }).then(async () => {
       await fetchDeleteNotice(row.id)
-      mittBus.emit('refreshNoticeUnread')
       ElMessage.success('删除成功')
       refreshData()
     })
@@ -338,14 +336,12 @@
 
   const handlePublish = async (row: NoticeListItem) => {
     await fetchPublishNotice(row.id)
-    mittBus.emit('refreshNoticeUnread')
     ElMessage.success('发布成功')
     refreshData()
   }
 
   const handleRevoke = async (row: NoticeListItem) => {
     await fetchRevokeNotice(row.id)
-    mittBus.emit('refreshNoticeUnread')
     ElMessage.success('撤回成功')
     refreshData()
   }
