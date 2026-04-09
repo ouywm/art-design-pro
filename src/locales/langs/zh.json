@@ -366,6 +366,9 @@
     "border": "边框",
     "headerBackground": "表头背景"
   },
+  "socketSession": {
+    "kickoutTitle": "下线通知"
+  },
   "socketIO": {
     "title": "连接测试",
     "description": "基于 Socket.IO 的实时通信测试，支持连接鉴权、状态监控和事件日志",
@@ -409,6 +412,19 @@
     "logManualDisconnect": "手动断开连接",
     "logManualReconnect": "手动重连（使用最新 Token）",
     "logCustomToken": "使用自定义 Token 连接",
-    "logNoTokenConnect": "不传 Token 连接（测试鉴权失败）"
+    "logNoTokenConnect": "不传 Token 连接（测试鉴权失败）",
+    "composableDemo": "Composable 演示",
+    "composableDesc": "使用 useSocketIO composable 的类型安全用法",
+    "composableStatus": "Composable 状态",
+    "composableConnect": "连接",
+    "composableDisconnect": "断开",
+    "composableEmit": "发送事件",
+    "composableEmitWithAck": "发送 (emitWithAck)",
+    "composableTimeout": "超时发送 (timeout)",
+    "composableVolatile": "易失发送 (volatile)",
+    "composableEventName": "事件名",
+    "composablePayload": "载荷 (JSON)",
+    "composableTimeoutMs": "超时(ms)",
+    "composableLog": "Composable 日志"
   }
 }

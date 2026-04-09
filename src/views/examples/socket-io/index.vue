@@ -154,6 +154,132 @@
       </ElCol>
     </ElRow>
 
+    <!-- Composable 演示 -->
+    <ElCard class="border-0 mb-15">
+      <template #header>
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-base font-bold">{{ t('socketIO.composableDemo') }}</span>
+            <span class="text-sm text-gray-500 ml-2">useSocketIO()</span>
+          </div>
+          <ElTag :type="composableConnected ? 'success' : 'danger'" size="small">
+            {{
+              composableConnected ? t('socketIO.statusConnected') : t('socketIO.statusDisconnected')
+            }}
+          </ElTag>
+        </div>
+      </template>
+
+      <p class="text-sm text-gray-500 mb-4">{{ t('socketIO.composableDesc') }}</p>
+
+      <ElRow :gutter="20">
+        <ElCol :xs="24" :md="12">
+          <ElForm label-width="120px" class="max-w-lg">
+            <!-- 连接/断开 -->
+            <ElFormItem :label="t('socketIO.composableStatus')">
+              <ElSpace>
+                <ElButton
+                  type="primary"
+                  size="small"
+                  @click="composableConnect"
+                  :disabled="composableConnected"
+                >
+                  {{ t('socketIO.composableConnect') }}
+                </ElButton>
+                <ElButton
+                  type="danger"
+                  size="small"
+                  @click="composableDisconnect"
+                  :disabled="!composableConnected"
+                >
+                  {{ t('socketIO.composableDisconnect') }}
+                </ElButton>
+              </ElSpace>
+            </ElFormItem>
+
+            <!-- 事件名和载荷 -->
+            <ElFormItem :label="t('socketIO.composableEventName')">
+              <ElInput v-model="composableEventName" placeholder="ping" clearable />
+            </ElFormItem>
+            <ElFormItem :label="t('socketIO.composablePayload')">
+              <ElInput v-model="composablePayload" placeholder='{"hello": "world"}' clearable />
+            </ElFormItem>
+            <ElFormItem :label="t('socketIO.composableTimeoutMs')">
+              <ElInputNumber v-model="composableTimeoutMs" :min="500" :max="30000" :step="500" />
+            </ElFormItem>
+
+            <!-- 操作按钮 -->
+            <ElFormItem>
+              <ElSpace wrap>
+                <ElButton
+                  type="primary"
+                  size="small"
+                  @click="handleComposableEmit"
+                  :disabled="!composableConnected"
+                >
+                  {{ t('socketIO.composableEmit') }}
+                </ElButton>
+                <ElButton
+                  type="success"
+                  size="small"
+                  @click="handleComposableEmitWithAck"
+                  :disabled="!composableConnected"
+                >
+                  {{ t('socketIO.composableEmitWithAck') }}
+                </ElButton>
+                <ElButton
+                  type="warning"
+                  size="small"
+                  @click="handleComposableTimeout"
+                  :disabled="!composableConnected"
+                >
+                  {{ t('socketIO.composableTimeout') }}
+                </ElButton>
+                <ElButton
+                  size="small"
+                  @click="handleComposableVolatile"
+                  :disabled="!composableConnected"
+                >
+                  {{ t('socketIO.composableVolatile') }}
+                </ElButton>
+              </ElSpace>
+            </ElFormItem>
+          </ElForm>
+        </ElCol>
+
+        <ElCol :xs="24" :md="12">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-bold">{{ t('socketIO.composableLog') }}</span>
+            <ElButton size="small" @click="composableLogs = []">{{
+              t('socketIO.clearLog')
+            }}</ElButton>
+          </div>
+          <div class="log-container">
+            <ElAlert
+              v-for="(log, index) in composableLogs"
+              :key="index"
+              :type="log.type"
+              :closable="false"
+              class="!mb-2"
+            >
+              <template #title>
+                <div class="flex items-start gap-2">
+                  <span class="text-xs opacity-70 whitespace-nowrap">{{ log.time }}</span>
+                  <ElTag :type="log.tagType" size="small" class="!mr-1">{{ log.tag }}</ElTag>
+                  <span class="flex-1 font-mono text-xs break-all">{{ log.message }}</span>
+                </div>
+              </template>
+            </ElAlert>
+            <ElEmpty
+              v-if="composableLogs.length === 0"
+              :description="t('socketIO.noLogs')"
+              :image-size="60"
+            />
+          </div>
+        </ElCol>
+      </ElRow>
+    </ElCard>
+
     <!-- 事件日志 -->
     <ElCard class="border-0">
       <template #header>
@@ -192,6 +318,7 @@
 
 <script setup lang="ts">
   import { io, type Socket } from 'socket.io-client'
+  import { useSocketIO } from '@/utils/socket/socket-io'
   import { useUserStore } from '@/store/modules/user'
   import { useI18n } from 'vue-i18n'
 
@@ -199,6 +326,8 @@
 
   const { t } = useI18n()
   const userStore = useUserStore()
+
+  // ==================== 直接 io() 连接测试（保留原有功能） ====================
 
   // Socket 实例
   let socket: Socket | null = null
@@ -410,6 +539,115 @@
   const clearLogs = () => {
     logList.value = []
     eventCount.value = 0
+  }
+
+  // ==================== Composable 演示 ====================
+
+  // useSocketIO composable — 使用默认泛型
+  const {
+    connected: composableConnected,
+    connect: composableConnect,
+    disconnect: composableDisconnect,
+    emit: composableEmitFn,
+    emitWithAck: composableEmitWithAckFn,
+    timeout: composableTimeoutFn,
+    volatile: composableVolatileFn
+  } = useSocketIO({
+    namespace: import.meta.env.VITE_SOCKET_NS || '/summer-admin',
+    path: import.meta.env.VITE_SOCKET_PATH || '/api/socket.io',
+    autoConnect: false
+  })
+
+  // Composable 演示配置
+  const composableEventName = ref('ping')
+  const composablePayload = ref('{"hello": "world"}')
+  const composableTimeoutMs = ref(5000)
+
+  // Composable 日志
+  const composableLogs = ref<
+    Array<{
+      type: 'info' | 'success' | 'warning' | 'error'
+      tagType: 'primary' | 'success' | 'warning' | 'danger' | 'info'
+      tag: string
+      message: string
+      time: string
+    }>
+  >([])
+
+  const addComposableLog = (
+    type: 'info' | 'success' | 'warning' | 'error',
+    tag: string,
+    message: string,
+    tagType: 'primary' | 'success' | 'warning' | 'danger' | 'info' = 'info'
+  ) => {
+    composableLogs.value.unshift({
+      type,
+      tagType,
+      tag,
+      message,
+      time: new Date().toLocaleTimeString()
+    })
+    if (composableLogs.value.length > 50) {
+      composableLogs.value = composableLogs.value.slice(0, 50)
+    }
+  }
+
+  const parsePayload = (): unknown => {
+    try {
+      return JSON.parse(composablePayload.value)
+    } catch {
+      return composablePayload.value
+    }
+  }
+
+  const handleComposableEmit = () => {
+    const payload = parsePayload()
+    composableEmitFn(composableEventName.value, payload)
+    addComposableLog('info', 'emit', `${composableEventName.value} → ${JSON.stringify(payload)}`)
+  }
+
+  const handleComposableEmitWithAck = async () => {
+    const payload = parsePayload()
+    addComposableLog(
+      'info',
+      'emitWithAck',
+      `${composableEventName.value} → ${JSON.stringify(payload)}`
+    )
+    try {
+      const result = await composableEmitWithAckFn(composableEventName.value, payload)
+      addComposableLog('success', 'ack', JSON.stringify(result), 'success')
+    } catch (err) {
+      addComposableLog('error', 'ack-error', String(err), 'danger')
+    }
+  }
+
+  const handleComposableTimeout = async () => {
+    const payload = parsePayload()
+    const ms = composableTimeoutMs.value
+    addComposableLog(
+      'info',
+      `timeout(${ms})`,
+      `${composableEventName.value} → ${JSON.stringify(payload)}`,
+      'warning'
+    )
+    try {
+      const { emitWithAck } = composableTimeoutFn(ms)
+      const result = await emitWithAck(composableEventName.value, payload)
+      addComposableLog('success', 'ack', JSON.stringify(result), 'success')
+    } catch (err) {
+      addComposableLog('error', 'timeout', String(err), 'danger')
+    }
+  }
+
+  const handleComposableVolatile = () => {
+    const payload = parsePayload()
+    composableVolatileFn.emit(composableEventName.value, payload)
+    addComposableLog(
+      'info',
+      'volatile',
+      `${composableEventName.value} → ${JSON.stringify(payload)}`,
+      'warning'
+    )
   }
 
   onUnmounted(() => {

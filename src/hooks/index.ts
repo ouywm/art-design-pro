@@ -30,3 +30,6 @@ export { useChart, useChartComponent, useChartOps } from './core/useChart'
 
 // 布局高度
 export { useLayoutHeight, useAutoLayoutHeight } from './core/useLayoutHeight'
+
+// Socket 会话管理
+export { useSocketSession } from './core/useSocketSession'

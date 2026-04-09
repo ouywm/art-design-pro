@@ -366,6 +366,9 @@
     "border": "Border",
     "headerBackground": "Header BG"
   },
+  "socketSession": {
+    "kickoutTitle": "Forced Offline"
+  },
   "socketIO": {
     "title": "Connection Test",
     "description": "Real-time communication test based on Socket.IO, supporting auth, status monitoring and event logging",
@@ -409,6 +412,19 @@
     "logManualDisconnect": "Manually disconnected",
     "logManualReconnect": "Manual reconnect (using latest token)",
     "logCustomToken": "Connecting with custom token",
-    "logNoTokenConnect": "Connecting without token (testing auth failure)"
+    "logNoTokenConnect": "Connecting without token (testing auth failure)",
+    "composableDemo": "Composable Demo",
+    "composableDesc": "Type-safe usage with useSocketIO composable",
+    "composableStatus": "Composable Status",
+    "composableConnect": "Connect",
+    "composableDisconnect": "Disconnect",
+    "composableEmit": "Emit Event",
+    "composableEmitWithAck": "Emit (emitWithAck)",
+    "composableTimeout": "Timeout Emit",
+    "composableVolatile": "Volatile Emit",
+    "composableEventName": "Event Name",
+    "composablePayload": "Payload (JSON)",
+    "composableTimeoutMs": "Timeout (ms)",
+    "composableLog": "Composable Log"
   }
 }

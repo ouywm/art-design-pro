@@ -21,7 +21,12 @@
 </template>
 
 <script setup lang="ts">
+  import { useSocketSession } from '@/hooks'
+
   defineOptions({ name: 'AppLayout' })
+
+  // 建立全局 Socket.IO 连接，内置 session.kickout 等业务事件处理
+  useSocketSession()
 </script>
 
 <style lang="scss" scoped>
