@@ -318,6 +318,21 @@
       "menu32": "菜单3-2",
       "menu321": "菜单3-2-1"
     },
+    "ai": {
+      "title": "AI 管理",
+      "vendor": "供应商管理",
+      "channel": "渠道管理",
+      "channelAccount": "渠道账号",
+      "channelModelPrice": "渠道模型价格",
+      "alertRule": "告警规则",
+      "alertEvent": "告警事件",
+      "alertSilence": "告警静默",
+      "dailyStats": "日统计",
+      "guardrail": "Guardrail",
+      "request": "请求记录",
+      "requestExecution": "执行记录",
+      "retryAttempt": "重试记录"
+    },
     "safeguard": {
       "title": "运维管理",
       "server": "服务器管理"

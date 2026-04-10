@@ -318,6 +318,21 @@
       "menu32": "Menu 3-2",
       "menu321": "Menu 3-2-1"
     },
+    "ai": {
+      "title": "AI Admin",
+      "vendor": "Vendor Management",
+      "channel": "Channel Management",
+      "channelAccount": "Channel Accounts",
+      "channelModelPrice": "Channel Model Prices",
+      "alertRule": "Alert Rules",
+      "alertEvent": "Alert Events",
+      "alertSilence": "Alert Silences",
+      "dailyStats": "Daily Stats",
+      "guardrail": "Guardrail",
+      "request": "Requests",
+      "requestExecution": "Executions",
+      "retryAttempt": "Retry Attempts"
+    },
     "safeguard": {
       "title": "Safeguard",
       "server": "Server"
