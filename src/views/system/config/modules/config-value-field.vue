@@ -130,9 +130,10 @@
 
   const createImageFile = (url: string): Api.FileUpload.FileUploadVo => ({
     fileId: 0,
+    fileNo: '',
     originalName: url.split('/').pop() || 'image',
-    url,
-    fileSize: 0
+    size: 0,
+    url
   })
 
   watch(

@@ -19,7 +19,7 @@
             <Document />
           </ElIcon>
           <span class="file-name" :title="file.originalName">{{ file.originalName }}</span>
-          <span v-if="file.fileSize" class="file-size">{{ formatFileSize(file.fileSize) }}</span>
+          <span v-if="file.size" class="file-size">{{ formatFileSize(file.size) }}</span>
         </div>
 
         <!-- 操作按钮 -->

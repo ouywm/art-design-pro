@@ -15,7 +15,6 @@
  * - 同一 namespace 可分散在多个 .d.ts 文件中，TypeScript 会自动合并
  *
  * @module types/api/api
- * @author Art Design Pro Team
  */
 
 declare namespace Api {
@@ -34,7 +33,14 @@ declare namespace Api {
     /** 通用搜索参数 */
     type CommonSearchParams = Pick<PaginationParams, 'page' | 'size'>
 
-    /** 分页响应基础结构 */
+    /**
+     * 分页响应基础结构（后端 Page<T>）
+     * - content: 数据列表
+     * - page: 当前页码
+     * - size: 每页条数
+     * - totalElements: 总元素数
+     * - totalPages: 总页数
+     */
     interface PaginatedResponse<T = any> {
       /** 数据列表 */
       content: T[]

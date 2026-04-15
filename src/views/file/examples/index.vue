@@ -422,7 +422,7 @@
       presignStep.value = 2
       presignStepDesc.value[2] = '确认中...'
       const callbackRes = await fetchPresignUploadCallback({
-        filePath: presignRes.filePath!,
+        objectKey: presignRes.objectKey!,
         originalName: file.name,
         fileSize: file.size
       })
@@ -453,8 +453,8 @@
     presignDownloadUrl.value = ''
     try {
       const res = await fetchPresignDownload(presignDownloadId.value)
-      presignDownloadUrl.value = res.downloadUrl
-      await downloadFileByUrl(res.downloadUrl)
+      presignDownloadUrl.value = res.url
+      await downloadFileByUrl(res.url)
       ElMessage.success('下载完成')
     } catch {
       // ignore
@@ -487,25 +487,45 @@
   // ==================== ArtFileList ====================
   function createMockFiles(): Api.FileUpload.FileUploadVo[] {
     return [
-      { fileId: 1, originalName: '项目设计文档.pdf', url: '', fileSize: 2458624 },
+      {
+        fileId: 1,
+        fileNo: 'F-0001',
+        originalName: '项目设计文档.pdf',
+        url: '',
+        size: 2458624,
+        expiresAt: null
+      },
       {
         fileId: 2,
+        fileNo: 'F-0002',
         originalName: '产品截图.png',
         url: 'https://picsum.photos/400/300?random=1',
-        fileSize: 856320
+        size: 856320,
+        expiresAt: null
       },
-      { fileId: 3, originalName: '数据导出.xlsx', url: '', fileSize: 125440 },
+      {
+        fileId: 3,
+        fileNo: 'F-0003',
+        originalName: '数据导出.xlsx',
+        url: '',
+        size: 125440,
+        expiresAt: null
+      },
       {
         fileId: 4,
+        fileNo: 'F-0004',
         originalName: '架构图.jpg',
         url: 'https://picsum.photos/400/300?random=2',
-        fileSize: 1536000
+        size: 1536000,
+        expiresAt: null
       },
       {
         fileId: 5,
+        fileNo: 'F-0005',
         originalName: '接口文档.pdf',
         url: 'https://example.com/api-docs.pdf',
-        fileSize: 4096000
+        size: 4096000,
+        expiresAt: null
       }
     ]
   }

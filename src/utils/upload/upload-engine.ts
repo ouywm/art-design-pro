@@ -46,7 +46,7 @@ export class UploadEngine {
 
   // 分片上传元数据（来自后端）
   private uploadId: string = ''
-  private filePath: string = ''
+  private objectKey: string = ''
   private chunkSize: number = 0
   private totalParts: number = 0
 
@@ -138,7 +138,7 @@ export class UploadEngine {
 
       // 保存元数据
       this.uploadId = initResult.uploadId!
-      this.filePath = initResult.filePath!
+      this.objectKey = initResult.objectKey!
       this.chunkSize = initResult.chunkSize!
       this.totalParts = initResult.totalParts!
 
@@ -214,7 +214,7 @@ export class UploadEngine {
       // 查询后端已上传的分片
       const partsResult = await fetchMultipartParts({
         uploadId: this.uploadId,
-        filePath: this.filePath,
+        objectKey: this.objectKey,
         fileSize: this.file.size
       })
 
@@ -273,7 +273,7 @@ export class UploadEngine {
       try {
         await fetchMultipartAbort({
           uploadId: this.uploadId,
-          filePath: this.filePath
+          objectKey: this.objectKey
         })
       } catch {
         // 忽略取消失败
@@ -402,7 +402,7 @@ export class UploadEngine {
 
     const result = await fetchMultipartComplete({
       uploadId: this.uploadId,
-      filePath: this.filePath,
+      objectKey: this.objectKey,
       originalName: this.file.name,
       fileSize: this.file.size,
       fileMd5: this.md5
@@ -465,7 +465,7 @@ export class UploadEngine {
     this.file = null
     this.md5 = ''
     this.uploadId = ''
-    this.filePath = ''
+    this.objectKey = ''
     this.chunkSize = 0
     this.totalParts = 0
     this.pendingParts = []

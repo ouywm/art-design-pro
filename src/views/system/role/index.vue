@@ -90,7 +90,7 @@
     loading,
     pagination,
     getData,
-    searchParams,
+    replaceSearchParams,
     resetSearchParams,
     handleSizeChange,
     handleCurrentChange,
@@ -197,10 +197,9 @@
   const handleSearch = (params: RoleSearchFormParams) => {
     // 处理日期区间参数，把 daterange 转换为 startTime 和 endTime
     const { daterange, ...filtersParams } = params
-    const [startTime, endTime] = Array.isArray(daterange) ? daterange : [null, null]
+    const [startTime, endTime] = Array.isArray(daterange) ? daterange : [undefined, undefined]
 
-    // 搜索参数赋值
-    Object.assign(searchParams, { ...filtersParams, startTime, endTime })
+    replaceSearchParams({ ...filtersParams, startTime, endTime })
     getData()
   }
 

@@ -109,7 +109,7 @@
     loading,
     pagination,
     getData,
-    searchParams,
+    replaceSearchParams,
     resetSearchParams,
     handleSizeChange,
     handleCurrentChange,
@@ -216,9 +216,7 @@
    * @param params 参数
    */
   const handleSearch = (params: UserSearchFormParams) => {
-    console.log(params)
-    // 搜索参数赋值
-    Object.assign(searchParams, params)
+    replaceSearchParams(params)
     getData()
   }
 

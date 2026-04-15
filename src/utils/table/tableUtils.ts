@@ -65,16 +65,28 @@ export const defaultResponseAdapter = <T>(response: unknown): ApiResponse<T> => 
 
   const res = response as Record<string, any>
 
-  // 兼容后端 snake_case (total_elements / total_pages) 和 camelCase (totalElements / totalPages)
-  const rawPage = res.page ?? 1
-  const totalElements = res.totalElements ?? res.total_elements ?? 0
-  const totalPages = res.totalPages ?? res.total_pages ?? 0
+  // 兼容多种后端分页结构：
+  // - Page<T>: { content, page, size, totalElements, totalPages }
+  // - MyBatis-Plus: { records, current, size, total, pages }
+  const content = Array.isArray(res.content)
+    ? res.content
+    : Array.isArray(res.records)
+      ? res.records
+      : []
+  const rawPage = res.page ?? res.current ?? 1
+  const size = res.size ?? 10
+  const totalElements = res.totalElements ?? res.total_elements ?? res.total ?? 0
+  const totalPages =
+    res.totalPages ??
+    res.total_pages ??
+    res.pages ??
+    (size > 0 ? Math.ceil(totalElements / size) : 0)
 
   return {
-    content: res.content || [],
+    content,
     // 兼容后端 0-based 分页：如果 page 为 0 且有数据，转换为 1-based
     page: rawPage === 0 ? 1 : rawPage,
-    size: res.size || 10,
+    size,
     totalElements,
     totalPages
   }

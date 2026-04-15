@@ -39,7 +39,12 @@ import { tableConfig } from '../../utils/table/tableConfig'
 // 类型推导工具类型
 type InferApiParams<T> = T extends (params: infer P) => any ? P : never
 type InferApiResponse<T> = T extends (params: any) => Promise<infer R> ? R : never
-type InferRecordType<T> = T extends Api.Common.PaginatedResponse<infer U> ? U : never
+type InferRecordType<T> =
+  T extends Api.Common.PaginatedResponse<infer U>
+    ? U
+    : T extends { records: (infer U)[] }
+      ? U
+      : never
 
 // 优化的配置接口 - 支持自动类型推导
 export interface UseTableConfig<
@@ -479,6 +484,30 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
     }
   }
 
+  // 替换搜索参数：适用于表单查询，避免旧字段残留
+  const replaceSearchParams = (params?: Partial<TParams>): void => {
+    const paramsRecord = searchParams as Record<string, unknown>
+    const currentSize = pagination.size || ((paramsRecord[sizeKey] as number) ?? 10)
+
+    Object.keys(searchParams).forEach((key) => {
+      if (key !== pageKey && key !== sizeKey) {
+        delete paramsRecord[key]
+      }
+    })
+
+    Object.assign(
+      searchParams,
+      {
+        [pageKey]: 1,
+        [sizeKey]: currentSize
+      },
+      params || {}
+    )
+
+    pagination.page = 1
+    pagination.size = currentSize
+  }
+
   // 防重复调用的标志
   let isCurrentChanging = false
 
@@ -660,6 +689,8 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
     // 搜索相关 - 统一前缀
     /** 搜索参数 */
     searchParams,
+    /** 替换搜索参数（适用于表单查询，避免旧字段残留） */
+    replaceSearchParams,
     /** 重置搜索参数 */
     resetSearchParams,
 

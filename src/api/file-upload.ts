@@ -5,24 +5,36 @@ import { useUserStore } from '@/store/modules/user'
 // ─── 服务端代理上传 ─────────────────────────────────────────────────────────
 
 /** 单文件上传（multipart/form-data） */
-export function fetchUploadFile(file: File) {
+export function fetchUploadFile(file: File, query: Api.FileUpload.FileUploadQueryDto = {}) {
   const form = new FormData()
-  form.append('file', file)
+  const relativePath = (file as any)?.__relativePath ?? (file as any)?.webkitRelativePath
+  if (query.preservePath && typeof relativePath === 'string' && relativePath.trim()) {
+    form.append('file', file, relativePath)
+  } else {
+    form.append('file', file)
+  }
   return request.post<Api.FileUpload.FileUploadVo>({
     url: '/api/file/upload',
-    data: form
+    data: form,
+    params: query
   })
 }
 
 /** 批量文件上传（multipart/form-data） */
-export function fetchUploadFiles(files: File[]) {
+export function fetchUploadFiles(files: File[], query: Api.FileUpload.FileUploadQueryDto = {}) {
   const form = new FormData()
   for (const file of files) {
-    form.append('files', file)
+    const relativePath = (file as any)?.__relativePath ?? (file as any)?.webkitRelativePath
+    if (query.preservePath && typeof relativePath === 'string' && relativePath.trim()) {
+      form.append('files', file, relativePath)
+    } else {
+      form.append('files', file)
+    }
   }
-  return request.post<Api.FileUpload.BatchUploadResult>({
+  return request.post<Api.FileUpload.BatchUploadVo>({
     url: '/api/file/upload/batch',
-    data: form
+    data: form,
+    params: query
   })
 }
 
@@ -30,7 +42,7 @@ export function fetchUploadFiles(files: File[]) {
 
 /** 获取预签名上传 URL */
 export function fetchPresignUpload(params: Api.FileUpload.PresignUploadParams) {
-  return request.post<Api.FileUpload.PresignUploadResult>({
+  return request.post<Api.FileUpload.PresignedUploadVo>({
     url: '/api/file/presign/upload',
     data: params
   })
@@ -45,8 +57,10 @@ export function fetchPresignUploadCallback(params: Api.FileUpload.PresignUploadC
 }
 
 /** 获取预签名下载 URL */
-export function fetchPresignDownload(fileId: number) {
-  return request.get<Api.FileUpload.PresignDownloadResult>({
+export async function fetchPresignDownload(
+  fileId: number
+): Promise<Api.FileUpload.PresignedDownloadVo> {
+  return request.get<Api.FileUpload.PresignedDownloadVo>({
     url: `/api/file/${fileId}/presign/download`
   })
 }
@@ -74,7 +88,7 @@ export async function fetchPutFileToPresignedUrl(
 export async function fetchProxyDownload(fileId: number) {
   const { accessToken } = useUserStore()
   const res = await fetch(`/api/file/${fileId}/download`, {
-    headers: accessToken ? { Authorization: accessToken } : {}
+    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
   })
   if (!res.ok) {
     const text = await res.text()
@@ -87,7 +101,7 @@ export async function fetchProxyDownload(fileId: number) {
 
 /** 初始化分片上传（含秒传检查） */
 export function fetchMultipartInit(params: Api.FileUpload.MultipartInitParams) {
-  return request.post<Api.FileUpload.MultipartInitResult>({
+  return request.post<Api.FileUpload.MultipartInitVo>({
     url: '/api/file/multipart/init',
     data: params
   })
@@ -97,10 +111,10 @@ export function fetchMultipartInit(params: Api.FileUpload.MultipartInitParams) {
 export function fetchMultipartParts(params: Api.FileUpload.MultipartPartsParams) {
   const query = new URLSearchParams({
     uploadId: params.uploadId,
-    filePath: params.filePath,
+    objectKey: params.objectKey,
     fileSize: String(params.fileSize)
   })
-  return request.get<Api.FileUpload.MultipartPartsResult>({
+  return request.get<Api.FileUpload.MultipartListPartsVo>({
     url: `/api/file/multipart/parts?${query}`
   })
 }
@@ -175,5 +189,91 @@ export function fetchGetFileDetail(id: number) {
 export function fetchDeleteFile(id: number) {
   return request.del<null>({
     url: `/api/file/${id}`
+  })
+}
+
+/** 获取文件夹树 */
+export function fetchGetFolderTree() {
+  return request.get<Api.FileUpload.FileFolderTreeVo[]>({
+    url: '/api/file/folder/tree'
+  })
+}
+
+/** 创建文件夹 */
+export function fetchCreateFolder(params: Api.FileUpload.CreateFileFolderDto) {
+  return request.post<Api.FileUpload.FileFolderVo>({
+    url: '/api/file/folder',
+    data: params
+  })
+}
+
+/** 更新文件夹 */
+export function fetchUpdateFolder(id: number, params: Api.FileUpload.UpdateFileFolderDto) {
+  return request.put<Api.FileUpload.FileFolderVo>({
+    url: `/api/file/folder/${id}`,
+    data: params
+  })
+}
+
+/** 删除文件夹 */
+export function fetchDeleteFolder(id: number) {
+  return request.del<null>({
+    url: `/api/file/folder/${id}`
+  })
+}
+
+/** 更新展示名称 */
+export function fetchUpdateFileDisplayName(
+  id: number,
+  params: Api.FileUpload.UpdateFileDisplayNameDto
+) {
+  return request.put<null>({
+    url: `/api/file/${id}/display-name`,
+    data: params
+  })
+}
+
+/** 移动文件到文件夹 */
+export function fetchMoveFile(id: number, params: Api.FileUpload.MoveFileDto) {
+  return request.put<null>({
+    url: `/api/file/${id}/move`,
+    data: params
+  })
+}
+
+/** 更新文件可见性 */
+export function fetchUpdateFileVisibility(
+  id: number,
+  params: Api.FileUpload.UpdateFileVisibilityDto
+) {
+  return request.put<null>({
+    url: `/api/file/${id}/visibility`,
+    data: params
+  })
+}
+
+/** 更新文件状态 */
+export function fetchUpdateFileStatus(id: number, params: Api.FileUpload.UpdateFileStatusDto) {
+  return request.put<null>({
+    url: `/api/file/${id}/status`,
+    data: params
+  })
+}
+
+/** 生成公开分享链接 */
+export function fetchGeneratePublicLink(
+  id: number,
+  params: Api.FileUpload.GeneratePublicLinkDto = {}
+) {
+  return request.post<Api.FileUpload.FilePublicLinkVo>({
+    url: `/api/file/${id}/public-link`,
+    data: params
+  })
+}
+
+/** 撤销公开分享链接 */
+export function fetchRevokePublicLink(id: number) {
+  return request.del<null>({
+    url: `/api/file/${id}/public-link`
   })
 }
