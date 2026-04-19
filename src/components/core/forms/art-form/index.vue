@@ -497,6 +497,7 @@
   defineExpose({
     ref: formInstance,
     validate: (...args: any[]) => formInstance.value?.validate(...args),
+    clearValidate: (props?: string | string[]) => formInstance.value?.clearValidate(props),
     reset: handleReset,
     // 允许外部在不触发提交事件时主动获取清洗后的输出。
     getOutput: getSanitizedOutput

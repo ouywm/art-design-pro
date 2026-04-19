@@ -386,22 +386,22 @@
   }
 
   /**
-   * 添加菜单
+   * 添加菜单（允许在弹窗内切换 目录/菜单/外链/内嵌/按钮 5 种类型）
    */
-  const handleAddMenu = (): void => openDialog(1, null, true)
+  const handleAddMenu = (): void => openDialog(1, null, false)
 
   /**
-   * 添加子菜单
+   * 添加子菜单（允许切换类型，已预填 parentId）
    * @param row 父菜单行数据
    */
   const handleAddChildMenu = (row: AppRouteRecord): void =>
-    openDialog(1, { parentId: row.id }, true)
+    openDialog(1, { parentId: row.id }, false)
 
   /**
-   * 添加权限按钮
+   * 添加权限按钮（锁定为按钮类型，不可切换）
    * @param row 父菜单行数据
    */
-  const handleAddAuth = (row: AppRouteRecord): void => openDialog(2, { parentId: row.id })
+  const handleAddAuth = (row: AppRouteRecord): void => openDialog(2, { parentId: row.id }, true)
 
   /**
    * 编辑菜单
