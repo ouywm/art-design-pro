@@ -1,5 +1,5 @@
 <template>
-  <div class="config-page">
+  <div class="art-full-height config-page">
     <ConfigSearch
       v-show="showSearchBar"
       v-model="searchForm"
@@ -9,11 +9,7 @@
       @reset="handleResetSearch"
     />
 
-    <ElCard
-      class="config-page-card"
-      shadow="never"
-      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
-    >
+    <ElCard class="art-table-card config-page-card" shadow="never">
       <ArtTableHeader
         v-model:showSearchBar="showSearchBar"
         layout="search,refresh,fullscreen"
@@ -30,135 +26,131 @@
         </template>
       </ArtTableHeader>
 
-      <div v-loading="loading" class="config-content">
-        <template v-if="groupedConfigSections.length > 0">
-          <section
-            v-for="section in groupedConfigSections"
-            :key="section.groupId"
-            class="config-group-section"
-          >
-            <div class="config-group-header">
-              <div>
-                <h3 class="config-group-title">{{ section.groupName }}</h3>
-                <p class="config-group-subtitle">{{ section.groupCode || '未设置分组编码' }}</p>
+      <div v-loading="loading" class="config-layout">
+        <aside class="config-sidebar">
+          <div class="config-sidebar__search">
+            <ElInput v-model="groupKeyword" placeholder="搜索分组" clearable size="default">
+              <template #prefix>
+                <ArtSvgIcon icon="ri:search-line" class="text-g-500" />
+              </template>
+            </ElInput>
+          </div>
+
+          <ul v-if="filteredSidebarSections.length" class="config-sidebar__list">
+            <li
+              v-for="section in filteredSidebarSections"
+              :key="section.groupId"
+              :class="['config-sidebar__item', { 'is-active': activeGroupId === section.groupId }]"
+              @click="scrollToGroup(section.groupId)"
+            >
+              <ArtSvgIcon icon="ri:arrow-right-s-line" class="config-sidebar__arrow text-base" />
+              <span class="config-sidebar__name truncate">{{ section.groupName }}</span>
+              <span class="config-sidebar__count">{{ section.items.length }}</span>
+            </li>
+          </ul>
+          <div v-else class="config-sidebar__empty">未匹配到分组</div>
+        </aside>
+
+        <div ref="mainRef" class="config-main">
+          <template v-if="groupedConfigSections.length > 0">
+            <section
+              v-for="section in groupedConfigSections"
+              :key="section.groupId"
+              :ref="(el) => setSectionRef(el, section.groupId)"
+              :id="`config-group-${section.groupId}`"
+              class="config-group-section"
+            >
+              <div class="config-group-header">
+                <div class="config-group-header__title">
+                  <h3>{{ section.groupName }}</h3>
+                  <span class="config-group-header__code">
+                    {{ section.groupCode || '未设置分组编码' }}
+                  </span>
+                </div>
+                <div class="config-group-header__actions">
+                  <ElTag effect="plain" round type="info">{{ section.items.length }} 项</ElTag>
+                  <ElButton
+                    link
+                    type="primary"
+                    :disabled="!getGroupDataById(section.groupId)"
+                    @click="showGroupFormPanel('edit', getGroupDataById(section.groupId))"
+                  >
+                    编辑
+                  </ElButton>
+                  <ElButton link type="danger" @click="handleDeleteGroup(section)"> 删除 </ElButton>
+                </div>
               </div>
-              <ElSpace wrap class="config-group-header-actions">
-                <ElTag effect="plain" round type="info">{{ section.items.length }} 项</ElTag>
-                <ElButton
-                  link
-                  type="primary"
-                  :disabled="!getGroupDataById(section.groupId)"
-                  @click="showGroupFormPanel('edit', getGroupDataById(section.groupId))"
+
+              <div class="config-item-grid">
+                <article
+                  v-for="item in section.items"
+                  :key="item.id"
+                  class="config-item-card"
+                  :class="{ 'is-disabled': !item.enabled }"
                 >
-                  编辑分组
-                </ElButton>
-                <ElButton link type="danger" @click="handleDeleteGroup(section)">
-                  删除分组
-                </ElButton>
-              </ElSpace>
-            </div>
-
-            <ElRow :gutter="16">
-              <ElCol
-                v-for="item in section.items"
-                :key="item.id"
-                :xs="24"
-                :sm="24"
-                :md="12"
-                :xl="8"
-              >
-                <article class="config-item-card">
-                  <div class="config-item-header">
-                    <div class="config-item-heading">
-                      <h4 class="config-item-title">{{ item.configName }}</h4>
-                      <p class="config-item-key">{{ item.configKey }}</p>
-                    </div>
-                    <ElSpace wrap>
-                      <ElTag :type="getValueTypeTagType(item.valueType)">
-                        {{ getValueTypeLabel(item.valueType) }}
-                      </ElTag>
-                      <ElTag :type="item.enabled ? 'success' : 'warning'">
-                        {{ item.enabled ? '启用' : '停用' }}
-                      </ElTag>
-                      <ElTag v-if="item.isSystem" type="info">系统内置</ElTag>
-                    </ElSpace>
-                  </div>
-
-                  <div class="config-item-body">
-                    <div
-                      v-if="item.valueType === CONFIG_VALUE_TYPE.IMAGE"
-                      class="config-image-values"
-                    >
-                      <div class="config-image-item">
-                        <span class="field-label">当前值</span>
-                        <ConfigValueDisplay
-                          compact
-                          :value="item.configValue"
-                          :value-type="item.valueType"
-                          :option-dict-type="item.optionDictType"
-                        />
-                      </div>
-
-                      <div class="config-image-item">
-                        <span class="field-label">默认值</span>
-                        <ConfigValueDisplay
-                          compact
-                          :value="item.defaultValue"
-                          :value-type="item.valueType"
-                          :option-dict-type="item.optionDictType"
-                        />
+                  <div class="config-item-card__main">
+                    <div class="config-item-card__heading">
+                      <h4 class="config-item-card__title truncate" :title="item.configName">
+                        {{ item.configName }}
+                      </h4>
+                      <div class="config-item-card__tags">
+                        <ElTag size="small" :type="getValueTypeTagType(item.valueType)">
+                          {{ getValueTypeLabel(item.valueType) }}
+                        </ElTag>
+                        <ElTag size="small" :type="item.enabled ? 'success' : 'info'">
+                          {{ item.enabled ? '启用' : '停用' }}
+                        </ElTag>
+                        <ElTag v-if="item.isSystem" size="small" type="warning">内置</ElTag>
                       </div>
                     </div>
 
-                    <template v-else>
-                      <div class="config-item-field">
-                        <span class="field-label">当前值</span>
-                        <ConfigValueDisplay
-                          :value="item.configValue"
-                          :value-type="item.valueType"
-                          :option-dict-type="item.optionDictType"
-                        />
-                      </div>
+                    <p class="config-item-card__key truncate" :title="item.configKey">
+                      {{ item.configKey }}
+                    </p>
 
-                      <div class="config-item-field">
-                        <span class="field-label">默认值</span>
-                        <ConfigValueDisplay
-                          :value="item.defaultValue"
-                          :value-type="item.valueType"
-                          :option-dict-type="item.optionDictType"
-                        />
-                      </div>
-                    </template>
+                    <div class="config-item-card__value">
+                      <ConfigValueDisplay
+                        compact
+                        :value="item.configValue"
+                        :value-type="item.valueType"
+                        :option-dict-type="item.optionDictType"
+                      />
 
-                    <div
-                      v-if="item.optionDictType && item.valueType !== CONFIG_VALUE_TYPE.IMAGE"
-                      class="config-item-meta"
-                    >
-                      <span class="meta-label">候选字典</span>
-                      <span class="meta-value">{{ item.optionDictType }}</span>
-                    </div>
-
-                    <div v-if="item.remark" class="config-item-meta">
-                      <span class="meta-label">备注</span>
-                      <span class="meta-value">{{ item.remark }}</span>
+                      <ElTooltip v-if="needMetaTooltip(item)" placement="top-end" :show-after="200">
+                        <template #content>
+                          <div class="config-item-meta-tip">
+                            <div v-if="item.defaultValue">
+                              <span class="label">默认值</span>
+                              <span class="value">{{ item.defaultValue }}</span>
+                            </div>
+                            <div v-if="item.optionDictType">
+                              <span class="label">候选字典</span>
+                              <span class="value">{{ item.optionDictType }}</span>
+                            </div>
+                            <div v-if="item.remark">
+                              <span class="label">备注</span>
+                              <span class="value">{{ item.remark }}</span>
+                            </div>
+                          </div>
+                        </template>
+                        <ArtSvgIcon icon="ri:information-line" class="config-item-card__info" />
+                      </ElTooltip>
                     </div>
                   </div>
 
-                  <div class="config-item-footer">
-                    <ElSpace>
-                      <ElButton link type="primary" @click="showFormPanel('edit', item)">
-                        编辑
-                      </ElButton>
-                      <ElButton link type="danger" @click="handleDelete(item)">删除</ElButton>
-                    </ElSpace>
+                  <div class="config-item-card__actions">
+                    <ElButton link type="primary" @click="showFormPanel('edit', item)">
+                      编辑
+                    </ElButton>
+                    <ElButton link type="danger" @click="handleDelete(item)">删除</ElButton>
                   </div>
                 </article>
-              </ElCol>
-            </ElRow>
-          </section>
-        </template>
+              </div>
+            </section>
+          </template>
 
-        <ElEmpty v-else description="暂无系统参数配置数据" :image-size="120" />
+          <ElEmpty v-else description="暂无系统参数配置数据" :image-size="120" />
+        </div>
       </div>
     </ElCard>
 
@@ -232,6 +224,61 @@
     return new Map(configGroupOptions.value.map((item) => [item.id, item] as const))
   })
 
+  // ==================== 布局：侧边导航 ====================
+  const groupKeyword = ref('')
+  const activeGroupId = ref<number | null>(null)
+  const mainRef = ref<HTMLElement | null>(null)
+  const sectionRefs = new Map<number, HTMLElement>()
+  let observer: IntersectionObserver | null = null
+
+  const setSectionRef = (el: Element | any, groupId: number) => {
+    if (el instanceof HTMLElement) {
+      sectionRefs.set(groupId, el)
+    } else {
+      sectionRefs.delete(groupId)
+    }
+  }
+
+  const filteredSidebarSections = computed(() => {
+    const kw = groupKeyword.value.trim().toLowerCase()
+    if (!kw) return groupedConfigSections.value
+    return groupedConfigSections.value.filter(
+      (s) =>
+        s.groupName.toLowerCase().includes(kw) || (s.groupCode ?? '').toLowerCase().includes(kw)
+    )
+  })
+
+  const scrollToGroup = (groupId: number) => {
+    const el = sectionRefs.get(groupId)
+    if (!el) return
+    activeGroupId.value = groupId
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const rebuildObserver = async () => {
+    await nextTick()
+    observer?.disconnect()
+    if (!mainRef.value) return
+    observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
+        if (visible) {
+          const id = Number((visible.target as HTMLElement).id.replace('config-group-', ''))
+          if (!Number.isNaN(id)) activeGroupId.value = id
+        }
+      },
+      {
+        root: mainRef.value,
+        rootMargin: '0px 0px -60% 0px',
+        threshold: [0, 0.2, 0.5, 1]
+      }
+    )
+    sectionRefs.forEach((el) => observer?.observe(el))
+  }
+
+  // ==================== 数据排序 / 结构化 ====================
   const sortConfigGroups = (left: ConfigGroupVo, right: ConfigGroupVo): number => {
     if (left.groupSort !== right.groupSort) {
       return left.groupSort - right.groupSort
@@ -298,6 +345,29 @@
     }))
   })
 
+  watch(
+    groupedConfigSections,
+    (list) => {
+      if (list.length && activeGroupId.value == null) {
+        activeGroupId.value = list[0].groupId
+      }
+      if (list.length && !list.find((s) => s.groupId === activeGroupId.value)) {
+        activeGroupId.value = list[0].groupId
+      }
+      rebuildObserver()
+    },
+    { flush: 'post' }
+  )
+
+  const needMetaTooltip = (item: ConfigListItem) => {
+    return Boolean(
+      item.remark ||
+        (item.optionDictType && item.valueType !== CONFIG_VALUE_TYPE.IMAGE) ||
+        (item.defaultValue && item.defaultValue !== item.configValue)
+    )
+  }
+
+  // ==================== 数据加载 ====================
   const loadFilterOptions = async () => {
     const [groupResponse, dictTypeResponse] = await Promise.all([
       fetchGetConfigGroupList({ page: 1, size: 1000 }),
@@ -399,194 +469,369 @@
   onMounted(() => {
     void refreshPage()
   })
+
+  onBeforeUnmount(() => {
+    observer?.disconnect()
+    observer = null
+  })
 </script>
 
 <style scoped lang="scss">
   .config-page {
-    padding-bottom: 20px;
+    min-height: 0;
 
     .config-page-card {
+      min-height: 0;
+
       :deep(.el-card__body) {
-        overflow: visible;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
       }
     }
 
-    .config-content {
-      margin-top: 16px;
+    // 顶部 header 与下方内容分隔
+    :deep(.art-table-header) {
+      flex-shrink: 0;
+    }
+
+    .config-layout {
+      display: grid;
+      flex: 1;
+      grid-template-columns: 220px 1fr;
+      gap: 16px;
+      min-height: 0;
+      margin-top: 12px;
+    }
+
+    // ==================== 侧边导航 ====================
+    .config-sidebar {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+      background-color: var(--art-main-bg-color);
+      border: 1px solid var(--default-border);
+      border-radius: calc(var(--custom-radius) / 2 + 2px);
+
+      &__search {
+        flex-shrink: 0;
+        padding: 10px;
+        border-bottom: 1px solid var(--default-border);
+      }
+
+      &__list {
+        flex: 1;
+        min-height: 0;
+        padding: 6px;
+        margin: 0;
+        overflow-y: auto;
+        list-style: none;
+      }
+
+      &__item {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        padding: 8px 10px;
+        font-size: 13px;
+        color: var(--el-text-color-regular);
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.2s;
+
+        & + & {
+          margin-top: 2px;
+        }
+
+        &:hover {
+          color: var(--el-color-primary);
+          background-color: var(--el-color-primary-light-9);
+        }
+
+        &.is-active {
+          font-weight: 600;
+          color: var(--el-color-primary);
+          background-color: var(--el-color-primary-light-9);
+
+          .config-sidebar__arrow {
+            color: var(--el-color-primary);
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+      }
+
+      &__arrow {
+        flex-shrink: 0;
+        color: var(--el-text-color-placeholder);
+        opacity: 0;
+        transition: all 0.2s;
+        transform: translateX(-4px);
+      }
+
+      &__name {
+        flex: 1;
+        min-width: 0;
+      }
+
+      &__count {
+        flex-shrink: 0;
+        min-width: 22px;
+        padding: 0 6px;
+        font-size: 11px;
+        line-height: 18px;
+        color: var(--el-text-color-secondary);
+        text-align: center;
+        background-color: var(--el-fill-color);
+        border-radius: 9px;
+      }
+
+      &__empty {
+        padding: 24px 12px;
+        font-size: 12px;
+        color: var(--el-text-color-placeholder);
+        text-align: center;
+      }
+    }
+
+    // ==================== 右侧内容（独立滚动容器） ====================
+    .config-main {
+      min-width: 0;
+      min-height: 0;
+      padding: 0 4px 16px 0;
+      overflow-y: auto;
     }
 
     .config-group-section {
-      & + .config-group-section {
-        margin-top: 24px;
-      }
+      scroll-margin-top: 8px;
 
-      :deep(.el-row) {
-        row-gap: 16px;
+      & + .config-group-section {
+        margin-top: 28px;
       }
     }
 
     .config-group-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
       display: flex;
       gap: 12px;
-      align-items: flex-start;
+      align-items: flex-end;
       justify-content: space-between;
-      margin-bottom: 14px;
+      padding: 4px 0 10px;
+      margin-bottom: 12px;
+      background-color: var(--art-main-bg-color);
+      border-bottom: 1px solid var(--default-border);
+
+      &__title {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        min-width: 0;
+
+        h3 {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--el-text-color-primary);
+        }
+      }
+
+      &__code {
+        font-family: 'JetBrains Mono', SFMono-Regular, Consolas, monospace;
+        font-size: 12px;
+        color: var(--el-text-color-placeholder);
+      }
+
+      &__actions {
+        display: flex;
+        flex-shrink: 0;
+        gap: 6px;
+        align-items: center;
+      }
     }
 
-    .config-group-header-actions {
-      align-items: center;
-      justify-content: flex-end;
-    }
-
-    .config-group-title {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--el-text-color-primary);
-    }
-
-    .config-group-subtitle {
-      margin: 6px 0 0;
-      font-family: 'JetBrains Mono', SFMono-Regular, Consolas, monospace;
-      font-size: 12px;
-      line-height: 1.6;
-      color: var(--el-text-color-secondary);
-      word-break: break-all;
+    // ==================== 紧凑卡片 ====================
+    .config-item-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 12px;
     }
 
     .config-item-card {
+      position: relative;
       display: flex;
       flex-direction: column;
-      height: 100%;
-      padding: 16px;
+      gap: 6px;
+      padding: 12px 14px;
       background-color: var(--default-box-color);
       border: 1px solid var(--default-border);
-      border-radius: var(--custom-radius);
-    }
+      border-radius: calc(var(--custom-radius) / 2 + 2px);
+      transition: all 0.2s;
 
-    .config-item-header,
-    .config-item-meta,
-    .config-item-field {
-      display: flex;
-      gap: 12px;
-      justify-content: space-between;
-    }
+      &:hover {
+        border-color: var(--el-color-primary-light-5);
+        box-shadow: 0 2px 12px -2px rgb(0 0 0 / 6%);
 
-    .config-item-header {
-      align-items: flex-start;
-      margin-bottom: 14px;
-    }
+        .config-item-card__actions {
+          pointer-events: auto;
+          opacity: 1;
+        }
+      }
 
-    .config-item-heading {
-      flex: 1;
-      min-width: 0;
-    }
+      &.is-disabled {
+        opacity: 0.75;
+      }
 
-    .config-item-title {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 700;
-      line-height: 1.4;
-      color: var(--el-text-color-primary);
-    }
+      &__main {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
 
-    .config-item-key {
-      margin: 8px 0 0;
-      font-family: 'JetBrains Mono', SFMono-Regular, Consolas, monospace;
-      font-size: 12px;
-      line-height: 1.6;
-      color: var(--el-text-color-secondary);
-      word-break: break-all;
-    }
+      &__heading {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+        min-width: 0;
+      }
 
-    .config-item-body {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      gap: 12px;
-    }
+      &__title {
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
+      }
 
-    .config-image-values {
-      display: flex;
-      gap: 12px;
-    }
-
-    .config-image-item {
-      display: flex;
-      flex: 1;
-      gap: 10px;
-      align-items: center;
-      min-width: 0;
-
-      .field-label {
+      &__tags {
+        display: flex;
         flex-shrink: 0;
-        font-size: 13px;
-        color: var(--el-text-color-secondary);
+        gap: 4px;
       }
 
-      :deep(.config-value-display) {
-        flex: 0 0 auto;
+      &__key {
+        margin: 0;
+        overflow: hidden;
+        font-family: 'JetBrains Mono', SFMono-Regular, Consolas, monospace;
+        font-size: 11px;
+        color: var(--el-text-color-placeholder);
       }
-    }
 
-    .config-item-field {
-      align-items: flex-start;
+      &__value {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 6px;
+        margin-top: 4px;
+        border-top: 1px dashed var(--default-border);
+      }
 
-      .field-label {
+      &__info {
         flex-shrink: 0;
-        width: 56px;
-        padding-top: 4px;
-        font-size: 13px;
-        color: var(--el-text-color-secondary);
+        color: var(--el-text-color-placeholder);
+        cursor: help;
+        transition: color 0.2s;
+
+        &:hover {
+          color: var(--el-color-primary);
+        }
+      }
+
+      &__actions {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        gap: 4px;
+        padding: 2px 6px;
+        pointer-events: none;
+        background-color: var(--default-box-color);
+        border-radius: 6px;
+        box-shadow: 0 0 0 1px var(--default-border);
+        opacity: 0;
+        transition: opacity 0.2s;
       }
     }
 
-    .config-item-meta {
-      align-items: flex-start;
-
-      .meta-label {
-        flex-shrink: 0;
-        font-size: 13px;
-        color: var(--el-text-color-secondary);
-      }
-
-      .meta-value {
-        font-size: 13px;
-        line-height: 1.7;
-        color: var(--el-text-color-regular);
-        text-align: right;
-        word-break: break-word;
-      }
-    }
-
-    .config-item-footer {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 16px;
+    .truncate {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 
+  .config-item-meta-tip {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 280px;
+    font-size: 12px;
+
+    .label {
+      display: inline-block;
+      min-width: 56px;
+      margin-right: 8px;
+      color: var(--el-color-primary-light-7);
+    }
+
+    .value {
+      color: inherit;
+      word-break: break-word;
+    }
+  }
+
+  // ==================== 响应式 ====================
   @media (width <= 992px) {
     .config-page {
-      .config-group-header,
-      .config-item-header,
-      .config-image-values,
-      .config-item-field,
-      .config-item-meta {
+      .config-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .config-sidebar {
+        max-height: 200px;
+
+        &__list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          padding: 10px;
+        }
+
+        &__item {
+          padding: 4px 10px;
+
+          & + & {
+            margin-top: 0;
+          }
+
+          .config-sidebar__arrow {
+            display: none;
+          }
+        }
+      }
+
+      .config-group-header {
+        position: static;
         flex-direction: column;
+        gap: 6px;
+        align-items: flex-start;
       }
 
-      .config-item-field .field-label {
-        width: auto;
-        padding-top: 0;
-      }
-
-      .config-item-meta .meta-value {
-        text-align: left;
-      }
-
-      .config-item-footer {
-        justify-content: flex-start;
+      .config-item-card__actions {
+        position: static;
+        padding: 0;
+        margin-top: 4px;
+        pointer-events: auto;
+        background-color: transparent;
+        box-shadow: none;
+        opacity: 1;
       }
     }
   }
