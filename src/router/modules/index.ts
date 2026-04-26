@@ -3,6 +3,7 @@ import { dashboardRoutes } from './dashboard'
 import { templateRoutes } from './template'
 import { widgetsRoutes } from './widgets'
 import { examplesRoutes } from './examples'
+import { aiRoutes } from './ai'
 import { systemRoutes } from './system'
 import { articleRoutes } from './article'
 import { resultRoutes } from './result'
@@ -19,6 +20,7 @@ export const routeModules: AppRouteRecord[] = [
   templateRoutes,
   widgetsRoutes,
   examplesRoutes,
+  aiRoutes,
   systemRoutes,
   articleRoutes,
   resultRoutes,

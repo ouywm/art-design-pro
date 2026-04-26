@@ -293,6 +293,14 @@
       "manage": "File Manage",
       "examples": "Component Demo"
     },
+    "ai": {
+      "title": "AI Management",
+      "vendor": "Vendor Manage",
+      "channel": "Channel Manage",
+      "channelAccount": "Channel Account",
+      "modelConfig": "Model Config",
+      "channelModelPrice": "Channel Model Price"
+    },
     "system": {
       "title": "System Settings",
       "user": "User Manage",

@@ -293,6 +293,14 @@
       "manage": "文件管理",
       "examples": "组件示例"
     },
+    "ai": {
+      "title": "AI 管理",
+      "vendor": "供应商管理",
+      "channel": "渠道管理",
+      "channelAccount": "渠道账号",
+      "modelConfig": "模型配置",
+      "channelModelPrice": "模型价格"
+    },
     "system": {
       "title": "系统管理",
       "user": "用户管理",
