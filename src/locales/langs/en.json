@@ -301,7 +301,8 @@
       "modelConfig": "Model Config",
       "channelModelPrice": "Channel Model Price",
       "groupRatio": "Group Ratio",
-      "configEntry": "Config Entry"
+      "configEntry": "Config Entry",
+      "userQuota": "User Quota"
     },
     "system": {
       "title": "System Settings",

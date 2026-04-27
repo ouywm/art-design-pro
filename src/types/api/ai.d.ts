@@ -524,5 +524,66 @@ declare namespace Api {
       status?: ConfigEntryStatus
       remark?: string
     }
+
+    type UserQuotaStatus = 1 | 2 | 3
+
+    type UserQuotaList = Api.Common.PaginatedResponse<UserQuotaVo>
+
+    interface UserQuotaVo {
+      id: number
+      userId: number
+      channelGroup: string
+      status: UserQuotaStatus
+      quota: number
+      usedQuota: number
+      remainingQuota: number
+      requestCount: number
+      dailyQuotaLimit: number
+      monthlyQuotaLimit: number
+      dailyUsedQuota: number
+      monthlyUsedQuota: number
+      dailyWindowStart?: string | null
+      monthlyWindowStart?: string | null
+      lastRequestTime?: string | null
+      remark: string
+      createBy: string
+      createTime: string
+      updateBy: string
+      updateTime: string
+    }
+
+    interface UserQuotaQueryFilters {
+      userId?: number
+      status?: UserQuotaStatus
+      channelGroup?: string
+      keyword?: string
+    }
+
+    interface UserQuotaQueryParams extends Api.Common.CommonSearchParams, UserQuotaQueryFilters {}
+
+    interface CreateUserQuotaParams {
+      userId: number
+      channelGroup?: string
+      status?: UserQuotaStatus
+      quota: number
+      dailyQuotaLimit?: number
+      monthlyQuotaLimit?: number
+      remark?: string
+    }
+
+    interface UpdateUserQuotaParams {
+      channelGroup?: string
+      status?: UserQuotaStatus
+      quota?: number
+      dailyQuotaLimit?: number
+      monthlyQuotaLimit?: number
+      remark?: string
+    }
+
+    interface AdjustUserQuotaParams {
+      quotaDelta: number
+      referenceNo?: string
+      reason?: string
+    }
   }
 }
