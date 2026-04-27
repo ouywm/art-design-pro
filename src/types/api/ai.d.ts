@@ -461,5 +461,68 @@ declare namespace Api {
       policy?: unknown
       remark?: string
     }
+
+    type ConfigEntryStatus = 1 | 2
+    type ConfigEntryScopeType =
+      | 'system'
+      | 'organization'
+      | 'project'
+      | 'provider'
+      | 'model'
+      | 'plugin'
+
+    type ConfigEntryList = Api.Common.PaginatedResponse<ConfigEntryVo>
+
+    interface ConfigEntryVo {
+      id: number
+      scopeType: ConfigEntryScopeType
+      scopeId: number
+      category: string
+      configKey: string
+      configValue: unknown
+      secretRef: string
+      status: ConfigEntryStatus
+      versionNo: number
+      remark: string
+      createBy: string
+      createTime: string
+      updateBy: string
+      updateTime: string
+    }
+
+    interface ConfigEntryQueryFilters {
+      scopeType?: ConfigEntryScopeType
+      scopeId?: number
+      category?: string
+      configKey?: string
+      status?: ConfigEntryStatus
+      keyword?: string
+    }
+
+    interface ConfigEntryQueryParams
+      extends Api.Common.CommonSearchParams,
+        ConfigEntryQueryFilters {}
+
+    interface CreateConfigEntryParams {
+      scopeType: ConfigEntryScopeType
+      scopeId: number
+      category: string
+      configKey: string
+      configValue: unknown
+      secretRef?: string
+      status?: ConfigEntryStatus
+      remark?: string
+    }
+
+    interface UpdateConfigEntryParams {
+      scopeType?: ConfigEntryScopeType
+      scopeId?: number
+      category?: string
+      configKey?: string
+      configValue?: unknown
+      secretRef?: string
+      status?: ConfigEntryStatus
+      remark?: string
+    }
   }
 }

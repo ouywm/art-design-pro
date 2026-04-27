@@ -300,7 +300,8 @@
       "channelAccount": "Channel Account",
       "modelConfig": "Model Config",
       "channelModelPrice": "Channel Model Price",
-      "groupRatio": "Group Ratio"
+      "groupRatio": "Group Ratio",
+      "configEntry": "Config Entry"
     },
     "system": {
       "title": "System Settings",
