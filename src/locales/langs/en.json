@@ -303,7 +303,8 @@
       "groupRatio": "Group Ratio",
       "configEntry": "Config Entry",
       "userQuota": "User Quota",
-      "ability": "Ability Mapping"
+      "ability": "Ability Mapping",
+      "routingRule": "Routing Rule"
     },
     "system": {
       "title": "System Settings",

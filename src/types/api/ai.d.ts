@@ -634,5 +634,77 @@ declare namespace Api {
       weight?: number
       routeConfig?: unknown
     }
+
+    type RoutingRuleStatus = 1 | 2
+
+    type RoutingRuleList = Api.Common.PaginatedResponse<RoutingRuleVo>
+
+    interface RoutingRuleVo {
+      id: number
+      organizationId: number
+      projectId: number
+      ruleCode: string
+      ruleName: string
+      priority: number
+      matchType: string
+      matchConditions: unknown
+      routeStrategy: string
+      fallbackStrategy: string
+      status: RoutingRuleStatus
+      startTime?: string | null
+      endTime?: string | null
+      metadata: unknown
+      remark: string
+      createBy: string
+      createTime: string
+      updateBy: string
+      updateTime: string
+    }
+
+    interface RoutingRuleQueryFilters {
+      organizationId?: number
+      projectId?: number
+      status?: RoutingRuleStatus
+      ruleCode?: string
+      keyword?: string
+    }
+
+    interface RoutingRuleQueryParams
+      extends Api.Common.CommonSearchParams,
+        RoutingRuleQueryFilters {}
+
+    interface CreateRoutingRuleParams {
+      organizationId: number
+      projectId: number
+      ruleCode: string
+      ruleName: string
+      priority?: number
+      matchType: string
+      matchConditions?: unknown
+      routeStrategy: string
+      fallbackStrategy?: string
+      status?: RoutingRuleStatus
+      startTime?: string
+      endTime?: string
+      metadata?: unknown
+      remark?: string
+    }
+
+    interface UpdateRoutingRuleParams {
+      organizationId?: number
+      projectId?: number
+      ruleCode?: string
+      ruleName?: string
+      priority?: number
+      matchType?: string
+      matchConditions?: unknown
+      routeStrategy?: string
+      fallbackStrategy?: string
+      status?: RoutingRuleStatus
+      startTime?: string
+      endTime?: string
+      metadata?: unknown
+      remark?: string
+    }
   }
 }

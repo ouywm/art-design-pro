@@ -153,6 +153,22 @@ export const aiRoutes: AppRouteRecord = {
           { title: '删除', authMark: 'delete' }
         ]
       }
+    },
+    {
+      path: 'routing-rule',
+      name: 'AiRoutingRule',
+      component: '/ai/routing-rule',
+      meta: {
+        title: 'menus.ai.routingRule',
+        icon: 'ri:git-branch-line',
+        keepAlive: true,
+        roles: ['R_SUPER', 'R_ADMIN'],
+        authList: [
+          { title: '新增', authMark: 'add' },
+          { title: '编辑', authMark: 'edit' },
+          { title: '删除', authMark: 'delete' }
+        ]
+      }
     }
   ]
 }
