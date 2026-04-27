@@ -299,7 +299,8 @@
       "channel": "渠道管理",
       "channelAccount": "渠道账号",
       "modelConfig": "模型配置",
-      "channelModelPrice": "模型价格"
+      "channelModelPrice": "模型价格",
+      "groupRatio": "分组比率"
     },
     "system": {
       "title": "系统管理",

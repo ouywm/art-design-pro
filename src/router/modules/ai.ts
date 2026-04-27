@@ -89,6 +89,22 @@ export const aiRoutes: AppRouteRecord = {
           { title: '删除', authMark: 'delete' }
         ]
       }
+    },
+    {
+      path: 'group-ratio',
+      name: 'AiGroupRatio',
+      component: '/ai/group-ratio',
+      meta: {
+        title: 'menus.ai.groupRatio',
+        icon: 'ri:scales-3-line',
+        keepAlive: true,
+        roles: ['R_SUPER', 'R_ADMIN'],
+        authList: [
+          { title: '新增', authMark: 'add' },
+          { title: '编辑', authMark: 'edit' },
+          { title: '删除', authMark: 'delete' }
+        ]
+      }
     }
   ]
 }

@@ -299,7 +299,8 @@
       "channel": "Channel Manage",
       "channelAccount": "Channel Account",
       "modelConfig": "Model Config",
-      "channelModelPrice": "Channel Model Price"
+      "channelModelPrice": "Channel Model Price",
+      "groupRatio": "Group Ratio"
     },
     "system": {
       "title": "System Settings",

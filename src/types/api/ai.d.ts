@@ -408,5 +408,58 @@ declare namespace Api {
       status?: ChannelModelPriceStatus
       remark?: string
     }
+
+    type GroupRatioList = Api.Common.PaginatedResponse<GroupRatioVo>
+
+    interface GroupRatioVo {
+      id: number
+      groupCode: string
+      groupName: string
+      ratio: number
+      enabled: boolean
+      modelWhitelist: string[]
+      modelBlacklist: string[]
+      endpointScopes: string[]
+      fallbackGroupCode: string
+      policy: unknown
+      remark: string
+      createBy: string
+      createTime: string
+      updateBy: string
+      updateTime: string
+    }
+
+    interface GroupRatioQueryFilters {
+      groupCode?: string
+      enabled?: boolean
+      keyword?: string
+    }
+
+    interface GroupRatioQueryParams extends Api.Common.CommonSearchParams, GroupRatioQueryFilters {}
+
+    interface CreateGroupRatioParams {
+      groupCode: string
+      groupName: string
+      ratio: number
+      enabled?: boolean
+      modelWhitelist?: string[]
+      modelBlacklist?: string[]
+      endpointScopes?: string[]
+      fallbackGroupCode?: string
+      policy?: unknown
+      remark?: string
+    }
+
+    interface UpdateGroupRatioParams {
+      groupName?: string
+      ratio?: number
+      enabled?: boolean
+      modelWhitelist?: string[]
+      modelBlacklist?: string[]
+      endpointScopes?: string[]
+      fallbackGroupCode?: string
+      policy?: unknown
+      remark?: string
+    }
   }
 }
