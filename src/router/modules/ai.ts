@@ -57,6 +57,22 @@ export const aiRoutes: AppRouteRecord = {
           { title: '删除', authMark: 'delete' }
         ]
       }
+    },
+    {
+      path: 'model-config',
+      name: 'AiModelConfig',
+      component: '/ai/model-config',
+      meta: {
+        title: 'menus.ai.modelConfig',
+        icon: 'ri:brain-line',
+        keepAlive: true,
+        roles: ['R_SUPER', 'R_ADMIN'],
+        authList: [
+          { title: '新增', authMark: 'add' },
+          { title: '编辑', authMark: 'edit' },
+          { title: '删除', authMark: 'delete' }
+        ]
+      }
     }
   ]
 }

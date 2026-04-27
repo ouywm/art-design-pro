@@ -252,5 +252,82 @@ declare namespace Api {
       extra?: unknown
       remark?: string
     }
+
+    type ModelConfigType = 1 | 2 | 3 | 4 | 5
+
+    type ModelConfigList = Api.Common.PaginatedResponse<ModelConfigVo>
+
+    interface ModelConfigVo {
+      id: number
+      modelName: string
+      displayName: string
+      modelType: ModelConfigType
+      vendorCode: string
+      supportedEndpoints: string[]
+      inputRatio: number
+      outputRatio: number
+      cachedInputRatio: number
+      reasoningRatio: number
+      capabilities: string[]
+      maxContext: number
+      currency: string
+      effectiveFrom?: string | null
+      metadata: unknown
+      enabled: boolean
+      remark: string
+      createBy: string
+      createTime: string
+      updateBy: string
+      updateTime: string
+    }
+
+    interface ModelConfigQueryFilters {
+      modelName?: string
+      modelType?: ModelConfigType
+      vendorCode?: string
+      enabled?: boolean
+      keyword?: string
+    }
+
+    interface ModelConfigQueryParams
+      extends Api.Common.CommonSearchParams,
+        ModelConfigQueryFilters {}
+
+    interface CreateModelConfigParams {
+      modelName: string
+      displayName: string
+      modelType: ModelConfigType
+      vendorCode: string
+      supportedEndpoints?: string[]
+      inputRatio?: number
+      outputRatio?: number
+      cachedInputRatio?: number
+      reasoningRatio?: number
+      capabilities?: string[]
+      maxContext?: number
+      currency?: string
+      effectiveFrom?: string
+      metadata?: unknown
+      enabled?: boolean
+      remark?: string
+    }
+
+    interface UpdateModelConfigParams {
+      displayName?: string
+      modelType?: ModelConfigType
+      vendorCode?: string
+      supportedEndpoints?: string[]
+      inputRatio?: number
+      outputRatio?: number
+      cachedInputRatio?: number
+      reasoningRatio?: number
+      capabilities?: string[]
+      maxContext?: number
+      currency?: string
+      effectiveFrom?: string
+      metadata?: unknown
+      enabled?: boolean
+      remark?: string
+    }
   }
 }
