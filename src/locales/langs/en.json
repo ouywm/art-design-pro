@@ -305,7 +305,8 @@
       "userQuota": "User Quota",
       "ability": "Ability Mapping",
       "routingRule": "Routing Rule",
-      "routingTarget": "Routing Target"
+      "routingTarget": "Routing Target",
+      "token": "Token"
     },
     "system": {
       "title": "System Settings",

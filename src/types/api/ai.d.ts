@@ -770,5 +770,124 @@ declare namespace Api {
       config?: unknown
       status?: RoutingTargetStatus
     }
+
+    type TokenStatus = 1 | 2 | 3 | 4
+
+    type TokenList = Api.Common.PaginatedResponse<TokenVo>
+
+    interface TokenVo {
+      id: number
+      userId: number
+      serviceAccountId: number
+      projectId: number
+      name: string
+      keyPrefix: string
+      status: TokenStatus
+      remainQuota: number
+      usedQuota: number
+      unlimitedQuota: boolean
+      models: string[]
+      endpointScopes: string[]
+      groupCodeOverride: string
+      rpmLimit: number
+      tpmLimit: number
+      concurrencyLimit: number
+      dailyQuotaLimit: number
+      monthlyQuotaLimit: number
+      dailyUsedQuota: number
+      monthlyUsedQuota: number
+      expireTime?: string | null
+      accessTime?: string | null
+      lastUsedIp: string
+      remark: string
+      createBy: string
+      createTime: string
+      updateBy: string
+      updateTime: string
+    }
+
+    interface TokenDetailVo extends TokenVo {
+      ipWhitelist: string[]
+      ipBlacklist: string[]
+      dailyWindowStart?: string | null
+      monthlyWindowStart?: string | null
+      lastUserAgent: string
+    }
+
+    interface CreatedTokenVo {
+      token: TokenVo
+      rawKey: string
+    }
+
+    interface RotatedTokenKeyVo {
+      id: number
+      keyPrefix: string
+      rawKey: string
+    }
+
+    interface BatchDeleteTokenResult {
+      deleted: number
+    }
+
+    interface TokenQueryFilters {
+      userId?: number
+      serviceAccountId?: number
+      projectId?: number
+      status?: TokenStatus
+      keyword?: string
+      keyPrefix?: string
+      groupCodeOverride?: string
+    }
+
+    interface TokenQueryParams extends Api.Common.CommonSearchParams, TokenQueryFilters {}
+
+    interface CreateTokenParams {
+      userId: number
+      serviceAccountId?: number
+      projectId?: number
+      name: string
+      remainQuota?: number
+      unlimitedQuota?: boolean
+      models?: string[]
+      endpointScopes?: string[]
+      ipWhitelist?: string[]
+      ipBlacklist?: string[]
+      groupCodeOverride?: string
+      rpmLimit?: number
+      tpmLimit?: number
+      concurrencyLimit?: number
+      dailyQuotaLimit?: number
+      monthlyQuotaLimit?: number
+      expireTime?: string
+      remark?: string
+      status?: TokenStatus
+    }
+
+    interface UpdateTokenParams {
+      name?: string
+      status?: TokenStatus
+      remainQuota?: number
+      unlimitedQuota?: boolean
+      models?: string[]
+      endpointScopes?: string[]
+      ipWhitelist?: string[]
+      ipBlacklist?: string[]
+      groupCodeOverride?: string
+      rpmLimit?: number
+      tpmLimit?: number
+      concurrencyLimit?: number
+      dailyQuotaLimit?: number
+      monthlyQuotaLimit?: number
+      expireTime?: string
+      remark?: string
+    }
+
+    interface UpdateTokenStatusParams {
+      status: TokenStatus
+    }
+
+    interface BatchDeleteTokenParams {
+      ids: number[]
+    }
   }
 }

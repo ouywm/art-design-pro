@@ -185,6 +185,24 @@ export const aiRoutes: AppRouteRecord = {
           { title: '删除', authMark: 'delete' }
         ]
       }
+    },
+    {
+      path: 'token',
+      name: 'AiToken',
+      component: '/ai/token',
+      meta: {
+        title: 'menus.ai.token',
+        icon: 'ri:key-line',
+        keepAlive: true,
+        roles: ['R_SUPER', 'R_ADMIN'],
+        authList: [
+          { title: '新增', authMark: 'add' },
+          { title: '编辑', authMark: 'edit' },
+          { title: '更新状态', authMark: 'status' },
+          { title: '轮换密钥', authMark: 'rotate' },
+          { title: '删除', authMark: 'delete' }
+        ]
+      }
     }
   ]
 }
