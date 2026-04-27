@@ -302,7 +302,8 @@
       "channelModelPrice": "模型价格",
       "groupRatio": "分组比率",
       "configEntry": "配置项",
-      "userQuota": "用户额度"
+      "userQuota": "用户额度",
+      "ability": "能力映射"
     },
     "system": {
       "title": "系统管理",

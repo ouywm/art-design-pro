@@ -137,6 +137,22 @@ export const aiRoutes: AppRouteRecord = {
           { title: '调整额度', authMark: 'adjust' }
         ]
       }
+    },
+    {
+      path: 'ability',
+      name: 'AiAbility',
+      component: '/ai/ability',
+      meta: {
+        title: 'menus.ai.ability',
+        icon: 'ri:flashlight-line',
+        keepAlive: true,
+        roles: ['R_SUPER', 'R_ADMIN'],
+        authList: [
+          { title: '新增', authMark: 'add' },
+          { title: '编辑', authMark: 'edit' },
+          { title: '删除', authMark: 'delete' }
+        ]
+      }
     }
   ]
 }

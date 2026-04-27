@@ -585,5 +585,54 @@ declare namespace Api {
       referenceNo?: string
       reason?: string
     }
+
+    type AbilityList = Api.Common.PaginatedResponse<AbilityVo>
+
+    interface AbilityVo {
+      id: number
+      channelGroup: string
+      endpointScope: string
+      model: string
+      channelId: number
+      enabled: boolean
+      priority: number
+      weight: number
+      routeConfig: unknown
+      createTime: string
+      updateTime: string
+    }
+
+    interface AbilityQueryFilters {
+      channelGroup?: string
+      endpointScope?: string
+      model?: string
+      channelId?: number
+      enabled?: boolean
+      keyword?: string
+    }
+
+    interface AbilityQueryParams extends Api.Common.CommonSearchParams, AbilityQueryFilters {}
+
+    interface CreateAbilityParams {
+      channelGroup: string
+      endpointScope: string
+      model: string
+      channelId: number
+      enabled?: boolean
+      priority?: number
+      weight?: number
+      routeConfig?: unknown
+    }
+
+    interface UpdateAbilityParams {
+      channelGroup?: string
+      endpointScope?: string
+      model?: string
+      channelId?: number
+      enabled?: boolean
+      priority?: number
+      weight?: number
+      routeConfig?: unknown
+    }
   }
 }
