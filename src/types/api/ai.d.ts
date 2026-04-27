@@ -329,5 +329,84 @@ declare namespace Api {
       enabled?: boolean
       remark?: string
     }
+
+    type ChannelModelPriceBillingMode = 1 | 2 | 3
+    type ChannelModelPriceStatus = 1 | 2
+    type ChannelModelPriceVersionStatus = 1 | 2
+
+    interface ChannelModelPriceConfig {
+      inputPerMillion: string
+      outputPerMillion: string
+      cacheReadPerMillion?: string
+      cacheWritePerMillion?: string
+      reasoningPerMillion?: string
+    }
+
+    type ChannelModelPriceList = Api.Common.PaginatedResponse<ChannelModelPriceVo>
+
+    interface ChannelModelPriceVo {
+      id: number
+      channelId: number
+      modelName: string
+      billingMode: ChannelModelPriceBillingMode
+      currency: string
+      priceConfig: ChannelModelPriceConfig
+      referenceId: string
+      status: ChannelModelPriceStatus
+      remark: string
+      createBy: string
+      createTime: string
+      updateBy: string
+      updateTime: string
+    }
+
+    interface ChannelModelPriceDetailVo extends ChannelModelPriceVo {
+      currentVersionNo?: number | null
+    }
+
+    interface ChannelModelPriceVersionVo {
+      id: number
+      channelModelPriceId: number
+      channelId: number
+      modelName: string
+      versionNo: number
+      referenceId: string
+      priceConfig: ChannelModelPriceConfig
+      effectiveStartAt: string
+      effectiveEndAt?: string | null
+      status: ChannelModelPriceVersionStatus
+      createTime: string
+    }
+
+    interface ChannelModelPriceQueryFilters {
+      channelId?: number
+      modelName?: string
+      status?: ChannelModelPriceStatus
+      billingMode?: ChannelModelPriceBillingMode
+      currency?: string
+      keyword?: string
+    }
+
+    interface ChannelModelPriceQueryParams
+      extends Api.Common.CommonSearchParams,
+        ChannelModelPriceQueryFilters {}
+
+    interface CreateChannelModelPriceParams {
+      channelId: number
+      modelName: string
+      billingMode: ChannelModelPriceBillingMode
+      currency: string
+      priceConfig: ChannelModelPriceConfig
+      status?: ChannelModelPriceStatus
+      remark?: string
+    }
+
+    interface UpdateChannelModelPriceParams {
+      billingMode?: ChannelModelPriceBillingMode
+      currency?: string
+      priceConfig?: ChannelModelPriceConfig
+      status?: ChannelModelPriceStatus
+      remark?: string
+    }
   }
 }

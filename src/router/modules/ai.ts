@@ -73,6 +73,22 @@ export const aiRoutes: AppRouteRecord = {
           { title: '删除', authMark: 'delete' }
         ]
       }
+    },
+    {
+      path: 'channel-model-price',
+      name: 'AiChannelModelPrice',
+      component: '/ai/channel-model-price',
+      meta: {
+        title: 'menus.ai.channelModelPrice',
+        icon: 'ri:money-dollar-circle-line',
+        keepAlive: true,
+        roles: ['R_SUPER', 'R_ADMIN'],
+        authList: [
+          { title: '新增', authMark: 'add' },
+          { title: '编辑', authMark: 'edit' },
+          { title: '删除', authMark: 'delete' }
+        ]
+      }
     }
   ]
 }
