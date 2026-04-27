@@ -304,7 +304,8 @@
       "configEntry": "Config Entry",
       "userQuota": "User Quota",
       "ability": "Ability Mapping",
-      "routingRule": "Routing Rule"
+      "routingRule": "Routing Rule",
+      "routingTarget": "Routing Target"
     },
     "system": {
       "title": "System Settings",

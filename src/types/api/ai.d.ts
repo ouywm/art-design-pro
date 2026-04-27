@@ -706,5 +706,69 @@ declare namespace Api {
       metadata?: unknown
       remark?: string
     }
+
+    type RoutingTargetStatus = 1 | 2
+    type RoutingTargetType = 'channel' | 'account' | 'channel_group' | 'plugin' | 'pipeline'
+
+    type RoutingTargetList = Api.Common.PaginatedResponse<RoutingTargetVo>
+
+    interface RoutingTargetVo {
+      id: number
+      routingRuleId: number
+      targetType: RoutingTargetType
+      channelId: number
+      accountId: number
+      pluginId: number
+      targetKey: string
+      weight: number
+      priority: number
+      cooldownSeconds: number
+      config: unknown
+      status: RoutingTargetStatus
+      createTime: string
+      updateTime: string
+    }
+
+    interface RoutingTargetQueryFilters {
+      routingRuleId?: number
+      targetType?: RoutingTargetType
+      status?: RoutingTargetStatus
+      channelId?: number
+      accountId?: number
+      pluginId?: number
+      keyword?: string
+    }
+
+    interface RoutingTargetQueryParams
+      extends Api.Common.CommonSearchParams,
+        RoutingTargetQueryFilters {}
+
+    interface CreateRoutingTargetParams {
+      routingRuleId: number
+      targetType: RoutingTargetType
+      channelId?: number
+      accountId?: number
+      pluginId?: number
+      targetKey?: string
+      weight?: number
+      priority?: number
+      cooldownSeconds?: number
+      config?: unknown
+      status?: RoutingTargetStatus
+    }
+
+    interface UpdateRoutingTargetParams {
+      routingRuleId?: number
+      targetType?: RoutingTargetType
+      channelId?: number
+      accountId?: number
+      pluginId?: number
+      targetKey?: string
+      weight?: number
+      priority?: number
+      cooldownSeconds?: number
+      config?: unknown
+      status?: RoutingTargetStatus
+    }
   }
 }

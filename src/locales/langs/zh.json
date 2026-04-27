@@ -304,7 +304,8 @@
       "configEntry": "配置项",
       "userQuota": "用户额度",
       "ability": "能力映射",
-      "routingRule": "路由规则"
+      "routingRule": "路由规则",
+      "routingTarget": "路由目标"
     },
     "system": {
       "title": "系统管理",
