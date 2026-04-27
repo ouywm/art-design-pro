@@ -306,7 +306,8 @@
       "ability": "Ability Mapping",
       "routingRule": "Routing Rule",
       "routingTarget": "Routing Target",
-      "token": "Token"
+      "token": "Token",
+      "requestLog": "Request Log"
     },
     "system": {
       "title": "System Settings",

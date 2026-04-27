@@ -203,6 +203,17 @@ export const aiRoutes: AppRouteRecord = {
           { title: '删除', authMark: 'delete' }
         ]
       }
+    },
+    {
+      path: 'request-log',
+      name: 'AiRequestLog',
+      component: '/ai/request-log',
+      meta: {
+        title: 'menus.ai.requestLog',
+        icon: 'ri:file-list-3-line',
+        keepAlive: true,
+        roles: ['R_SUPER', 'R_ADMIN']
+      }
     }
   ]
 }

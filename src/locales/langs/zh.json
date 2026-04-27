@@ -306,7 +306,8 @@
       "ability": "能力映射",
       "routingRule": "路由规则",
       "routingTarget": "路由目标",
-      "token": "令牌管理"
+      "token": "令牌管理",
+      "requestLog": "请求日志"
     },
     "system": {
       "title": "系统管理",

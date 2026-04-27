@@ -889,5 +889,94 @@ declare namespace Api {
     interface BatchDeleteTokenParams {
       ids: number[]
     }
+
+    type RequestLogType = 1 | 2 | 3 | 4
+    type RequestLogStatus = 1 | 2 | 3
+    type RequestStatus = 1 | 2 | 3 | 4 | 5
+
+    type RequestLogList = Api.Common.PaginatedResponse<RequestLogVo>
+
+    interface RequestLogVo {
+      id: number
+      userId: number
+      tokenId: number
+      tokenName: string
+      projectId: number
+      channelId: number
+      channelName: string
+      accountId: number
+      accountName: string
+      executionId: number
+      endpoint: string
+      requestFormat: string
+      requestedModel: string
+      upstreamModel: string
+      modelName: string
+      promptTokens: number
+      completionTokens: number
+      totalTokens: number
+      cachedTokens: number
+      reasoningTokens: number
+      quota: number
+      costTotal: number
+      priceReference: string
+      elapsedTime: number
+      firstTokenTime: number
+      isStream: boolean
+      requestId: string
+      upstreamRequestId: string
+      statusCode: number
+      clientIp: string
+      content: string
+      logType: RequestLogType
+      status: RequestLogStatus
+      requestStatus?: RequestStatus | null
+      createTime: string
+    }
+
+    interface RequestDetailVo {
+      id: number
+      requestId: string
+      userId: number
+      tokenId: number
+      projectId: number
+      channelGroup: string
+      sourceType: string
+      endpoint: string
+      requestFormat: string
+      requestedModel: string
+      upstreamModel: string
+      isStream: boolean
+      clientIp: string
+      userAgent: string
+      requestHeaders: unknown
+      requestBody: unknown
+      responseBody?: unknown | null
+      responseStatusCode: number
+      status: RequestStatus
+      errorMessage: string
+      durationMs: number
+      firstTokenMs: number
+      createTime: string
+      updateTime: string
+    }
+
+    interface RequestLogQueryFilters {
+      userId?: number
+      tokenId?: number
+      projectId?: number
+      channelId?: number
+      accountId?: number
+      status?: RequestLogStatus
+      logType?: RequestLogType
+      endpoint?: string
+      modelName?: string
+      requestId?: string
+      keyword?: string
+      startTime?: string
+      endTime?: string
+    }
+
+    interface RequestLogQueryParams extends Api.Common.CommonSearchParams, RequestLogQueryFilters {}
   }
 }
