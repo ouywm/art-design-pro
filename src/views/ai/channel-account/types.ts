@@ -8,6 +8,8 @@ export interface ChannelOption {
   status: Api.AiManage.ChannelStatus
 }
 
+export type OpenAiOAuthDialogMode = 'create' | 'rebind'
+
 export type SearchFormModel = Pick<
   Api.AiManage.ChannelAccountQueryParams,
   'channelId' | 'status' | 'credentialType' | 'keyword'
@@ -29,4 +31,39 @@ export interface FormModel {
   testModel: string
   extraText: string
   remark: string
+}
+
+export interface OpenAiOAuthFormModel {
+  channelId: number | undefined
+  accountId: number | undefined
+  name: string
+  remark: string
+  testModel: string
+  redirectUri: string
+  sessionId: string
+  authUrl: string
+  code: string
+  state: string
+}
+
+export interface OpenAiOAuthPendingPayload {
+  mode: OpenAiOAuthDialogMode
+  createdAt: number
+  sessionId: string
+  redirectUri: string
+  authUrl?: string
+  channelId?: number
+  accountId?: number
+  name: string
+  remark?: string
+  testModel?: string
+  code?: string
+  state?: string
+}
+
+export interface OpenAiOAuthCallbackParams {
+  code?: string
+  state?: string
+  error?: string
+  errorDescription?: string
 }

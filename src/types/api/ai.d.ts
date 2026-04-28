@@ -253,6 +253,44 @@ declare namespace Api {
       remark?: string
     }
 
+    interface GenerateOpenAiOAuthAuthUrlParams {
+      redirectUri: string
+    }
+
+    interface ExchangeOpenAiOAuthCodeParams {
+      sessionId: string
+      code: string
+      state: string
+      channelId?: number
+      accountId?: number
+      name?: string
+      remark?: string
+      testModel?: string
+    }
+
+    interface RefreshOpenAiOAuthTokenParams {
+      accountId: number
+    }
+
+    interface OpenAiOAuthAuthUrlVo {
+      authUrl: string
+      sessionId: string
+    }
+
+    interface OpenAiOAuthExchangeVo {
+      accountId: number
+      created: boolean
+      expiresAt: string
+      subscriptionExpiresAt?: string | null
+    }
+
+    interface OpenAiOAuthRefreshVo {
+      accountId: number
+      refreshedAt: string
+      expiresAt: string
+      subscriptionExpiresAt?: string | null
+    }
+
     type ModelConfigType = 1 | 2 | 3 | 4 | 5
 
     type ModelConfigList = Api.Common.PaginatedResponse<ModelConfigVo>

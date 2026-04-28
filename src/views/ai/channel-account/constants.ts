@@ -3,6 +3,9 @@ export interface SelectOption<T = string | number | boolean> {
   value: T
 }
 
+export const OPENAI_CHANNEL_TYPE: Api.AiManage.ChannelType = 1
+export const OAUTH_CREDENTIAL_TYPE = 'oauth'
+
 export const CHANNEL_ACCOUNT_STATUS_OPTIONS: SelectOption<Api.AiManage.ChannelAccountStatus>[] = [
   { label: '启用', value: 1 },
   { label: '禁用', value: 2 },

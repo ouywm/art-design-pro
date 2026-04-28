@@ -12,6 +12,15 @@
         <template #left>
           <ElSpace wrap>
             <ElButton type="primary" @click="showDialog('add')" v-ripple>新增渠道账号</ElButton>
+            <ElButton
+              type="primary"
+              plain
+              :disabled="openAiChannelOptions.length === 0"
+              @click="showOpenAiOAuthDialog('create')"
+              v-ripple
+            >
+              OpenAI OAuth 新增账号
+            </ElButton>
           </ElSpace>
         </template>
       </ArtTableHeader>
@@ -32,6 +41,16 @@
         :channel-options="channelOptions"
         @submit="handleDialogSubmit"
       />
+
+      <OpenAiOAuthBindDialog
+        v-model:visible="oauthDialogVisible"
+        :mode="oauthDialogMode"
+        :account-data="currentOAuthAccountData"
+        :channel-options="openAiChannelOptions"
+        :pending-payload="oauthPendingPayload"
+        :callback-params="oauthCallbackParams"
+        @submit="handleOAuthDialogSubmit"
+      />
     </ElCard>
   </div>
 </template>
@@ -40,6 +59,7 @@
   import ArtButtonMore, {
     type ButtonMoreItem
   } from '@/components/core/forms/art-button-more/index.vue'
+  import { fetchRefreshOpenAiOAuthToken } from '@/api/ai-openai-oauth'
   import { fetchGetChannelList } from '@/api/ai-channel'
   import { fetchDeleteChannelAccount, fetchGetChannelAccountList } from '@/api/ai-channel-account'
   import { useTable } from '@/hooks/core/useTable'
@@ -52,16 +72,36 @@
     getSchedulableLabel,
     getSchedulableTagType
   } from './constants'
+  import {
+    clearOpenAiOAuthCallbackParamsFromUrl,
+    getOpenAiOAuthCallbackParams,
+    isOAuthCredentialType,
+    isOpenAiChannelType,
+    readOpenAiOAuthPendingPayload
+  } from './oauth'
   import ChannelAccountDialog from './modules/channel-account-dialog.vue'
   import ChannelAccountSearch from './modules/channel-account-search.vue'
-  import type { ChannelAccountListItem, ChannelOption, SearchFormModel } from './types'
+  import OpenAiOAuthBindDialog from './modules/openai-oauth-bind-dialog.vue'
+  import type {
+    ChannelAccountListItem,
+    ChannelOption,
+    OpenAiOAuthCallbackParams,
+    OpenAiOAuthDialogMode,
+    OpenAiOAuthPendingPayload,
+    SearchFormModel
+  } from './types'
 
   defineOptions({ name: 'AiChannelAccount' })
 
   const dialogType = ref<DialogType>('add')
   const dialogVisible = ref(false)
+  const oauthDialogVisible = ref(false)
+  const oauthDialogMode = ref<OpenAiOAuthDialogMode>('create')
   const currentAccountData = ref<Partial<ChannelAccountListItem>>({})
+  const currentOAuthAccountData = ref<Partial<ChannelAccountListItem>>({})
   const channelOptions = ref<ChannelOption[]>([])
+  const oauthPendingPayload = ref<OpenAiOAuthPendingPayload>()
+  const oauthCallbackParams = ref<OpenAiOAuthCallbackParams>()
 
   const searchForm = ref<SearchFormModel>({
     channelId: undefined,
@@ -70,8 +110,23 @@
     keyword: undefined
   })
 
+  const openAiChannelOptions = computed(() =>
+    channelOptions.value.filter((item) => isOpenAiChannelType(item.channelType))
+  )
+
   const getChannelLabel = (channelId: number) => {
     return channelOptions.value.find((item) => item.value === channelId)?.label ?? `#${channelId}`
+  }
+
+  const getChannelOption = (channelId: number) => {
+    return channelOptions.value.find((item) => item.value === channelId)
+  }
+
+  const isOpenAiOAuthAccount = (row: ChannelAccountListItem) => {
+    const channelType = getChannelOption(row.channelId)?.channelType
+    return Boolean(
+      channelType && isOAuthCredentialType(row.credentialType) && isOpenAiChannelType(channelType)
+    )
   }
 
   const loadChannelOptions = async () => {
@@ -88,6 +143,37 @@
     const usedText = Number(used || 0).toFixed(2)
     if (!limit || Number(limit) <= 0) return `${usedText} / 不限`
     return `${usedText} / ${Number(limit).toFixed(2)}`
+  }
+
+  const syncOpenAiOAuthCallbackState = () => {
+    const callback = getOpenAiOAuthCallbackParams()
+    const hasCallback = Boolean(callback.code) || Boolean(callback.state) || Boolean(callback.error)
+
+    oauthPendingPayload.value = readOpenAiOAuthPendingPayload()
+    oauthCallbackParams.value = hasCallback ? callback : undefined
+
+    if (!hasCallback) return
+
+    if (!oauthPendingPayload.value) {
+      const title = callback.errorDescription || callback.error || '本地授权会话已失效'
+      ElMessage.warning(`检测到 OpenAI OAuth 回跳参数，但无法恢复会话：${title}`)
+      clearOpenAiOAuthCallbackParamsFromUrl()
+      return
+    }
+
+    oauthDialogMode.value = oauthPendingPayload.value.mode
+    currentOAuthAccountData.value =
+      oauthPendingPayload.value.mode === 'rebind'
+        ? {
+            id: oauthPendingPayload.value.accountId,
+            channelId: oauthPendingPayload.value.channelId,
+            name: oauthPendingPayload.value.name,
+            remark: oauthPendingPayload.value.remark || '',
+            testModel: oauthPendingPayload.value.testModel || ''
+          }
+        : {}
+    oauthDialogVisible.value = true
+    clearOpenAiOAuthCallbackParamsFromUrl()
   }
 
   const {
@@ -188,6 +274,12 @@
             h(ArtButtonMore, {
               list: [
                 { key: 'edit', label: '编辑账号', icon: 'ri:edit-2-line' },
+                ...(isOpenAiOAuthAccount(row)
+                  ? [
+                      { key: 'oauth-rebind', label: '重新绑定', icon: 'ri:links-line' },
+                      { key: 'oauth-refresh', label: '刷新 OAuth', icon: 'ri:refresh-line' }
+                    ]
+                  : []),
                 { key: 'delete', label: '删除账号', icon: 'ri:delete-bin-4-line', color: '#f56c6c' }
               ],
               onClick: (item: ButtonMoreItem) => handleMoreClick(item, row)
@@ -208,6 +300,14 @@
     dialogVisible.value = true
   }
 
+  const showOpenAiOAuthDialog = (mode: OpenAiOAuthDialogMode, row?: ChannelAccountListItem) => {
+    oauthDialogMode.value = mode
+    oauthPendingPayload.value =
+      oauthPendingPayload.value?.mode === mode ? oauthPendingPayload.value : undefined
+    currentOAuthAccountData.value = row || {}
+    oauthDialogVisible.value = true
+  }
+
   const deleteAccount = (row: ChannelAccountListItem) => {
     ElMessageBox.confirm(`确定删除账号“${row.name}”吗？`, '删除渠道账号', {
       confirmButtonText: '确定',
@@ -220,9 +320,29 @@
     })
   }
 
+  const refreshOAuthToken = (row: ChannelAccountListItem) => {
+    ElMessageBox.confirm(`确定刷新 OAuth 账号“${row.name}”的令牌吗？`, '刷新 OAuth', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(async () => {
+      await fetchRefreshOpenAiOAuthToken({ accountId: row.id })
+      ElMessage.success('OAuth 令牌已刷新')
+      await refreshUpdate()
+    })
+  }
+
   const handleMoreClick = (item: ButtonMoreItem, row: ChannelAccountListItem) => {
     if (item.key === 'edit') {
       showDialog('edit', row)
+      return
+    }
+    if (item.key === 'oauth-rebind') {
+      showOpenAiOAuthDialog('rebind', row)
+      return
+    }
+    if (item.key === 'oauth-refresh') {
+      refreshOAuthToken(row)
       return
     }
     if (item.key === 'delete') {
@@ -238,8 +358,20 @@
     }
   }
 
+  const handleOAuthDialogSubmit = async (mode: OpenAiOAuthDialogMode) => {
+    oauthPendingPayload.value = undefined
+    oauthCallbackParams.value = undefined
+
+    if (mode === 'create') {
+      await refreshCreate()
+    } else {
+      await refreshUpdate()
+    }
+  }
+
   onMounted(() => {
     void loadChannelOptions()
+    syncOpenAiOAuthCallbackState()
   })
 </script>
 
