@@ -307,7 +307,8 @@
       "routingRule": "Routing Rule",
       "routingTarget": "Routing Target",
       "token": "Token",
-      "requestLog": "Request Log"
+      "requestLog": "Request Log",
+      "dailyStats": "Daily Stats"
     },
     "system": {
       "title": "System Settings",

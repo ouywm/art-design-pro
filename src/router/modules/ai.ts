@@ -214,6 +214,17 @@ export const aiRoutes: AppRouteRecord = {
         keepAlive: true,
         roles: ['R_SUPER', 'R_ADMIN']
       }
+    },
+    {
+      path: 'daily-stats',
+      name: 'AiDailyStats',
+      component: '/ai/daily-stats',
+      meta: {
+        title: 'menus.ai.dailyStats',
+        icon: 'ri:bar-chart-box-line',
+        keepAlive: true,
+        roles: ['R_SUPER', 'R_ADMIN']
+      }
     }
   ]
 }

@@ -307,7 +307,8 @@
       "routingRule": "路由规则",
       "routingTarget": "路由目标",
       "token": "令牌管理",
-      "requestLog": "请求日志"
+      "requestLog": "请求日志",
+      "dailyStats": "每日统计"
     },
     "system": {
       "title": "系统管理",

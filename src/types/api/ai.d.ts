@@ -978,5 +978,78 @@ declare namespace Api {
     }
 
     interface RequestLogQueryParams extends Api.Common.CommonSearchParams, RequestLogQueryFilters {}
+
+    type DailyStatsList = Api.Common.PaginatedResponse<DailyStatsVo>
+
+    interface DailyStatsVo {
+      id: number
+      statsDate: string
+      userId: number
+      projectId: number
+      channelId: number
+      accountId: number
+      modelName: string
+      requestCount: number
+      successCount: number
+      failCount: number
+      promptTokens: number
+      completionTokens: number
+      totalTokens: number
+      cachedTokens: number
+      reasoningTokens: number
+      quota: number
+      costTotal: number
+      avgElapsedTime: number
+      avgFirstTokenTime: number
+      createTime: string
+    }
+
+    interface DailyStatsSummaryVo {
+      requestCount: number
+      successCount: number
+      failCount: number
+      promptTokens: number
+      completionTokens: number
+      totalTokens: number
+      cachedTokens: number
+      reasoningTokens: number
+      quota: number
+      costTotal: number
+      avgElapsedTime: number
+      avgFirstTokenTime: number
+    }
+
+    interface DailyStatsDimensionVo {
+      key: string
+      requestCount: number
+      successCount: number
+      failCount: number
+      totalTokens: number
+      quota: number
+      costTotal: number
+    }
+
+    interface DashboardOverviewVo {
+      summary: DailyStatsSummaryVo
+      byChannel: DailyStatsDimensionVo[]
+      byModel: DailyStatsDimensionVo[]
+    }
+
+    interface DailyStatsQueryFilters {
+      startDate?: string
+      endDate?: string
+      userId?: number
+      projectId?: number
+      channelId?: number
+      accountId?: number
+      modelName?: string
+    }
+
+    interface DailyStatsQueryParams extends Api.Common.CommonSearchParams, DailyStatsQueryFilters {}
+
+    interface DashboardQueryParams {
+      startDate?: string
+      endDate?: string
+    }
   }
 }
