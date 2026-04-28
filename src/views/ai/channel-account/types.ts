@@ -20,6 +20,11 @@ export interface FormModel {
   name: string
   credentialType: string
   credentialsText: string
+  redirectUri: string
+  oauthSessionId: string
+  oauthAuthUrl: string
+  oauthCode: string
+  oauthState: string
   secretRef: string
   status: Api.AiManage.ChannelAccountStatus | undefined
   schedulable: boolean
@@ -55,6 +60,14 @@ export interface OpenAiOAuthPendingPayload {
   channelId?: number
   accountId?: number
   name: string
+  secretRef?: string
+  status?: Api.AiManage.ChannelAccountStatus
+  schedulable?: boolean
+  priority?: number
+  weight?: number
+  rateMultiplier?: number
+  concurrencyLimit?: number
+  quotaLimit?: number
   remark?: string
   testModel?: string
   code?: string
