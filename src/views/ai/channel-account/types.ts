@@ -6,6 +6,8 @@ export interface ChannelOption {
   value: number
   channelType: Api.AiManage.ChannelType
   status: Api.AiManage.ChannelStatus
+  models: string[]
+  testModel: string
 }
 
 export type OpenAiOAuthDialogMode = 'create' | 'rebind'

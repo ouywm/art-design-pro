@@ -5,6 +5,7 @@ export interface SelectOption<T = string | number | boolean> {
 
 export const OPENAI_CHANNEL_TYPE: Api.AiManage.ChannelType = 1
 export const OAUTH_CREDENTIAL_TYPE = 'oauth'
+export const DEFAULT_CREDENTIALS_TEMPLATE = '{\n  "api_key": ""\n}'
 
 export const CHANNEL_ACCOUNT_STATUS_OPTIONS: SelectOption<Api.AiManage.ChannelAccountStatus>[] = [
   { label: '启用', value: 1 },
@@ -31,6 +32,38 @@ export const getChannelAccountStatusLabel = (value: Api.AiManage.ChannelAccountS
 
 export const getCredentialTypeLabel = (value: string) =>
   getOptionLabel(COMMON_CREDENTIAL_TYPE_OPTIONS, value, value || '-')
+
+export const getCredentialTemplate = (value: string) => {
+  switch (value.trim().toLowerCase()) {
+    case 'api_key':
+      return '{\n  "api_key": ""\n}'
+    case 'cookie':
+      return '{\n  "cookie": ""\n}'
+    case 'session':
+      return '{\n  "session": ""\n}'
+    case 'token':
+      return '{\n  "token": ""\n}'
+    case 'oauth':
+      return '{}'
+    default:
+      return '{\n  "value": ""\n}'
+  }
+}
+
+export const getCredentialPlaceholder = (value: string) => {
+  switch (value.trim().toLowerCase()) {
+    case 'api_key':
+      return '请输入 JSON，例如：{"api_key":"sk-xxx"} 或 {"api_keys":["sk-1","sk-2"]}'
+    case 'cookie':
+      return '请输入 JSON，例如：{"cookie":"key=value; key2=value2"}'
+    case 'session':
+      return '请输入 JSON，例如：{"session":"sess-xxx"}'
+    case 'token':
+      return '请输入 JSON，例如：{"token":"tk-xxx"}'
+    default:
+      return '请输入 JSON，例如：{"value":"..."}'
+  }
+}
 
 export const getChannelAccountStatusTagType = (value: Api.AiManage.ChannelAccountStatus) => {
   switch (value) {

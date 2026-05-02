@@ -95,7 +95,9 @@
       label: `${item.name} (${item.vendorCode})`,
       value: item.id,
       channelType: item.channelType,
-      status: item.status
+      status: item.status,
+      models: item.models || [],
+      testModel: item.testModel || ''
     }))
   }
 

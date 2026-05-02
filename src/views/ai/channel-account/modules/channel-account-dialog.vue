@@ -129,7 +129,21 @@
         </ElCol>
         <ElCol :span="8">
           <ElFormItem label="测速模型" prop="testModel">
-            <ElInput v-model="formData.testModel" placeholder="可选" />
+            <ElSelect
+              v-model="formData.testModel"
+              filterable
+              allow-create
+              default-first-option
+              clearable
+              placeholder="可选，优先选择渠道支持模型"
+            >
+              <ElOption
+                v-for="item in availableTestModelOptions"
+                :key="item"
+                :label="item"
+                :value="item"
+              />
+            </ElSelect>
           </ElFormItem>
         </ElCol>
       </ElRow>
@@ -231,7 +245,7 @@
           v-model="formData.credentialsText"
           type="textarea"
           :rows="5"
-          placeholder='请输入 JSON，例如：{"api_key":"sk-xxx"}'
+          :placeholder="credentialPlaceholder"
         />
       </ElFormItem>
 
@@ -307,8 +321,11 @@
   import {
     CHANNEL_ACCOUNT_STATUS_OPTIONS,
     COMMON_CREDENTIAL_TYPE_OPTIONS,
+    DEFAULT_CREDENTIALS_TEMPLATE,
     OPENAI_CHANNEL_TYPE,
-    OAUTH_CREDENTIAL_TYPE
+    OAUTH_CREDENTIAL_TYPE,
+    getCredentialPlaceholder,
+    getCredentialTemplate
   } from '../constants'
   import {
     buildDefaultOpenAiOAuthRedirectUri,
@@ -366,7 +383,7 @@
     channelId: undefined,
     name: '',
     credentialType: 'api_key',
-    credentialsText: '{\n  "api_key": ""\n}',
+    credentialsText: DEFAULT_CREDENTIALS_TEMPLATE,
     redirectUri: buildDefaultOpenAiOAuthRedirectUri(),
     oauthSessionId: '',
     oauthAuthUrl: '',
@@ -393,6 +410,20 @@
 
   const selectedChannel = computed(() =>
     channelOptions.value.find((item) => item.value === formData.channelId)
+  )
+  const availableTestModelOptions = computed(() => {
+    const values = new Set<string>()
+    if (selectedChannel.value?.testModel?.trim()) {
+      values.add(selectedChannel.value.testModel.trim())
+    }
+    for (const model of selectedChannel.value?.models || []) {
+      const text = model.trim()
+      if (text) values.add(text)
+    }
+    return Array.from(values)
+  })
+  const credentialPlaceholder = computed(() =>
+    isOpenAiOAuthFlow.value ? '' : getCredentialPlaceholder(formData.credentialType)
   )
 
   const isOpenAiChannel = computed(() => selectedChannel.value?.channelType === OPENAI_CHANNEL_TYPE)
@@ -477,6 +508,7 @@
   }
 
   const normalizeOptionalString = (value: string) => value.trim() || undefined
+  const normalizeCredentialType = (value: string) => value.trim().toLowerCase()
 
   const stringifyJson = (value: unknown, emptyAsBlank = true) => {
     if (value === undefined || value === null) return ''
@@ -845,6 +877,32 @@
       await initFormData()
       await nextTick()
       formRef.value?.clearValidate()
+    }
+  )
+
+  watch(
+    () => formData.credentialType,
+    (value, previousValue) => {
+      const normalized = normalizeCredentialType(value)
+      const previous = normalizeCredentialType(previousValue || '')
+
+      if (!normalized || normalized === previous) return
+      if (isOpenAiOAuthFlow.value) return
+
+      const previousTemplate = getCredentialTemplate(previous)
+      const nextTemplate = getCredentialTemplate(normalized)
+      if (!formData.credentialsText.trim() || formData.credentialsText === previousTemplate) {
+        formData.credentialsText = nextTemplate
+      }
+    }
+  )
+
+  watch(
+    () => formData.channelId,
+    () => {
+      if (!availableTestModelOptions.value.length) return
+      if (formData.testModel.trim()) return
+      formData.testModel = availableTestModelOptions.value[0]
     }
   )
 </script>
