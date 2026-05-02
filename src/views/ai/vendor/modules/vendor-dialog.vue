@@ -141,7 +141,7 @@
   const createDefaultFormData = (): FormModel => ({
     vendorCode: '',
     vendorName: '',
-    apiStyle: 'openai-compatible',
+    apiStyle: 'OpenAiCompatible',
     icon: '',
     description: '',
     baseUrl: '',

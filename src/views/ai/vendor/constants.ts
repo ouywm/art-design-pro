@@ -4,10 +4,10 @@ export interface SelectOption<T = string | number | boolean> {
 }
 
 export const API_STYLE_OPTIONS: SelectOption<Api.AiManage.ApiStyle>[] = [
-  { label: 'OpenAI Compatible', value: 'openai-compatible' },
-  { label: 'Anthropic Native', value: 'anthropic-native' },
-  { label: 'Gemini Native', value: 'gemini-native' },
-  { label: 'Ollama Native', value: 'ollama-native' }
+  { label: 'OpenAI Compatible', value: 'OpenAiCompatible' },
+  { label: 'Anthropic Native', value: 'AnthropicNative' },
+  { label: 'Gemini Native', value: 'GeminiNative' },
+  { label: 'Ollama Native', value: 'OllamaNative' }
 ]
 
 export const ENABLED_OPTIONS: SelectOption<boolean>[] = [
@@ -26,13 +26,13 @@ export const getEnabledLabel = (value: boolean) => getOptionLabel(ENABLED_OPTION
 
 export const getApiStyleTagType = (value: Api.AiManage.ApiStyle) => {
   switch (value) {
-    case 'openai-compatible':
+    case 'OpenAiCompatible':
       return 'success'
-    case 'anthropic-native':
+    case 'AnthropicNative':
       return 'warning'
-    case 'gemini-native':
+    case 'GeminiNative':
       return 'info'
-    case 'ollama-native':
+    case 'OllamaNative':
       return 'danger'
     default:
       return 'info'

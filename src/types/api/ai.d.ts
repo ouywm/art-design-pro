@@ -1,6 +1,6 @@
 declare namespace Api {
   namespace AiManage {
-    type ApiStyle = 'openai-compatible' | 'anthropic-native' | 'gemini-native' | 'ollama-native'
+    type ApiStyle = 'OpenAiCompatible' | 'AnthropicNative' | 'GeminiNative' | 'OllamaNative'
 
     type ChannelType = 1 | 2 | 3 | 4 | 5 | 6 | 7
     type ChannelStatus = 1 | 2 | 3 | 4
