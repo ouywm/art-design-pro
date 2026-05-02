@@ -1,6 +1,6 @@
 # AI 组件库全景调研报告
 
-> 调研时间：2026-03-20 调研目的：全面调研各框架（Vue / React / Svelte / Angular / 跨框架）的 AI 交互组件库，为项目选型提供参考数据来源：GitHub API 实时查询 + 网络搜索 + MCP 检索
+> 调研时间：2026-03-20 · 最后数据更新：2026-04-18 调研目的：全面调研各框架（Vue / React / Svelte / Angular / 跨框架）的 AI 交互组件库，为项目选型提供参考数据来源：GitHub API 实时查询 + 网络搜索 + MCP 检索
 
 ---
 
@@ -8,20 +8,23 @@
 
 | 组件库 | Stars | 框架 | 出品方 | 协议 | 类型 |
 | --- | --- | --- | --- | --- | --- |
-| [CopilotKit](https://github.com/CopilotKit/CopilotKit) | 29,564 | React + Angular | CopilotKit (YC) | MIT | 全栈 Agent 框架 |
-| [Vercel AI SDK](https://github.com/vercel/ai) | 22,798 | React / Vue / Svelte / Angular | Vercel | - | 数据层 SDK |
-| [HuggingFace chat-ui](https://github.com/huggingface/chat-ui) | 10,596 | SvelteKit | Hugging Face | Apache-2.0 | 完整应用 |
-| [assistant-ui](https://github.com/assistant-ui/assistant-ui) | 8,919 | React | 社区 (YC) | MIT | UI 组件库 |
-| [Ant Design X](https://github.com/ant-design/x) | 4,393 | React | 蚂蚁集团 | - | UI 组件库 |
-| [ChatUI 3.0](https://github.com/alibaba/ChatUI) | 4,323 | React | 阿里达摩院 | MIT | UI 组件库 |
-| [Deep Chat](https://github.com/OvidijusParsiunas/deep-chat) | 3,560 | **全框架** (Web Component) | 社区 | MIT | Web Component |
-| [prompt-kit](https://github.com/ibelick/prompt-kit) | 2,698 | React (shadcn) | 社区 | MIT | UI 组件库 |
-| [TanStack AI](https://github.com/TanStack/ai) | 2,431 | React（主）/ 跨框架 | TanStack | MIT | 数据层 SDK |
-| [TDesign AI Chat](https://github.com/Tencent/tdesign-vue-next) | 2,062 (主仓库) | Vue 3 | 腾讯 | MIT | UI 组件库 |
-| [Ant Design X Vue](https://github.com/wzc520pyfm/ant-design-x-vue) | 1,746 | Vue 3 | 社区 | MIT | UI 组件库 |
-| [Element Plus X](https://github.com/element-plus-x/Element-Plus-X) | 1,351 | Vue 3 | 社区 | MIT | UI 组件库 |
-| [AI Elements Vue](https://github.com/vuepont/ai-elements-vue) | 967 | Vue 3 (shadcn-vue) | 社区 | - | UI 组件库 |
-| [@llamaindex/chat-ui](https://github.com/run-llama/chat-ui) | 573 | React (shadcn) | LlamaIndex | MIT | UI 组件库 |
+| [CopilotKit](https://github.com/CopilotKit/CopilotKit) | 30,311 | React + Angular | CopilotKit (YC) | MIT | 全栈 Agent 框架 |
+| [Vercel AI SDK](https://github.com/vercel/ai) | 23,599 | React / Vue / Svelte / Angular | Vercel | - | 数据层 SDK |
+| [HuggingFace chat-ui](https://github.com/huggingface/chat-ui) | 10,656 | SvelteKit | Hugging Face | Apache-2.0 | 完整应用 |
+| [assistant-ui](https://github.com/assistant-ui/assistant-ui) | 9,538 | React | 社区 (YC) | MIT | UI 组件库 |
+| [Ant Design X](https://github.com/ant-design/x) | 4,473 | React | 蚂蚁集团 | - | UI 组件库 |
+| [ChatUI 3.0](https://github.com/alibaba/ChatUI) | 4,363 | React | 阿里达摩院 | MIT | UI 组件库 |
+| [Deep Chat](https://github.com/OvidijusParsiunas/deep-chat) | 3,585 | **全框架** (Web Component) | 社区 | MIT | Web Component |
+| [prompt-kit](https://github.com/ibelick/prompt-kit) | 2,751 | React (shadcn) | 社区 | MIT | UI 组件库 |
+| [TanStack AI](https://github.com/TanStack/ai) | 2,560 | React（主）/ 跨框架 | TanStack | MIT | 数据层 SDK |
+| [TDesign AI Chat](https://github.com/Tencent/tdesign-vue-next) | 2,068 (主仓库) | Vue 3 | 腾讯 | MIT | UI 组件库 |
+| [Lobe UI](https://github.com/lobehub/lobe-ui) | 1,925 | React | LobeHub | MIT | UI 组件库 (AIGC) |
+| [Ant Design X Vue](https://github.com/wzc520pyfm/ant-design-x-vue) | 1,770 | Vue 3 | 社区 | MIT | UI 组件库 |
+| [Element Plus X](https://github.com/element-plus-x/Element-Plus-X) | 1,388 | Vue 3 | 社区 | MIT | UI 组件库 |
+| [AI Elements Vue](https://github.com/vuepont/ai-elements-vue) | 1,013 | Vue 3 (shadcn-vue) | 社区 | - | UI 组件库 |
+| [shadcn-chatbot-kit](https://github.com/Blazity/shadcn-chatbot-kit) | 778 | React (shadcn) | Blazity | MIT | UI 组件库 |
+| [assistant-ui/tool-ui](https://github.com/assistant-ui/tool-ui) | 640 | React | assistant-ui | MIT | 工具 UI 原语 |
+| [@llamaindex/chat-ui](https://github.com/run-llama/chat-ui) | 578 | React (shadcn) | LlamaIndex | MIT | UI 组件库 |
 
 ---
 
@@ -32,11 +35,11 @@
 | 属性         | 详情                                                              |
 | ------------ | ----------------------------------------------------------------- |
 | GitHub       | [CopilotKit/CopilotKit](https://github.com/CopilotKit/CopilotKit) |
-| Stars        | 29,564                                                            |
-| Forks        | 3,834                                                             |
+| Stars        | 30,311                                                            |
+| Forks        | 3,917                                                             |
 | 协议         | MIT                                                               |
 | npm 周下载量 | ~126,000 (`@copilotkit/react-ui`)                                 |
-| 最后更新     | 2026-03-19                                                        |
+| 最后更新     | 2026-04-18                                                        |
 | 官网         | https://www.copilotkit.ai                                         |
 
 #### 核心特性
@@ -73,10 +76,10 @@
 | 属性     | 详情                                                                      |
 | -------- | ------------------------------------------------------------------------- |
 | GitHub   | [assistant-ui/assistant-ui](https://github.com/assistant-ui/assistant-ui) |
-| Stars    | 8,919                                                                     |
-| Forks    | 928                                                                       |
+| Stars    | 9,538                                                                     |
+| Forks    | 979                                                                       |
 | 协议     | MIT                                                                       |
-| 最后更新 | 2026-03-19                                                                |
+| 最后更新 | 2026-04-18                                                                |
 | 官网     | https://www.assistant-ui.com                                              |
 
 #### 核心特性
@@ -112,8 +115,8 @@
 | 属性       | 详情                                            |
 | ---------- | ----------------------------------------------- |
 | GitHub     | [ant-design/x](https://github.com/ant-design/x) |
-| Stars      | 4,393                                           |
-| Forks      | 1,041                                           |
+| Stars      | 4,473                                           |
+| Forks      | 1,072                                           |
 | 框架       | React 18+                                       |
 | 最新大版本 | 2.0                                             |
 | 官网       | https://x.ant.design                            |
@@ -140,8 +143,8 @@
 | 属性   | 详情                                                |
 | ------ | --------------------------------------------------- |
 | GitHub | [alibaba/ChatUI](https://github.com/alibaba/ChatUI) |
-| Stars  | 4,323                                               |
-| Forks  | 419                                                 |
+| Stars  | 4,363                                               |
+| Forks  | 420                                                 |
 | 协议   | MIT                                                 |
 | 框架   | React                                               |
 
@@ -162,10 +165,10 @@
 | 属性     | 详情                                                        |
 | -------- | ----------------------------------------------------------- |
 | GitHub   | [ibelick/prompt-kit](https://github.com/ibelick/prompt-kit) |
-| Stars    | 2,698                                                       |
-| Forks    | 145                                                         |
+| Stars    | 2,751                                                       |
+| Forks    | 149                                                         |
 | 协议     | MIT                                                         |
-| 最后更新 | 2026-03-18                                                  |
+| 最后更新 | 2026-03-12                                                  |
 | 官网     | https://www.prompt-kit.com                                  |
 
 #### 核心特性
@@ -187,10 +190,10 @@
 | 属性     | 详情                                                      |
 | -------- | --------------------------------------------------------- |
 | GitHub   | [run-llama/chat-ui](https://github.com/run-llama/chat-ui) |
-| Stars    | 573                                                       |
+| Stars    | 578                                                       |
 | Forks    | 56                                                        |
 | 协议     | MIT                                                       |
-| 最后更新 | 2026-03-16                                                |
+| 最后更新 | 2025-12-16                                                |
 
 #### 核心特性
 
@@ -199,6 +202,21 @@
 - 支持自定义 LLM 输出渲染器
 - 与 Vercel AI 后端集成
 - 代码高亮 (highlight.js) + LaTeX (KaTeX)
+
+> ⚠️ 注意：最后提交为 2025-12-16，近期维护活跃度较低。
+
+---
+
+### 其他活跃的 React AI 库（补录）
+
+| 组件库 | Stars | 说明 |
+| --- | --: | --- |
+| [Lobe UI](https://github.com/lobehub/lobe-ui) | 1,925 | LobeHub 出品，**专为 AIGC 设计的 React 组件库**；配套 Lobe Chat 生态。官网：https://ui.lobehub.com |
+| [nlux](https://github.com/nlkitai/nlux) | 1,373 | "Powerful Conversational AI JavaScript Library" — 支持 React + Vanilla JS，集成 LangChain / HuggingFace。⚠️ 最后更新 2025-11-25 |
+| [ant-design/pro-chat](https://github.com/ant-design/pro-chat) | 900 | 蚂蚁 **旧版** LLM Chat 组件库。⚠️ 最后更新 2024-11-26，**推荐迁移到 ant-design/x** |
+| [shadcn-chatbot-kit](https://github.com/Blazity/shadcn-chatbot-kit) | 778 | Blazity 出品，shadcn/ui 风格的 chatbot 组件库。2024-10 创建，2026 年保持活跃 |
+| [assistant-ui/tool-ui](https://github.com/assistant-ui/tool-ui) | 640 | assistant-ui 团队**新开副项目**（2025-11 创建），专注 Tool Calling UI 原语 |
+| [superinterface](https://github.com/supercorp-ai/superinterface) | 334 | Supercorp 出品的 AI assistants 集成库，快速为网站添加 AI 能力 |
 
 ---
 
@@ -211,11 +229,11 @@
 | 属性     | 详情                                                                              |
 | -------- | --------------------------------------------------------------------------------- |
 | GitHub   | [element-plus-x/Element-Plus-X](https://github.com/element-plus-x/Element-Plus-X) |
-| Stars    | 1,351                                                                             |
-| Forks    | 189                                                                               |
+| Stars    | 1,388                                                                             |
+| Forks    | 191                                                                               |
 | 协议     | MIT                                                                               |
 | npm 包名 | `vue-element-plus-x`                                                              |
-| 最后更新 | 2026-03-19                                                                        |
+| 最后更新 | 2026-04-05                                                                        |
 | 官网     | https://element-plus-x.com                                                        |
 
 #### 核心特性
@@ -257,11 +275,11 @@ app.use(ElementPlusX)
 | 属性     | 详情                                                                          |
 | -------- | ----------------------------------------------------------------------------- |
 | GitHub   | [wzc520pyfm/ant-design-x-vue](https://github.com/wzc520pyfm/ant-design-x-vue) |
-| Stars    | 1,746                                                                         |
+| Stars    | 1,770                                                                         |
 | Forks    | 126                                                                           |
 | 协议     | MIT                                                                           |
 | npm 包名 | `ant-design-x-vue`                                                            |
-| 最后更新 | 2026-03-17                                                                    |
+| 最后更新 | 2026-04-08                                                                    |
 | 官网     | https://antd-x-vue.com                                                        |
 
 #### 核心特性
@@ -311,11 +329,12 @@ npm install ant-design-vue ant-design-x-vue
 | 属性     | 详情                                                                              |
 | -------- | --------------------------------------------------------------------------------- |
 | GitHub   | [Tencent/tdesign-vue-next](https://github.com/Tencent/tdesign-vue-next)（主仓库） |
-| Stars    | 2,062（主仓库）                                                                   |
-| Forks    | 602                                                                               |
+| Stars    | 2,068（主仓库）                                                                   |
+| Forks    | 604                                                                               |
 | 协议     | MIT                                                                               |
 | npm 包名 | `@tdesign-vue-next/chat`                                                          |
 | 最新版本 | 0.5.0                                                                             |
+| 最后更新 | 2026-04-16                                                                        |
 | 官网     | https://tdesign.tencent.com/chat                                                  |
 
 #### 核心特性
@@ -360,11 +379,11 @@ app.use(TDesignChat)
 | 属性     | 详情                                                                  |
 | -------- | --------------------------------------------------------------------- |
 | GitHub   | [vuepont/ai-elements-vue](https://github.com/vuepont/ai-elements-vue) |
-| Stars    | 967                                                                   |
-| Forks    | 90                                                                    |
+| Stars    | 1,013                                                                 |
+| Forks    | 89                                                                    |
 | 协议     | -                                                                     |
 | 创建时间 | 2025-08-27                                                            |
-| 最后更新 | 2026-03-19                                                            |
+| 最后更新 | 2026-04-07                                                            |
 | 基础依赖 | shadcn-vue                                                            |
 
 #### 核心特性
@@ -391,12 +410,27 @@ npx shadcn-vue@latest add https://registry.ai-elements-vue.com/all.json
 
 ### Vue 轻量级 / 独立聊天组件
 
-| 组件名 | GitHub | Stars | 说明 |
-| --- | --- | --- | --- |
-| vue-bot-ui | [juzser/vue-bot-ui](https://github.com/juzser/vue-bot-ui) | 227 | 可定制的聊天机器人 UI，支持表情、附件 |
-| vue3-beautiful-chat | [Sitronik/vue3-beautiful-chat](https://github.com/Sitronik/vue3-beautiful-chat) | 129 | 类 Intercom 风格聊天窗口 |
-| vue3-chatgpt-ai | [mustafacagri/vue3-chatgpt-ai](https://github.com/mustafacagri/vue3-chatgpt-ai) | 117 | ChatGPT 集成，Vue 3 + Vuetify 3 |
-| @aivue/chatbot | [npm](https://www.npmjs.com/package/@aivue/chatbot) | - | 多 Provider 支持（OpenAI/Claude/Gemini） |
+| 组件名 | GitHub | Stars | 最后更新 | 说明 |
+| --- | --- | --: | --- | --- |
+| vue-bot-ui | [juzser/vue-bot-ui](https://github.com/juzser/vue-bot-ui) | 228 | 2024-09-18 | 可定制的聊天机器人 UI，支持表情、附件 |
+| vue3-beautiful-chat | [Sitronik/vue3-beautiful-chat](https://github.com/Sitronik/vue3-beautiful-chat) | 129 | 2025-01-30 | 类 Intercom 风格聊天窗口 |
+| vue3-chatgpt-ai | [mustafacagri/vue3-chatgpt-ai](https://github.com/mustafacagri/vue3-chatgpt-ai) | 117 | 2024-06-22 | ChatGPT 集成，Vue 3 + Vuetify 3 |
+| @aivue/chatbot | [npm](https://www.npmjs.com/package/@aivue/chatbot) | - | - | 多 Provider 支持（OpenAI/Claude/Gemini） |
+
+> ⚠️ 此列三个仓库最后提交均在半年以上，维护活跃度较低，适合原型/学习参考而非生产使用。
+
+---
+
+### Vue AI 完整应用 / 模板参考（补录）
+
+> 这些不是"组件库"，而是 **基于 Vue 3 的完整 AI 应用或起步模板**，对于参考 Vue 生态如何构建 AI 应用非常有价值。
+
+| 仓库 | Stars | 框架 | 最后更新 | 说明 |
+| --- | --: | --- | --- | --- |
+| [NitroRCr/AIaW](https://github.com/NitroRCr/AIaW) | 1,797 | Vue 3 | 2026-04-15 | **AI as Workspace** — 优雅的 AI 对话客户端（完整应用），多模型支持，Vue 3 + Quasar |
+| [chatgpt-web-dev/chatgpt-web](https://github.com/chatgpt-web-dev/chatgpt-web) | 1,865 | Vue 3 | 2026-03-04 | 基于 Express + Vue 3 + Naive UI 的 ChatGPT Web UI |
+| [pdsuwwz/chatgpt-vue3-light-mvp](https://github.com/pdsuwwz/chatgpt-vue3-light-mvp) | 548 | Vue 3 + Naive UI | 2026-03-01 | Chat Bot 单轮对话 Web 端 **MVP 原型模板**，Vue 3 + Vite 7 + TS + Pinia v3 |
+| [nuxt-ui-templates/chat](https://github.com/nuxt-ui-templates/chat) | 313 | Nuxt | 2026-04-17 | **Nuxt 官方 AI Chatbot 模板**（Nuxt UI + Vercel AI SDK） |
 
 ---
 
@@ -407,11 +441,12 @@ npx shadcn-vue@latest add https://registry.ai-elements-vue.com/all.json
 | 属性       | 详情                                               |
 | ---------- | -------------------------------------------------- |
 | GitHub     | [vercel/ai](https://github.com/vercel/ai)          |
-| Stars      | 22,798                                             |
-| Forks      | 4,016                                              |
+| Stars      | 23,599                                             |
+| Forks      | 4,199                                              |
 | npm 包名   | `@ai-sdk/vue` / `@ai-sdk/react` / `@ai-sdk/svelte` |
 | 最新大版本 | AI SDK 6                                           |
 | 月下载量   | 2000 万+                                           |
+| 最后更新   | 2026-04-17                                         |
 | 官网       | https://ai-sdk.dev                                 |
 
 #### 核心特性
@@ -448,10 +483,10 @@ npm install @ai-sdk/vue
 | 属性     | 详情                                                                          |
 | -------- | ----------------------------------------------------------------------------- |
 | GitHub   | [OvidijusParsiunas/deep-chat](https://github.com/OvidijusParsiunas/deep-chat) |
-| Stars    | 3,560                                                                         |
-| Forks    | 429                                                                           |
+| Stars    | 3,585                                                                         |
+| Forks    | 433                                                                           |
 | 协议     | MIT                                                                           |
-| 最后更新 | 2026-03-19                                                                    |
+| 最后更新 | 2026-04-17                                                                    |
 | 官网     | https://deepchat.dev                                                          |
 
 #### 核心特性
@@ -498,11 +533,11 @@ npm install deep-chat
 | 属性     | 详情                                          |
 | -------- | --------------------------------------------- |
 | GitHub   | [TanStack/ai](https://github.com/TanStack/ai) |
-| Stars    | 2,431                                         |
-| Forks    | 151                                           |
+| Stars    | 2,560                                         |
+| Forks    | 180                                           |
 | 协议     | MIT                                           |
 | 创建时间 | 2025-10-08                                    |
-| 最后更新 | 2026-03-19                                    |
+| 最后更新 | 2026-04-18                                    |
 | 官网     | https://tanstack.com/ai                       |
 
 #### 核心特性
@@ -579,11 +614,11 @@ npm install deep-chat
 | 属性     | 详情                                                          |
 | -------- | ------------------------------------------------------------- |
 | GitHub   | [huggingface/chat-ui](https://github.com/huggingface/chat-ui) |
-| Stars    | 10,596                                                        |
-| Forks    | 1,611                                                         |
+| Stars    | 10,656                                                        |
+| Forks    | 1,618                                                         |
 | 协议     | Apache-2.0                                                    |
 | 框架     | SvelteKit                                                     |
-| 最后更新 | 2026-03-19                                                    |
+| 最后更新 | 2026-04-17                                                    |
 
 #### 核心特性
 
@@ -615,7 +650,7 @@ npm install deep-chat
 
 | 维度 | CopilotKit | assistant-ui | Deep Chat | Vercel AI SDK | Element Plus X | Ant Design X Vue | TDesign Chat |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Stars | 29,564 | 8,919 | 3,560 | 22,798 | 1,351 | 1,746 | 2,062 |
+| Stars | 30,311 | 9,538 | 3,585 | 23,599 | 1,388 | 1,770 | 2,068 |
 | 框架 | React | React | 全框架 | 全框架 | Vue 3 | Vue 3 | Vue 3 |
 | 提供 UI | 是 | 是 | 是 | 否(仅数据层) | 是 | 是 | 是 |
 | 流式渲染 | 是 | 是 | 是 | 是 | 是 | 是 | 是 |
@@ -645,7 +680,7 @@ npm install deep-chat
 
 缺点：
 - 社区驱动，非 Element Plus 官方
-- Stars 相对较少（1,351），生态仍在成长
+- Stars 相对较少（1,388），生态仍在成长
 
 安装：npm install vue-element-plus-x
 ```
@@ -655,7 +690,7 @@ npm install deep-chat
 ```
 优点：
 - Web Component 实现，Vue 3 可直接使用
-- 3,560 Stars，社区成熟
+- 3,585 Stars，社区成熟
 - 一行代码集成，开发速度最快
 - 内置多 Provider 对接
 
@@ -670,7 +705,7 @@ npm install deep-chat
 
 ```
 优点：
-- Stars 最多（22,798），生态最成熟
+- Stars 最多（23,599），生态最成熟
 - 多 Provider 支持，模型切换方便
 - UI 完全自定义，与 Element Plus 风格统一
 
@@ -736,3 +771,84 @@ npm install deep-chat
 - [CopilotKit](https://www.copilotkit.ai) | [assistant-ui](https://www.assistant-ui.com) | [Vercel AI SDK](https://ai-sdk.dev)
 - [TDesign AI Chat](https://tdesign.tencent.com/chat) | [Element Plus X](https://element-plus-x.com) | [Deep Chat](https://deepchat.dev)
 - [prompt-kit](https://www.prompt-kit.com) | [TanStack AI](https://tanstack.com/ai) | [Ant Design X](https://x.ant.design)
+
+---
+
+## 十、本次更新日志（2026-04-18）
+
+较 2026-03-20 首次调研一个月的 Stars 变化：
+
+| 组件库              | 旧 Stars | 新 Stars |     增长 | 活跃度  |
+| ------------------- | -------: | -------: | -------: | :-----: |
+| Vercel AI SDK       |   22,798 |   23,599 | **+801** |   🔥    |
+| CopilotKit          |   29,564 |   30,311 | **+747** |   🔥    |
+| assistant-ui        |    8,919 |    9,538 | **+619** |   🔥    |
+| TanStack AI         |    2,431 |    2,560 |     +129 |   🔥    |
+| Ant Design X        |    4,393 |    4,473 |      +80 |  活跃   |
+| HuggingFace chat-ui |   10,596 |   10,656 |      +60 |  活跃   |
+| prompt-kit          |    2,698 |    2,751 |      +53 |  活跃   |
+| AI Elements Vue     |      967 |    1,013 |      +46 |  活跃   |
+| alibaba ChatUI      |    4,323 |    4,363 |      +40 |  活跃   |
+| Element Plus X      |    1,351 |    1,388 |      +37 |  活跃   |
+| Deep Chat           |    3,560 |    3,585 |      +25 |  活跃   |
+| Ant Design X Vue    |    1,746 |    1,770 |      +24 |  活跃   |
+| TDesign Vue Next    |    2,062 |    2,068 |       +6 |  平稳   |
+| @llamaindex/chat-ui |      573 |      578 |       +5 | ⚠️ 停滞 |
+| vue-bot-ui          |      227 |      228 |       +1 | ⚠️ 停滞 |
+| vue3-beautiful-chat |      129 |      129 |        0 | ⚠️ 停滞 |
+| vue3-chatgpt-ai     |      117 |      117 |        0 | ⚠️ 停滞 |
+
+**观察**
+
+- 头部三强（CopilotKit / Vercel AI / assistant-ui）月增长均在 600+，生态继续集中
+- Vue 生态三强（Element Plus X / Ant Design X Vue / TDesign Chat）均保持活跃更新
+- `@llamaindex/chat-ui` 最后提交停留在 2025-12-16，不建议新项目采用
+- Vue 轻量级独立 chat 组件（vue-bot-ui、vue3-beautiful-chat、vue3-chatgpt-ai）均长期未更新，仅适合学习参考
+
+### 本次新补录的组件库（原调研遗漏）
+
+使用 GitHub Search API + WebSearch + MCP 三路交叉搜索，发现以下原调研遗漏或近期新增的库：
+
+**React 生态新增 6 个**
+
+| 组件库 | Stars | 类型 | 说明 |
+| --- | --: | --- | --- |
+| [Lobe UI](https://github.com/lobehub/lobe-ui) | 1,925 | AIGC 组件库 | LobeHub 出品，配套 Lobe Chat 生态 |
+| [nlux](https://github.com/nlkitai/nlux) | 1,373 | React + Vanilla JS | 对话式 AI JS 库（⚠️ 2025-11 后停更） |
+| [ant-design/pro-chat](https://github.com/ant-design/pro-chat) | 900 | 旧版 Chat 组件 | 蚂蚁旧版，已被 ant-design/x 取代 |
+| [shadcn-chatbot-kit](https://github.com/Blazity/shadcn-chatbot-kit) | 778 | shadcn 风格 | Blazity 出品，2024-10 创建持续活跃 |
+| [assistant-ui/tool-ui](https://github.com/assistant-ui/tool-ui) | 640 | Tool UI 原语 | **真正新冒出**（2025-11-03 创建） |
+| [superinterface](https://github.com/supercorp-ai/superinterface) | 334 | Assistants 集成 | Supercorp 出品 |
+
+**Vue 生态新增 4 个应用/模板**
+
+| 仓库 | Stars | 类型 | 说明 |
+| --- | --: | --- | --- |
+| [NitroRCr/AIaW](https://github.com/NitroRCr/AIaW) | 1,797 | Vue 3 完整应用 | AI Workspace 客户端 |
+| [chatgpt-web-dev/chatgpt-web](https://github.com/chatgpt-web-dev/chatgpt-web) | 1,865 | Vue 3 完整应用 | Express + Naive UI |
+| [pdsuwwz/chatgpt-vue3-light-mvp](https://github.com/pdsuwwz/chatgpt-vue3-light-mvp) | 548 | Vue 3 MVP 模板 | Vue 3 + Vite 7 + Naive UI |
+| [nuxt-ui-templates/chat](https://github.com/nuxt-ui-templates/chat) | 313 | Nuxt 官方模板 | Nuxt UI + Vercel AI SDK |
+
+### 深度搜索结论：2026 年**真正新出**的 UI 组件库极少
+
+本次使用以下方式深度搜索：
+
+1. **GitHub Search API**（多关键词组合）：
+   - `created:>2026-01-01 stars:>100 ai chat ui` → 命中 5 个，**仅 EKKOLearnAI/hermes-web-ui (876⭐) 勉强相关，其余非 UI 组件库**
+   - `created:>2025-09-01 stars:>200 chatbot component` → 命中 2 个（lobe-ui、shadcn-chatbot-kit），本轮已补录
+   - `created:>2025-10-01 stars:>300` + AI chat 关键词 → 无新命中
+2. **WebSearch**：[DEV Community 2026 AI Chat UI Library 评测](https://dev.to/alexander_lukashov/i-evaluated-every-ai-chat-ui-library-in-2026-heres-what-i-found-and-what-i-built-4p10) 提到的全部库已覆盖
+3. **Context7 MCP**：主要返回已入选大库的文档，无新库信息
+
+**结论**：AI 组件库市场已明显**集中化**，头部（CopilotKit / Vercel AI / assistant-ui）吸走绝大多数新社区关注，2026 年创建（`created_at > 2026-01-01`）且 Stars 超过 300 的纯 UI 组件库目前几乎空白。唯一明显的"新势力"是 **assistant-ui/tool-ui**（2025-11-03 创建，2026 年起势），专注 Tool Calling UI 原语。
+
+### 附：社区热门完整 AI 应用（非组件库，参考实现）
+
+这些是**完整应用**而非组件库，但常被团队作为"参考实现"或"二次开发基座"：
+
+| 仓库 | Stars | 技术栈 | 状态 |
+| --- | --: | --- | :-: |
+| [lobehub/lobehub](https://github.com/lobehub/lobehub) (原 lobe-chat) | 75,323 | Next.js/TS | 🔥 活跃 |
+| [danny-avila/LibreChat](https://github.com/danny-avila/LibreChat) | 35,746 | TS (Node + React) | 🔥 活跃 |
+| [mckaywrigley/chatbot-ui](https://github.com/mckaywrigley/chatbot-ui) | 33,171 | Next.js/TS | ⚠️ 2024-08 后停更 |
+| [huggingface/chat-ui](https://github.com/huggingface/chat-ui) | 10,656 | SvelteKit | 活跃（已在正文） |
