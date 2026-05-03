@@ -310,6 +310,13 @@
       "requestLog": "Request Log",
       "dailyStats": "Daily Stats"
     },
+    "scheduler": {
+      "title": "Scheduler",
+      "job": "Jobs",
+      "run": "Runs",
+      "monitor": "Monitor",
+      "instance": "Instances"
+    },
     "system": {
       "title": "System Settings",
       "user": "User Manage",
