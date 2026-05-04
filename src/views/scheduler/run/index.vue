@@ -79,11 +79,12 @@
     data,
     loading,
     pagination,
-    searchParams,
     getData,
     handleSizeChange,
     handleCurrentChange,
-    refreshData
+    refreshData,
+    replaceSearchParams,
+    resetSearchParams
   } = useTable({
     core: {
       apiFn: fetchGetRunList,
@@ -166,9 +167,8 @@
   })
 
   const handleSearch = (params: SearchFormModel) => {
-    Object.assign(searchParams, flattenSearch(params))
-    // 清掉 dateRange 这个仅前端用的字段(避免发到后端)
-    ;(searchParams as Record<string, unknown>).dateRange = undefined
+    // 把 dateRange 拍平为 startTime/endTime,且不发 dateRange 字段
+    replaceSearchParams(flattenSearch(params))
     getData()
   }
 
@@ -181,9 +181,7 @@
       instance: undefined,
       dateRange: null
     })
-    Object.assign(searchParams, flattenSearch(searchForm.value))
-    ;(searchParams as Record<string, unknown>).dateRange = undefined
-    getData()
+    resetSearchParams()
   }
 
   const showDetail = (row: RunListItem) => {
