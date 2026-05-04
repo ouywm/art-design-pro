@@ -314,8 +314,7 @@
       "title": "Scheduler",
       "job": "Jobs",
       "run": "Runs",
-      "monitor": "Monitor",
-      "instance": "Instances"
+      "monitor": "Monitor"
     },
     "system": {
       "title": "System Settings",

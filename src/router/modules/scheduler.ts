@@ -50,17 +50,6 @@ export const schedulerRoutes: AppRouteRecord = {
         keepAlive: true,
         roles: ['R_SUPER', 'R_ADMIN']
       }
-    },
-    {
-      path: 'instance',
-      name: 'SchedulerInstance',
-      component: '/scheduler/instance',
-      meta: {
-        title: 'menus.scheduler.instance',
-        icon: 'ri:server-line',
-        keepAlive: true,
-        roles: ['R_SUPER', 'R_ADMIN']
-      }
     }
   ]
 }

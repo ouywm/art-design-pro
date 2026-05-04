@@ -28,9 +28,6 @@
           <ElDescriptionsItem v-if="detail.uniqueKey" label="去重 Key" :span="2">
             <span class="trace-id">{{ detail.uniqueKey }}</span>
           </ElDescriptionsItem>
-          <ElDescriptionsItem v-if="detail.shardTotal" label="分片">
-            {{ detail.shardIndex ?? '-' }} / {{ detail.shardTotal }}
-          </ElDescriptionsItem>
         </ElDescriptions>
 
         <h4 class="run-detail__title">执行时间线</h4>

@@ -1,11 +1,9 @@
 import request from '@/utils/http'
 
-// 列表接口:把前端 1-indexed page 转成后端 0-indexed
 export function fetchGetJobList(params: Api.Scheduler.JobQueryParams) {
-  const { page = 1, size = 20, ...rest } = params
   return request.get<Api.Scheduler.JobList>({
     url: '/api/scheduler/jobs',
-    params: { page: page - 1, size, ...rest }
+    params
   })
 }
 
@@ -48,6 +46,31 @@ export function fetchTriggerJob(id: number, params: Api.Scheduler.TriggerJobPara
     params
   })
 }
+
+// ============ 批量操作(v3 新增) ============
+
+export function fetchBatchToggleJobs(params: Api.Scheduler.BatchToggleParams) {
+  return request.post<Api.Scheduler.BatchResultVo>({
+    url: '/api/scheduler/jobs/batch/toggle',
+    params
+  })
+}
+
+export function fetchBatchTriggerJobs(params: Api.Scheduler.BatchIdsParams) {
+  return request.post<Api.Scheduler.BatchResultVo>({
+    url: '/api/scheduler/jobs/batch/trigger',
+    params
+  })
+}
+
+export function fetchBatchDeleteJobs(params: Api.Scheduler.BatchIdsParams) {
+  return request.del<Api.Scheduler.BatchResultVo>({
+    url: '/api/scheduler/jobs/batch',
+    params
+  })
+}
+
+// ============ 依赖 ============
 
 export function fetchGetJobDependencies(id: number) {
   return request.get<Api.Scheduler.JobDependencyListVo>({

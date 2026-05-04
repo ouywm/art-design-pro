@@ -1,24 +1,12 @@
 declare namespace Api {
   namespace Scheduler {
-    // ============ 枚举(后端 Rust serde 默认 PascalCase 序列化) ============
+    // ============ 枚举(后端 Rust serde PascalCase 序列化) ============
 
     type ScheduleType = 'Cron' | 'FixedRate' | 'FixedDelay' | 'Oneshot'
 
     type BlockingStrategy = 'Serial' | 'Discard' | 'Override'
 
     type MisfireStrategy = 'FireNow' | 'Ignore' | 'Reschedule'
-
-    type RouteStrategy =
-      | 'First'
-      | 'Last'
-      | 'RoundRobin'
-      | 'Random'
-      | 'ConsistentHash'
-      | 'LeastFrequently'
-      | 'LeastRecently'
-      | 'Failover'
-      | 'Busyover'
-      | 'ShardingBroadcast'
 
     type RetryBackoff = 'Exponential' | 'Linear' | 'Fixed'
 
@@ -33,6 +21,7 @@ declare namespace Api {
       | 'Canceled'
       | 'Discarded'
 
+    // ScriptEngine 仍用小写(后端 sea_orm string_value="rhai"/"lua")
     type ScriptEngine = 'rhai' | 'lua'
 
     type DependencyOnState = 'Succeeded' | 'Failed' | 'Always'
@@ -59,7 +48,6 @@ declare namespace Api {
       cronExpr: string | null
       enabled: boolean
       blocking: BlockingStrategy
-      routeStrategy: RouteStrategy
       // 运行时(后端 join 得出,只读)
       nextFireAt: string | null
       lastRunState: RunState | null
@@ -85,11 +73,9 @@ declare namespace Api {
       enabled: boolean
       blocking: BlockingStrategy
       misfire: MisfireStrategy
-      routeStrategy: RouteStrategy
       timeoutMs: number
       retryMax: number
       retryBackoff: RetryBackoff
-      shardTotal: number | null
       uniqueKey: string | null
       version: number
       createdBy: number | null
@@ -132,11 +118,9 @@ declare namespace Api {
       enabled?: boolean
       blocking?: BlockingStrategy
       misfire?: MisfireStrategy
-      routeStrategy?: RouteStrategy
       timeoutMs?: number
       retryMax?: number
       retryBackoff?: RetryBackoff
-      shardTotal?: number
       uniqueKey?: string
       tenantId?: number
     }
@@ -157,11 +141,9 @@ declare namespace Api {
       enabled?: boolean
       blocking?: BlockingStrategy
       misfire?: MisfireStrategy
-      routeStrategy?: RouteStrategy
       timeoutMs?: number
       retryMax?: number
       retryBackoff?: RetryBackoff
-      shardTotal?: number | null
       uniqueKey?: string | null
     }
 
@@ -177,18 +159,38 @@ declare namespace Api {
       name: string
     }
 
+    // ============ 批量操作(POST /scheduler/jobs/batch/*) ============
+
+    interface BatchToggleParams {
+      ids: number[] // 1-100
+      enabled: boolean
+    }
+
+    interface BatchIdsParams {
+      ids: number[] // 1-100
+    }
+
+    interface BatchFailure {
+      id: number
+      reason: string
+    }
+
+    interface BatchResultVo {
+      successCount: number
+      failedCount: number
+      failures: BatchFailure[]
+    }
+
     // ============ Run ============
 
     interface JobRunVo {
       id: number
       jobId: number
       traceId: string
-      shardIndex: number | null
-      shardTotal: number | null
       triggerType: TriggerType
       triggerBy: number | null
       state: RunState
-      instance: string | null
+      instance: string | null // hostname:pid(审计用,单实例下无路由含义)
       scheduledAt: string
       startedAt: string | null
       finishedAt: string | null
@@ -217,7 +219,7 @@ declare namespace Api {
       size?: number
     }
 
-    // ============ 监控 ============
+    // ============ 监控(GET /scheduler/metrics) ============
 
     interface MetricsSnapshot {
       triggersCron: number
@@ -233,15 +235,6 @@ declare namespace Api {
       runsDiscarded: number
       runsEnqueuedOrRunning: number
       runsInFlight: number
-    }
-
-    interface JobInstance {
-      id: string
-      ip: string | null
-      lastSeen: string
-      runningJobs: number
-      isDispatcher: boolean
-      createTime: string
     }
 
     // ============ 依赖 ============
@@ -278,33 +271,38 @@ declare namespace Api {
 
     interface ScriptDryrunResult {
       ok: boolean
-      result?: unknown
-      error?: string
+      result: unknown | null
+      error: string | null
       durationMs: number
-      logs: string[]
+      logs: string[] // ["[INFO] xxx", "[WARN] yyy"]
     }
 
-    // ============ 统计(GET /scheduler/stats/...) ============
+    // ============ 统计(GET /scheduler/stats/*) ============
 
     type StatsPeriod = '1h' | '24h' | '7d' | '30d'
 
-    interface StatsPoint {
-      ts: string
-      triggered: number
-      succeeded: number
-      failed: number
-      avgDurationMs: number | null
+    interface TopFailedJob {
+      jobId: number
+      name: string
+      failCount: number
     }
 
     interface StatsOverviewVo {
+      totalJobs: number
+      enabledJobs: number
       triggeredCount: number
       succeededCount: number
       failedCount: number
-      successRate: number | null
-      avgDurationMs: number | null
-      p50: number | null
-      p99: number | null
-      points: StatsPoint[]
+      successRate: number | null // 0.0-1.0;触发数为 0 时 null
+      inFlightCount: number
+      topFailedJobs: TopFailedJob[] // 最多 5 条
+    }
+
+    interface JobStatsPoint {
+      ts: string // 桶起始时间
+      total: number
+      succeeded: number
+      failed: number
     }
 
     interface JobStatsVo {
@@ -316,7 +314,11 @@ declare namespace Api {
       avgDurationMs: number | null
       p50: number | null
       p99: number | null
-      points: StatsPoint[]
+      points: JobStatsPoint[]
+    }
+
+    interface StatsQueryParams {
+      period?: StatsPeriod
     }
   }
 }

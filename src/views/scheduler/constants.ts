@@ -30,21 +30,6 @@ export const MISFIRE_STRATEGY_OPTIONS: SelectOption<Api.Scheduler.MisfireStrateg
   { label: '全部补跑', value: 'Reschedule' }
 ]
 
-// ============ Route Strategy ============
-
-export const ROUTE_STRATEGY_OPTIONS: SelectOption<Api.Scheduler.RouteStrategy>[] = [
-  { label: '第一个实例', value: 'First' },
-  { label: '最后一个实例', value: 'Last' },
-  { label: '轮询', value: 'RoundRobin' },
-  { label: '随机', value: 'Random' },
-  { label: '一致性哈希', value: 'ConsistentHash' },
-  { label: '最不繁忙', value: 'LeastFrequently' },
-  { label: '最久未运行', value: 'LeastRecently' },
-  { label: '故障转移', value: 'Failover' },
-  { label: '忙时切换', value: 'Busyover' },
-  { label: '分片广播', value: 'ShardingBroadcast' }
-]
-
 // ============ Retry Backoff ============
 
 export const RETRY_BACKOFF_OPTIONS: SelectOption<Api.Scheduler.RetryBackoff>[] = [
@@ -122,9 +107,6 @@ export const getBlockingStrategyLabel = (value: Api.Scheduler.BlockingStrategy) 
 export const getMisfireStrategyLabel = (value: Api.Scheduler.MisfireStrategy) =>
   getOptionLabel(MISFIRE_STRATEGY_OPTIONS, value)
 
-export const getRouteStrategyLabel = (value: Api.Scheduler.RouteStrategy) =>
-  getOptionLabel(ROUTE_STRATEGY_OPTIONS, value)
-
 export const getRetryBackoffLabel = (value: Api.Scheduler.RetryBackoff) =>
   getOptionLabel(RETRY_BACKOFF_OPTIONS, value)
 
@@ -165,11 +147,9 @@ export const getTriggerTypeTagType = (value: Api.Scheduler.TriggerType): TagProp
     case 'Manual':
       return 'success'
     case 'Retry':
-      return 'warning'
-    case 'Workflow':
-      return 'info'
     case 'Misfire':
       return 'warning'
+    case 'Workflow':
     case 'Api':
       return 'info'
     default:

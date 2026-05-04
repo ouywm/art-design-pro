@@ -32,14 +32,11 @@ export interface FormModel {
   enabled: boolean
   blocking: Api.Scheduler.BlockingStrategy
   misfire: Api.Scheduler.MisfireStrategy
-  routeStrategy: Api.Scheduler.RouteStrategy
   timeoutMs: number
   retryMax: number
   retryBackoff: Api.Scheduler.RetryBackoff
   // 去重
   uniqueKey: string
-  // 分片(高级)
-  shardTotal: number | undefined
   // 租户
   tenantId: number | undefined
 }

@@ -314,8 +314,7 @@
       "title": "任务调度",
       "job": "任务管理",
       "run": "执行记录",
-      "monitor": "调度监控",
-      "instance": "集群实例"
+      "monitor": "调度监控"
     },
     "system": {
       "title": "系统管理",
