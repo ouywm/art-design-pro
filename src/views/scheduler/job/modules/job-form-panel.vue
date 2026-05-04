@@ -246,18 +246,6 @@
                     </ElFormItem>
                   </ElCol>
                   <ElCol :span="12">
-                    <ElFormItem label="路由策略" prop="routeStrategy">
-                      <ElSelect v-model="formData.routeStrategy" filterable style="width: 100%">
-                        <ElOption
-                          v-for="item in ROUTE_STRATEGY_OPTIONS"
-                          :key="item.value"
-                          :label="item.label"
-                          :value="item.value"
-                        />
-                      </ElSelect>
-                    </ElFormItem>
-                  </ElCol>
-                  <ElCol :span="12">
                     <ElFormItem label="超时 (ms)" prop="timeoutMs">
                       <ElInputNumber
                         v-model="formData.timeoutMs"
@@ -291,18 +279,6 @@
                       </ElSelect>
                     </ElFormItem>
                   </ElCol>
-                  <ElCol :span="12">
-                    <ElFormItem label="分片总数">
-                      <ElInputNumber
-                        v-model="formData.shardTotal"
-                        :min="1"
-                        :step="1"
-                        controls-position="right"
-                        style="width: 100%"
-                        placeholder="留空 = 不分片"
-                      />
-                    </ElFormItem>
-                  </ElCol>
                   <ElCol :span="24">
                     <ElFormItem label="去重 Key">
                       <ElInput
@@ -323,9 +299,18 @@
               <div>
                 <div class="job-section__title">Rhai 脚本</div>
                 <div class="job-section__subtitle"
-                  >handler 选择 script::rhai 时,在此填写脚本源码。</div
+                  >handler 选择 script::rhai 时,在此填写脚本源码,可用「试运行」实时验证。</div
                 >
               </div>
+              <ElButton
+                type="primary"
+                plain
+                :loading="dryrunLoading"
+                :disabled="!formData.script"
+                @click="runDryrun"
+              >
+                试运行
+              </ElButton>
             </div>
             <ElFormItem label="脚本引擎" prop="scriptEngine">
               <ElSelect
@@ -351,6 +336,42 @@
                 placeholder="例:log_info(`hi user ${params.userId}`); #{ ok: true }"
               />
             </ElFormItem>
+
+            <!-- 试运行结果 -->
+            <div
+              v-if="dryrunResult"
+              class="dryrun-result"
+              :class="dryrunResult.ok ? 'dryrun-result--ok' : 'dryrun-result--err'"
+            >
+              <div class="dryrun-result__head">
+                <ElTag :type="dryrunResult.ok ? 'success' : 'danger'" size="small">
+                  {{ dryrunResult.ok ? '执行成功' : '执行失败' }}
+                </ElTag>
+                <span class="dryrun-result__meta">耗时 {{ dryrunResult.durationMs }} ms</span>
+                <ElButton link type="info" class="!ml-auto !px-0" @click="clearDryrunResult">
+                  清除结果
+                </ElButton>
+              </div>
+
+              <div v-if="dryrunResult.error" class="dryrun-result__section">
+                <div class="dryrun-result__label">错误信息</div>
+                <pre class="dryrun-result__pre dryrun-result__pre--err">{{
+                  dryrunResult.error
+                }}</pre>
+              </div>
+
+              <div v-if="dryrunResult.ok" class="dryrun-result__section">
+                <div class="dryrun-result__label">返回值</div>
+                <pre class="dryrun-result__pre">{{ formatDryrunValue(dryrunResult.result) }}</pre>
+              </div>
+
+              <div v-if="dryrunResult.logs?.length" class="dryrun-result__section">
+                <div class="dryrun-result__label">脚本日志 ({{ dryrunResult.logs.length }} 条)</div>
+                <pre class="dryrun-result__pre dryrun-result__pre--log">{{
+                  dryrunResult.logs.join('\n')
+                }}</pre>
+              </div>
+            </div>
           </section>
 
           <!-- Section 3: 任务参数 -->
@@ -538,6 +559,7 @@
   import { useWindowSize } from '@vueuse/core'
   import { ElMessage, type FormInstance, type FormItemRule, type FormRules } from 'element-plus'
   import { fetchCreateJob, fetchGetJobDetail, fetchUpdateJob } from '@/api/scheduler-job'
+  import { fetchScriptDryrun } from '@/api/scheduler-script'
   import type { DialogType } from '@/types'
   import {
     BLOCKING_STRATEGY_OPTIONS,
@@ -545,7 +567,6 @@
     MISFIRE_STRATEGY_OPTIONS,
     RETRY_BACKOFF_OPTIONS,
     RHAI_HANDLER,
-    ROUTE_STRATEGY_OPTIONS,
     SCHEDULE_TYPE_OPTIONS,
     SCRIPT_ENGINE_OPTIONS,
     summarizeSchedule
@@ -608,12 +629,10 @@
     enabled: true,
     blocking: 'Serial',
     misfire: 'FireNow',
-    routeStrategy: 'RoundRobin',
     timeoutMs: 0,
     retryMax: 0,
     retryBackoff: 'Exponential',
     uniqueKey: '',
-    shardTotal: undefined,
     tenantId: undefined
   })
 
@@ -644,6 +663,72 @@
 
   const paramsMode = ref<'form' | 'json'>('form')
   const paramsObject = reactive<Record<string, unknown>>({})
+
+  // ============ Rhai 试运行 ============
+
+  const dryrunLoading = ref(false)
+  const dryrunResult = ref<Api.Scheduler.ScriptDryrunResult | null>(null)
+
+  const buildDryrunParams = (): unknown => {
+    if (paramsMode.value === 'form' && hasParamsSchema.value) {
+      return { ...paramsObject }
+    }
+    const text = formData.paramsJsonText.trim()
+    if (!text) return {}
+    try {
+      return JSON.parse(text)
+    } catch {
+      throw new Error('paramsJson 不是合法 JSON')
+    }
+  }
+
+  const runDryrun = async () => {
+    if (!isRhaiHandler.value) {
+      ElMessage.warning('仅 script::rhai 处理器支持试运行')
+      return
+    }
+    if (!formData.script || !formData.script.trim()) {
+      ElMessage.warning('请先填写脚本源码')
+      return
+    }
+    let params: unknown
+    try {
+      params = buildDryrunParams()
+    } catch (e) {
+      ElMessage.error((e as Error).message)
+      return
+    }
+    dryrunLoading.value = true
+    try {
+      const result = await fetchScriptDryrun({
+        engine: 'rhai',
+        script: formData.script,
+        params,
+        timeoutMs: 5000
+      })
+      dryrunResult.value = result
+      if (result.ok) {
+        ElMessage.success(`试运行成功 (${result.durationMs} ms)`)
+      } else {
+        ElMessage.error('试运行失败,详见下方结果')
+      }
+    } finally {
+      dryrunLoading.value = false
+    }
+  }
+
+  const clearDryrunResult = () => {
+    dryrunResult.value = null
+  }
+
+  const formatDryrunValue = (value: unknown): string => {
+    if (value === null || value === undefined) return 'null'
+    try {
+      return JSON.stringify(value, null, 2)
+    } catch {
+      return String(value)
+    }
+  }
 
   const currentMeta = computed(() => getHandlerMeta(formData.handler))
   const hasParamsSchema = computed(
@@ -734,6 +819,7 @@
       } else {
         formData.script = ''
         formData.scriptEngine = undefined
+        dryrunResult.value = null
       }
       // 切到没 schema 的 handler:回退到 JSON
       if (!meta || meta.paramsSchema.length === 0) {
@@ -908,6 +994,7 @@
     Object.assign(formData, createDefaultFormData())
     Object.keys(paramsObject).forEach((k) => delete paramsObject[k])
     paramsMode.value = 'form'
+    dryrunResult.value = null
   }
 
   const initFormData = async () => {
@@ -934,12 +1021,10 @@
         enabled: detail.enabled,
         blocking: detail.blocking,
         misfire: detail.misfire,
-        routeStrategy: detail.routeStrategy,
         timeoutMs: detail.timeoutMs ?? 0,
         retryMax: detail.retryMax ?? 0,
         retryBackoff: detail.retryBackoff,
         uniqueKey: detail.uniqueKey || '',
-        shardTotal: detail.shardTotal ?? undefined,
         tenantId: detail.tenantId ?? undefined
       })
     } finally {
@@ -1019,12 +1104,10 @@
           enabled: formData.enabled,
           blocking: formData.blocking,
           misfire: formData.misfire,
-          routeStrategy: formData.routeStrategy,
           timeoutMs: formData.timeoutMs,
           retryMax: formData.retryMax,
           retryBackoff: formData.retryBackoff,
           uniqueKey: formData.uniqueKey.trim() || undefined,
-          shardTotal: formData.shardTotal,
           tenantId: formData.tenantId
         }
         await fetchCreateJob(createPayload)
@@ -1050,12 +1133,10 @@
           enabled: formData.enabled,
           blocking: formData.blocking,
           misfire: formData.misfire,
-          routeStrategy: formData.routeStrategy,
           timeoutMs: formData.timeoutMs,
           retryMax: formData.retryMax,
           retryBackoff: formData.retryBackoff,
-          uniqueKey: formData.uniqueKey.trim() || null,
-          shardTotal: formData.shardTotal ?? null
+          uniqueKey: formData.uniqueKey.trim() || null
         }
         await fetchUpdateJob(props.jobData.id, updatePayload)
         ElMessage.success('更新成功')
@@ -1117,5 +1198,74 @@
       ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, 'Courier New', monospace;
     font-size: 12.5px;
     line-height: 1.55;
+  }
+
+  .dryrun-result {
+    padding: 14px 16px;
+    margin-top: 12px;
+    background: color-mix(in srgb, var(--default-box-color) 96%, transparent);
+    border: 1px solid var(--default-border);
+    border-radius: var(--custom-radius);
+
+    &--ok {
+      background: color-mix(in srgb, var(--el-color-success-light-9) 60%, var(--default-box-color));
+      border-color: color-mix(in srgb, var(--el-color-success) 35%, var(--default-border));
+    }
+
+    &--err {
+      background: color-mix(in srgb, var(--el-color-danger-light-9) 60%, var(--default-box-color));
+      border-color: color-mix(in srgb, var(--el-color-danger) 35%, var(--default-border));
+    }
+
+    &__head {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    &__meta {
+      font-size: 12px;
+      color: var(--art-text-gray-600);
+    }
+
+    &__section {
+      margin-top: 10px;
+
+      &:first-of-type {
+        margin-top: 0;
+      }
+    }
+
+    &__label {
+      margin-bottom: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--art-text-gray-700);
+    }
+
+    &__pre {
+      max-height: 220px;
+      padding: 10px 12px;
+      margin: 0;
+      overflow: auto;
+      font-family:
+        ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--art-text-gray-900);
+      word-break: break-all;
+      white-space: pre-wrap;
+      background: var(--art-bg-page-color);
+      border-radius: calc(var(--custom-radius) - 2px);
+
+      &--err {
+        color: var(--el-color-danger);
+      }
+
+      &--log {
+        color: var(--art-text-gray-700);
+      }
+    }
   }
 </style>
