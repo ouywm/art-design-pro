@@ -71,13 +71,6 @@
       }
     },
     {
-      label: '执行实例',
-      key: 'instance',
-      type: 'input',
-      placeholder: 'hostname:pid',
-      clearable: true
-    },
-    {
       label: '调度时间',
       key: 'dateRange',
       type: 'datetimerange',

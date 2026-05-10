@@ -6,6 +6,5 @@ export interface SearchFormModel {
   traceId?: string
   triggerType?: Api.Scheduler.TriggerType
   state?: Api.Scheduler.RunState
-  instance?: string
   dateRange?: [string, string] | null
 }

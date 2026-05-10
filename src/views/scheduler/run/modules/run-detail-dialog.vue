@@ -21,12 +21,8 @@
             <span class="trace-id">{{ detail.traceId }}</span>
             <ElButton link type="primary" @click="copyTraceId">复制</ElButton>
           </ElDescriptionsItem>
-          <ElDescriptionsItem label="执行实例">{{ detail.instance || '-' }}</ElDescriptionsItem>
-          <ElDescriptionsItem label="触发来源">
+          <ElDescriptionsItem label="触发来源" :span="2">
             {{ formatTriggerBy(detail) }}
-          </ElDescriptionsItem>
-          <ElDescriptionsItem v-if="detail.uniqueKey" label="去重 Key" :span="2">
-            <span class="trace-id">{{ detail.uniqueKey }}</span>
           </ElDescriptionsItem>
         </ElDescriptions>
 
@@ -64,11 +60,6 @@
 
         <h4 class="run-detail__title">结果 JSON</h4>
         <pre class="run-detail__code">{{ formatJson(detail.resultJson) }}</pre>
-
-        <template v-if="detail.logExcerpt">
-          <h4 class="run-detail__title">日志摘录</h4>
-          <pre class="run-detail__code">{{ detail.logExcerpt }}</pre>
-        </template>
       </template>
     </div>
   </ElDrawer>
@@ -146,14 +137,16 @@
   }
 
   const formatTriggerBy = (run: RunDetailData) => {
-    if (run.triggerBy == null) return getTriggerTypeLabel(run.triggerType)
-    if (run.triggerType === 'Manual')
-      return `${getTriggerTypeLabel(run.triggerType)} · 用户 #${run.triggerBy}`
-    if (run.triggerType === 'Workflow')
-      return `${getTriggerTypeLabel(run.triggerType)} · 上游 Run #${run.triggerBy}`
-    if (run.triggerType === 'Retry')
-      return `${getTriggerTypeLabel(run.triggerType)} · 源 Run #${run.triggerBy}`
-    return `${getTriggerTypeLabel(run.triggerType)} · ${run.triggerBy}`
+    const label = getTriggerTypeLabel(run.triggerType)
+    if (run.triggerType === 'Manual') {
+      if (run.triggerByName) return `${label} · ${run.triggerByName}`
+      if (run.triggerBy != null) return `${label} · 用户 #${run.triggerBy}(已删除)`
+      return label
+    }
+    if (run.triggerType === 'Retry' && run.triggerBy != null) {
+      return `${label} · 源 Run #${run.triggerBy}`
+    }
+    return label
   }
 
   const formatJson = (value: unknown) => {

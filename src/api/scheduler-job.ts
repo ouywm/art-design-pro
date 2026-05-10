@@ -47,7 +47,7 @@ export function fetchTriggerJob(id: number, params: Api.Scheduler.TriggerJobPara
   })
 }
 
-// ============ 批量操作(v3 新增) ============
+// ============ 批量操作 ============
 
 export function fetchBatchToggleJobs(params: Api.Scheduler.BatchToggleParams) {
   return request.post<Api.Scheduler.BatchResultVo>({
@@ -67,26 +67,5 @@ export function fetchBatchDeleteJobs(params: Api.Scheduler.BatchIdsParams) {
   return request.del<Api.Scheduler.BatchResultVo>({
     url: '/api/scheduler/jobs/batch',
     params
-  })
-}
-
-// ============ 依赖 ============
-
-export function fetchGetJobDependencies(id: number) {
-  return request.get<Api.Scheduler.JobDependencyListVo>({
-    url: `/api/scheduler/jobs/${id}/dependencies`
-  })
-}
-
-export function fetchAddJobDependency(id: number, params: Api.Scheduler.AddJobDependencyParams) {
-  return request.post<number>({
-    url: `/api/scheduler/jobs/${id}/dependencies`,
-    params
-  })
-}
-
-export function fetchDeleteJobDependency(id: number, depId: number) {
-  return request.del<null>({
-    url: `/api/scheduler/jobs/${id}/dependencies/${depId}`
   })
 }

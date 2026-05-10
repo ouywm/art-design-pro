@@ -24,7 +24,6 @@ export const schedulerRoutes: AppRouteRecord = {
           { title: '编辑', authMark: 'edit' },
           { title: '启停', authMark: 'toggle' },
           { title: '触发', authMark: 'trigger' },
-          { title: '依赖', authMark: 'dependencies' },
           { title: '删除', authMark: 'delete' }
         ]
       }
@@ -36,17 +35,6 @@ export const schedulerRoutes: AppRouteRecord = {
       meta: {
         title: 'menus.scheduler.run',
         icon: 'ri:history-line',
-        keepAlive: true,
-        roles: ['R_SUPER', 'R_ADMIN']
-      }
-    },
-    {
-      path: 'monitor',
-      name: 'SchedulerMonitor',
-      component: '/scheduler/monitor',
-      meta: {
-        title: 'menus.scheduler.monitor',
-        icon: 'ri:dashboard-3-line',
         keepAlive: true,
         roles: ['R_SUPER', 'R_ADMIN']
       }

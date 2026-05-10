@@ -3,10 +3,6 @@
 // 后端 GET /api/scheduler/handlers 返回的是真实可用 handler 列表(name 字段),
 // 这里仅作为前端补全的可选元数据来源 —— 给 UI 提供中文 label / 描述 / 类别 /
 // 推荐参数 schema。如果后端 handler 在此处未登记,UI 会 fallback 到 handler 原值。
-//
-// v3 起后端实际 handler 名形如 `summer_system::s3_multipart_cleanup`、
-// `script::rhai` 等,跟之前前端硬编码的 SCREAMING_CASE 完全不同;
-// 故清空示例数据,需要 meta 时再按真实 handler 名补充。
 
 export interface HandlerParamSchema {
   key: string
@@ -25,7 +21,6 @@ export interface HandlerMeta {
   description: string
   category: string
   recommendedCron: string
-  recommendedBlocking: Api.Scheduler.BlockingStrategy
   paramsSchema: HandlerParamSchema[]
 }
 

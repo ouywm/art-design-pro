@@ -1,40 +1,18 @@
 declare namespace Api {
   namespace Scheduler {
-    // ============ 枚举(后端 Rust serde PascalCase 序列化) ============
+    // ============ 枚举(v3 后端 SCREAMING_SNAKE_CASE) ============
 
-    type ScheduleType = 'Cron' | 'FixedRate' | 'FixedDelay' | 'Oneshot'
+    type ScheduleType = 'Cron' | 'FixedRate' | 'Oneshot'
 
-    type BlockingStrategy = 'Serial' | 'Discard' | 'Override'
+    type TriggerType = 'Cron' | 'Manual' | 'Retry'
 
-    type MisfireStrategy = 'FireNow' | 'Ignore' | 'Reschedule'
+    type RunState = 'Running' | 'Succeeded' | 'Failed' | 'Timeout' | 'Discarded'
 
-    type RetryBackoff = 'Exponential' | 'Linear' | 'Fixed'
-
-    type TriggerType = 'Cron' | 'Manual' | 'Retry' | 'Workflow' | 'Misfire' | 'Api'
-
-    type RunState =
-      | 'Enqueued'
-      | 'Running'
-      | 'Succeeded'
-      | 'Failed'
-      | 'Timeout'
-      | 'Canceled'
-      | 'Discarded'
-
-    // ScriptEngine 仍用小写(后端 sea_orm string_value="rhai"/"lua")
-    type ScriptEngine = 'rhai' | 'lua'
-
-    type DependencyOnState = 'Succeeded' | 'Failed' | 'Always'
-
-    // ============ 通用分页(后端 0-indexed) ============
-
-    interface Page<T> {
-      content: T[]
-      size: number
-      page: number
-      totalElements: number
-      totalPages: number
-    }
+    // ============ 通用分页 ============
+    // 后端 Rust 返回 { content, page, size, total },
+    // defaultResponseAdapter 会把 total 映射为 totalElements,
+    // 所以前端统一用 Api.Common.PaginatedResponse 做类型,
+    // 保证 useTable 的 InferRecordType<T> 能正确推导出 TRecord。
 
     // ============ Job ============
 
@@ -47,11 +25,6 @@ declare namespace Api {
       scheduleType: ScheduleType
       cronExpr: string | null
       enabled: boolean
-      blocking: BlockingStrategy
-      // 运行时(后端 join 得出,只读)
-      nextFireAt: string | null
-      lastRunState: RunState | null
-      lastRunFinishedAt: string | null
       createTime: string
       updateTime: string
     }
@@ -68,26 +41,16 @@ declare namespace Api {
       intervalMs: number | null
       fireTime: string | null
       paramsJson: unknown
-      script: string | null
-      scriptEngine: ScriptEngine | null
       enabled: boolean
-      blocking: BlockingStrategy
-      misfire: MisfireStrategy
       timeoutMs: number
       retryMax: number
-      retryBackoff: RetryBackoff
-      uniqueKey: string | null
       version: number
       createdBy: number | null
-      // 运行时(后端 join 得出,只读)
-      nextFireAt: string | null
-      lastRunState: RunState | null
-      lastRunFinishedAt: string | null
       createTime: string
       updateTime: string
     }
 
-    type JobList = Page<JobVo>
+    type JobList = Api.Common.PaginatedResponse<JobVo>
 
     interface JobQueryFilters {
       name?: string
@@ -113,19 +76,13 @@ declare namespace Api {
       intervalMs?: number
       fireTime?: string
       paramsJson?: unknown
-      script?: string
-      scriptEngine?: ScriptEngine
       enabled?: boolean
-      blocking?: BlockingStrategy
-      misfire?: MisfireStrategy
       timeoutMs?: number
       retryMax?: number
-      retryBackoff?: RetryBackoff
-      uniqueKey?: string
       tenantId?: number
     }
 
-    // PATCH 语义:所有字段可选;可空字段(cronExpr/script 等)传 null 表示显式置空
+    // PATCH 语义:所有字段可选;可空字段(cronExpr 等)传 null 表示显式置空
     interface UpdateJobParams {
       name?: string
       groupName?: string
@@ -136,15 +93,9 @@ declare namespace Api {
       intervalMs?: number | null
       fireTime?: string | null
       paramsJson?: unknown
-      script?: string | null
-      scriptEngine?: ScriptEngine | null
       enabled?: boolean
-      blocking?: BlockingStrategy
-      misfire?: MisfireStrategy
       timeoutMs?: number
       retryMax?: number
-      retryBackoff?: RetryBackoff
-      uniqueKey?: string | null
     }
 
     interface TriggerJobParams {
@@ -157,9 +108,10 @@ declare namespace Api {
 
     interface HandlerVo {
       name: string
+      description?: string
     }
 
-    // ============ 批量操作(POST /scheduler/jobs/batch/*) ============
+    // ============ 批量操作 ============
 
     interface BatchToggleParams {
       ids: number[] // 1-100
@@ -189,27 +141,25 @@ declare namespace Api {
       traceId: string
       triggerType: TriggerType
       triggerBy: number | null
+      // 详情接口独有:手动触发时填 sys.user.nick_name,用户删除或非手动触发时不返回
+      triggerByName?: string
       state: RunState
-      instance: string | null // hostname:pid(审计用,单实例下无路由含义)
       scheduledAt: string
       startedAt: string | null
       finishedAt: string | null
       retryCount: number
       resultJson: unknown
       errorMessage: string | null
-      logExcerpt: string | null
-      uniqueKey: string | null
       createTime: string
     }
 
-    type JobRunList = Page<JobRunVo>
+    type JobRunList = Api.Common.PaginatedResponse<JobRunVo>
 
     interface JobRunQueryFilters {
       jobId?: number
       traceId?: string
       triggerType?: TriggerType
       state?: RunState
-      instance?: string
       startTime?: string
       endTime?: string
     }
@@ -217,108 +167,6 @@ declare namespace Api {
     interface JobRunQueryParams extends JobRunQueryFilters {
       page?: number
       size?: number
-    }
-
-    // ============ 监控(GET /scheduler/metrics) ============
-
-    interface MetricsSnapshot {
-      triggersCron: number
-      triggersManual: number
-      triggersRetry: number
-      triggersMisfire: number
-      triggersWorkflow: number
-      triggersApi: number
-      runsSucceeded: number
-      runsFailed: number
-      runsTimeout: number
-      runsCanceled: number
-      runsDiscarded: number
-      runsEnqueuedOrRunning: number
-      runsInFlight: number
-    }
-
-    // ============ 依赖 ============
-
-    interface DependencyVo {
-      id: number
-      upstreamId: number
-      upstreamName: string
-      downstreamId: number
-      downstreamName: string
-      onState: DependencyOnState
-      enabled: boolean
-      createTime: string
-    }
-
-    interface JobDependencyListVo {
-      outgoing: DependencyVo[]
-      incoming: DependencyVo[]
-    }
-
-    interface AddJobDependencyParams {
-      downstreamId: number
-      onState?: DependencyOnState
-    }
-
-    // ============ 脚本试运行(POST /scheduler/script/dryrun) ============
-
-    interface ScriptDryrunParams {
-      engine: 'rhai'
-      script: string
-      params?: unknown
-      timeoutMs?: number // 默认 5000,最大 30000
-    }
-
-    interface ScriptDryrunResult {
-      ok: boolean
-      result: unknown | null
-      error: string | null
-      durationMs: number
-      logs: string[] // ["[INFO] xxx", "[WARN] yyy"]
-    }
-
-    // ============ 统计(GET /scheduler/stats/*) ============
-
-    type StatsPeriod = '1h' | '24h' | '7d' | '30d'
-
-    interface TopFailedJob {
-      jobId: number
-      name: string
-      failCount: number
-    }
-
-    interface StatsOverviewVo {
-      totalJobs: number
-      enabledJobs: number
-      triggeredCount: number
-      succeededCount: number
-      failedCount: number
-      successRate: number | null // 0.0-1.0;触发数为 0 时 null
-      inFlightCount: number
-      topFailedJobs: TopFailedJob[] // 最多 5 条
-    }
-
-    interface JobStatsPoint {
-      ts: string // 桶起始时间
-      total: number
-      succeeded: number
-      failed: number
-    }
-
-    interface JobStatsVo {
-      jobId: number
-      triggeredCount: number
-      succeededCount: number
-      failedCount: number
-      successRate: number | null
-      avgDurationMs: number | null
-      p50: number | null
-      p99: number | null
-      points: JobStatsPoint[]
-    }
-
-    interface StatsQueryParams {
-      period?: StatsPeriod
     }
   }
 }

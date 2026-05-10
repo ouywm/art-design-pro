@@ -64,18 +64,6 @@
         :job-id="currentJobId"
         :job-name="currentJobName"
       />
-
-      <JobDependenciesPanel
-        v-model:visible="depsVisible"
-        :job-id="currentJobId"
-        :job-name="currentJobName"
-      />
-
-      <JobStatsDialog
-        v-model:visible="statsVisible"
-        :job-id="currentJobId"
-        :job-name="currentJobName"
-      />
     </ElCard>
   </div>
 </template>
@@ -97,13 +85,10 @@
   import { useTable } from '@/hooks/core/useTable'
   import type { DialogType } from '@/types'
   import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import { getRunStateLabel, getRunStateTagType } from '../constants'
   import { getHandlerLabel } from './handler-meta'
   import JobSearch from './modules/job-search.vue'
   import JobFormPanel from './modules/job-form-panel.vue'
   import JobTriggerDialog from './modules/job-trigger-dialog.vue'
-  import JobDependenciesPanel from './modules/job-dependencies-panel.vue'
-  import JobStatsDialog from './modules/job-stats-dialog.vue'
   import type { HandlerOption, JobListItem, SearchFormModel } from './types'
 
   defineOptions({ name: 'SchedulerJob' })
@@ -113,8 +98,6 @@
   const dialogType = ref<DialogType>('add')
   const formVisible = ref(false)
   const triggerVisible = ref(false)
-  const depsVisible = ref(false)
-  const statsVisible = ref(false)
 
   const currentJobData = ref<Partial<JobListItem>>({})
   const currentJobId = ref<number>()
@@ -138,7 +121,8 @@
       const result = await fetchGetHandlers()
       handlerOptions.value = result.map((item) => ({
         label: getHandlerLabel(item.name),
-        value: item.name
+        value: item.name,
+        description: item.description
       }))
     } finally {
       handlerLoading.value = false
@@ -147,18 +131,6 @@
 
   const goRunListAll = () => {
     router.push('/scheduler/run')
-  }
-
-  const showDepsPanel = (row: JobListItem) => {
-    currentJobId.value = row.id
-    currentJobName.value = row.name
-    depsVisible.value = true
-  }
-
-  const showStatsDialog = (row: JobListItem) => {
-    currentJobId.value = row.id
-    currentJobName.value = row.name
-    statsVisible.value = true
   }
 
   const handleMoreClick = (item: ButtonMoreItem, row: JobListItem) => {
@@ -171,12 +143,6 @@
         break
       case 'trigger':
         showTriggerDialog(row)
-        break
-      case 'stats':
-        showStatsDialog(row)
-        break
-      case 'deps':
-        showDepsPanel(row)
         break
       case 'delete':
         deleteJob(row)
@@ -194,8 +160,6 @@
           icon: row.enabled ? 'ri:pause-circle-line' : 'ri:play-circle-line'
         },
         { key: 'trigger', label: '手动触发', icon: 'ri:flashlight-line' },
-        { key: 'stats', label: '查看统计', icon: 'ri:bar-chart-2-line' },
-        { key: 'deps', label: '管理依赖', icon: 'ri:git-branch-line' },
         { key: 'delete', label: '删除', icon: 'ri:delete-bin-4-line', color: '#f56c6c' }
       ],
       onClick: (item: ButtonMoreItem) => handleMoreClick(item, row)
@@ -250,29 +214,8 @@
               row.enabled ? '启用' : '停用'
             )
         },
-        {
-          prop: 'lastRunState',
-          label: '最近执行',
-          width: 100,
-          formatter: (row) =>
-            row.lastRunState
-              ? h(ElTag, { type: getRunStateTagType(row.lastRunState), size: 'small' }, () =>
-                  getRunStateLabel(row.lastRunState!)
-                )
-              : h(ElTag, { type: 'info', size: 'small' }, () => '未执行')
-        },
-        {
-          prop: 'lastRunFinishedAt',
-          label: '上次执行',
-          minWidth: 170,
-          formatter: (row) => row.lastRunFinishedAt || '-'
-        },
-        {
-          prop: 'nextFireAt',
-          label: '下次执行',
-          minWidth: 170,
-          formatter: (row) => row.nextFireAt || '-'
-        },
+        { prop: 'groupName', label: '分组', width: 120 },
+        { prop: 'updateTime', label: '更新时间', minWidth: 170 },
         {
           prop: 'operation',
           label: '操作',

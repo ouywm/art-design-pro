@@ -10,32 +10,7 @@ export interface SelectOption<T = string | number | boolean> {
 export const SCHEDULE_TYPE_OPTIONS: SelectOption<Api.Scheduler.ScheduleType>[] = [
   { label: 'Cron 表达式', value: 'Cron' },
   { label: '固定频率', value: 'FixedRate' },
-  { label: '固定延迟', value: 'FixedDelay' },
   { label: '一次性', value: 'Oneshot' }
-]
-
-// ============ Blocking Strategy ============
-
-export const BLOCKING_STRATEGY_OPTIONS: SelectOption<Api.Scheduler.BlockingStrategy>[] = [
-  { label: '串行排队', value: 'Serial' },
-  { label: '丢弃新触发', value: 'Discard' },
-  { label: '取消旧任务', value: 'Override' }
-]
-
-// ============ Misfire Strategy ============
-
-export const MISFIRE_STRATEGY_OPTIONS: SelectOption<Api.Scheduler.MisfireStrategy>[] = [
-  { label: '立即补跑一次', value: 'FireNow' },
-  { label: '忽略', value: 'Ignore' },
-  { label: '全部补跑', value: 'Reschedule' }
-]
-
-// ============ Retry Backoff ============
-
-export const RETRY_BACKOFF_OPTIONS: SelectOption<Api.Scheduler.RetryBackoff>[] = [
-  { label: '指数退避', value: 'Exponential' },
-  { label: '线性退避', value: 'Linear' },
-  { label: '固定 60 秒', value: 'Fixed' }
 ]
 
 // ============ Trigger Type ============
@@ -43,37 +18,17 @@ export const RETRY_BACKOFF_OPTIONS: SelectOption<Api.Scheduler.RetryBackoff>[] =
 export const TRIGGER_TYPE_OPTIONS: SelectOption<Api.Scheduler.TriggerType>[] = [
   { label: 'Cron 自动', value: 'Cron' },
   { label: '手动触发', value: 'Manual' },
-  { label: '自动重试', value: 'Retry' },
-  { label: '依赖触发', value: 'Workflow' },
-  { label: 'Misfire 补跑', value: 'Misfire' },
-  { label: 'API 调用', value: 'Api' }
+  { label: '自动重试', value: 'Retry' }
 ]
 
 // ============ Run State ============
 
 export const RUN_STATE_OPTIONS: SelectOption<Api.Scheduler.RunState>[] = [
-  { label: '已入队', value: 'Enqueued' },
   { label: '执行中', value: 'Running' },
   { label: '成功', value: 'Succeeded' },
   { label: '失败', value: 'Failed' },
   { label: '超时', value: 'Timeout' },
-  { label: '已取消', value: 'Canceled' },
   { label: '已丢弃', value: 'Discarded' }
-]
-
-// ============ Script Engine ============
-
-export const SCRIPT_ENGINE_OPTIONS: SelectOption<Api.Scheduler.ScriptEngine>[] = [
-  { label: 'Rhai', value: 'rhai' },
-  { label: 'Lua (未实现)', value: 'lua' }
-]
-
-// ============ Dependency On State ============
-
-export const DEPENDENCY_ON_STATE_OPTIONS: SelectOption<Api.Scheduler.DependencyOnState>[] = [
-  { label: '成功时触发', value: 'Succeeded' },
-  { label: '失败时触发', value: 'Failed' },
-  { label: '总是触发', value: 'Always' }
 ]
 
 // ============ Enabled ============
@@ -81,15 +36,6 @@ export const DEPENDENCY_ON_STATE_OPTIONS: SelectOption<Api.Scheduler.DependencyO
 export const ENABLED_OPTIONS: SelectOption<boolean>[] = [
   { label: '启用', value: true },
   { label: '停用', value: false }
-]
-
-// ============ Stats Period ============
-
-export const STATS_PERIOD_OPTIONS: SelectOption<Api.Scheduler.StatsPeriod>[] = [
-  { label: '近 1 小时', value: '1h' },
-  { label: '近 24 小时', value: '24h' },
-  { label: '近 7 天', value: '7d' },
-  { label: '近 30 天', value: '30d' }
 ]
 
 // ============ 工具函数 ============
@@ -101,23 +47,11 @@ const getOptionLabel = <T>(options: SelectOption<T>[], value: T, fallback = '-')
 export const getScheduleTypeLabel = (value: Api.Scheduler.ScheduleType) =>
   getOptionLabel(SCHEDULE_TYPE_OPTIONS, value)
 
-export const getBlockingStrategyLabel = (value: Api.Scheduler.BlockingStrategy) =>
-  getOptionLabel(BLOCKING_STRATEGY_OPTIONS, value)
-
-export const getMisfireStrategyLabel = (value: Api.Scheduler.MisfireStrategy) =>
-  getOptionLabel(MISFIRE_STRATEGY_OPTIONS, value)
-
-export const getRetryBackoffLabel = (value: Api.Scheduler.RetryBackoff) =>
-  getOptionLabel(RETRY_BACKOFF_OPTIONS, value)
-
 export const getTriggerTypeLabel = (value: Api.Scheduler.TriggerType) =>
   getOptionLabel(TRIGGER_TYPE_OPTIONS, value)
 
 export const getRunStateLabel = (value: Api.Scheduler.RunState) =>
   getOptionLabel(RUN_STATE_OPTIONS, value)
-
-export const getDependencyOnStateLabel = (value: Api.Scheduler.DependencyOnState) =>
-  getOptionLabel(DEPENDENCY_ON_STATE_OPTIONS, value)
 
 // ============ Tag 颜色映射 ============
 
@@ -129,10 +63,8 @@ export const getRunStateTagType = (value: Api.Scheduler.RunState): TagProps['typ
       return 'danger'
     case 'Timeout':
       return 'warning'
-    case 'Enqueued':
     case 'Running':
       return 'primary'
-    case 'Canceled':
     case 'Discarded':
       return 'info'
     default:
@@ -147,11 +79,7 @@ export const getTriggerTypeTagType = (value: Api.Scheduler.TriggerType): TagProp
     case 'Manual':
       return 'success'
     case 'Retry':
-    case 'Misfire':
       return 'warning'
-    case 'Workflow':
-    case 'Api':
-      return 'info'
     default:
       return 'info'
   }
@@ -163,8 +91,6 @@ export const getScheduleTypeTagType = (value: Api.Scheduler.ScheduleType): TagPr
       return 'primary'
     case 'FixedRate':
       return 'success'
-    case 'FixedDelay':
-      return 'warning'
     case 'Oneshot':
       return 'info'
     default:
@@ -172,25 +98,7 @@ export const getScheduleTypeTagType = (value: Api.Scheduler.ScheduleType): TagPr
   }
 }
 
-export const getDependencyOnStateTagType = (
-  value: Api.Scheduler.DependencyOnState
-): TagProps['type'] => {
-  switch (value) {
-    case 'Succeeded':
-      return 'success'
-    case 'Failed':
-      return 'danger'
-    case 'Always':
-      return 'info'
-    default:
-      return 'info'
-  }
-}
-
-// ============ 常量 ============
-
-export const RHAI_HANDLER = 'script::rhai'
-export const DEFAULT_SCRIPT_ENGINE: Api.Scheduler.ScriptEngine = 'rhai'
+// ============ Cron 模板 ============
 
 export interface CronTemplate {
   label: string
@@ -221,7 +129,6 @@ export const summarizeSchedule = (
     case 'Cron':
       return cronExpr || '-'
     case 'FixedRate':
-    case 'FixedDelay':
       return intervalMs != null ? `${intervalMs} ms` : '-'
     case 'Oneshot':
       return fireTime || '-'

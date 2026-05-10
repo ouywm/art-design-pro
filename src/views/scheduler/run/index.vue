@@ -51,7 +51,6 @@
     traceId: undefined,
     triggerType: undefined,
     state: undefined,
-    instance: undefined,
     dateRange: null
   })
 
@@ -120,12 +119,6 @@
             )
         },
         {
-          prop: 'instance',
-          label: '执行实例',
-          minWidth: 140,
-          formatter: (row) => row.instance || '-'
-        },
-        {
           prop: 'scheduledAt',
           label: '时间',
           minWidth: 180,
@@ -178,7 +171,6 @@
       traceId: undefined,
       triggerType: undefined,
       state: undefined,
-      instance: undefined,
       dateRange: null
     })
     resetSearchParams()
