@@ -263,13 +263,19 @@
   })
 
   const filteredIcons = computed(() => {
+    const kw = keyword.value.trim().toLowerCase()
+
+    // 如果有搜索关键词，全局搜索所有图标
+    if (kw) {
+      return allIcons.value.filter((n) => n.toLowerCase().includes(kw))
+    }
+
+    // 无搜索关键词时，按分类过滤
     let pool = allIcons.value
     if (currentCategory.value !== ALL_CATEGORY && categories.value[currentCategory.value]) {
       pool = categories.value[currentCategory.value].map((n) => withPrefix(n))
     }
-    const kw = keyword.value.trim().toLowerCase()
-    if (!kw) return pool
-    return pool.filter((n) => n.toLowerCase().includes(kw))
+    return pool
   })
 
   const total = computed(() => filteredIcons.value.length)
