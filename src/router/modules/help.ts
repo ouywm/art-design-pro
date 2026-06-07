@@ -48,5 +48,15 @@ export const helpRoutes: AppRouteRecord[] = [
       icon: 'ri:gamepad-line',
       keepAlive: false
     }
+  },
+  {
+    name: 'ChangeLogNew',
+    path: '/change/log-new',
+    component: '/change/log-new',
+    meta: {
+      title: 'menus.plan.log',
+      icon: 'ri:file-list-3-line',
+      keepAlive: false
+    }
   }
 ]

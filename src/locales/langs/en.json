@@ -238,6 +238,8 @@
       "watermark": "Watermark",
       "contextMenu": "Context Menu",
       "qrcode": "QR Code",
+      "dataSelect": "Data Select",
+      "resourceSelect": "Resource Select",
       "drag": "Drag",
       "textScroll": "Text Scroll",
       "fireworks": "Fireworks",
@@ -288,6 +290,10 @@
         "pageVisibility": "Super Admin Visibility"
       }
     },
+    "devTools": {
+      "title": "Dev Tools",
+      "aiGenerator": "AI Code Generator"
+    },
     "file": {
       "title": "File Management",
       "manage": "File Manage",
@@ -322,7 +328,9 @@
       "role": "Role Manage",
       "userCenter": "User Center",
       "menu": "Menu Manage",
+      "resourcePermission": "Resource Permission",
       "config": "System Config",
+      "feedback": "Feedback",
       "notice": "System Notice",
       "noticeCenter": "Notice Center",
       "noticeDetail": "Notice Detail",

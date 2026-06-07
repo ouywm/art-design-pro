@@ -7,31 +7,44 @@ export interface SelectOption<T = string | number | boolean> {
 
 // ============ Schedule Type ============
 
-export const SCHEDULE_TYPE_OPTIONS: SelectOption<Api.Scheduler.ScheduleType>[] = [
-  { label: 'Cron 表达式', value: 'Cron' },
-  { label: '固定频率', value: 'FixedRate' },
-  { label: '一次性', value: 'Oneshot' }
+export const SCHEDULE_TYPE_OPTIONS: SelectOption<Api.Scheduler.JobScheduleType>[] = [
+  { label: 'Cron 表达式', value: 'CRON' },
+  { label: '固定间隔', value: 'INTERVAL' },
+  { label: '延迟执行', value: 'DELAY' },
+  { label: '不自动调度', value: 'NONE' }
 ]
 
-// ============ Trigger Type ============
-
-export const TRIGGER_TYPE_OPTIONS: SelectOption<Api.Scheduler.TriggerType>[] = [
-  { label: 'Cron 自动', value: 'Cron' },
-  { label: '手动触发', value: 'Manual' },
-  { label: '自动重试', value: 'Retry' }
+export const RUN_MODE_OPTIONS: SelectOption<Api.Scheduler.JobRunMode>[] = [
+  { label: 'Bean 处理器', value: 'BEAN' },
+  { label: 'Groovy Glue', value: 'GLUE_GROOVY' },
+  { label: 'Shell Glue', value: 'GLUE_SHELL' },
+  { label: 'Python Glue', value: 'GLUE_PYTHON' },
+  { label: 'PHP Glue', value: 'GLUE_PHP' },
+  { label: 'Node.js Glue', value: 'GLUE_NODEJS' },
+  { label: 'PowerShell Glue', value: 'GLUE_POWERSHELL' }
 ]
 
-// ============ Run State ============
-
-export const RUN_STATE_OPTIONS: SelectOption<Api.Scheduler.RunState>[] = [
-  { label: '执行中', value: 'Running' },
-  { label: '成功', value: 'Succeeded' },
-  { label: '失败', value: 'Failed' },
-  { label: '超时', value: 'Timeout' },
-  { label: '已丢弃', value: 'Discarded' }
+export const ROUTER_STRATEGY_OPTIONS: SelectOption<Api.Scheduler.JobRouterStrategy>[] = [
+  { label: '第一个', value: 'FIRST' },
+  { label: '最后一个', value: 'LAST' },
+  { label: '轮询', value: 'ROUND_ROBIN' },
+  { label: '随机', value: 'RANDOM' },
+  { label: '一致性 Hash', value: 'CONSISTENT_HASH' },
+  { label: '分片广播', value: 'SHARDING_BROADCAST' }
 ]
 
-// ============ Enabled ============
+export const PAST_DUE_STRATEGY_OPTIONS: SelectOption<Api.Scheduler.JobPastDueStrategy>[] = [
+  { label: '默认', value: 'DEFAULT' },
+  { label: '忽略', value: 'IGNORE' },
+  { label: '立即执行', value: 'EXECUTE' }
+]
+
+export const BLOCKING_STRATEGY_OPTIONS: SelectOption<Api.Scheduler.JobBlockingStrategy>[] = [
+  { label: '串行执行', value: 'SERIAL_EXECUTION' },
+  { label: '丢弃后续', value: 'DISCARD_LATER' },
+  { label: '覆盖早期', value: 'COVER_EARLY' },
+  { label: '其他', value: 'OTHER' }
+]
 
 export const ENABLED_OPTIONS: SelectOption<boolean>[] = [
   { label: '启用', value: true },
@@ -44,54 +57,35 @@ const getOptionLabel = <T>(options: SelectOption<T>[], value: T, fallback = '-')
   return options.find((item) => item.value === value)?.label ?? fallback
 }
 
-export const getScheduleTypeLabel = (value: Api.Scheduler.ScheduleType) =>
+export const getScheduleTypeLabel = (value: Api.Scheduler.JobScheduleType) =>
   getOptionLabel(SCHEDULE_TYPE_OPTIONS, value)
 
-export const getTriggerTypeLabel = (value: Api.Scheduler.TriggerType) =>
-  getOptionLabel(TRIGGER_TYPE_OPTIONS, value)
+export const getRunModeLabel = (value: Api.Scheduler.JobRunMode) =>
+  getOptionLabel(RUN_MODE_OPTIONS, value)
 
-export const getRunStateLabel = (value: Api.Scheduler.RunState) =>
-  getOptionLabel(RUN_STATE_OPTIONS, value)
+export const getRouterStrategyLabel = (value: Api.Scheduler.JobRouterStrategy) =>
+  getOptionLabel(ROUTER_STRATEGY_OPTIONS, value)
 
-// ============ Tag 颜色映射 ============
+export const getTaskStatusLabel = (value: string | null | undefined) => value || '-'
 
-export const getRunStateTagType = (value: Api.Scheduler.RunState): TagProps['type'] => {
-  switch (value) {
-    case 'Succeeded':
-      return 'success'
-    case 'Failed':
-      return 'danger'
-    case 'Timeout':
-      return 'warning'
-    case 'Running':
-      return 'primary'
-    case 'Discarded':
-      return 'info'
-    default:
-      return 'info'
-  }
+export const getTaskStatusTagType = (value: string | null | undefined): TagProps['type'] => {
+  const status = String(value || '').toUpperCase()
+  if (status.includes('SUCCESS') || status.includes('SUCCEEDED')) return 'success'
+  if (status.includes('FAIL') || status.includes('ERROR')) return 'danger'
+  if (status.includes('RUNNING') || status.includes('EXECUTING')) return 'primary'
+  if (status.includes('TIMEOUT')) return 'warning'
+  return 'info'
 }
 
-export const getTriggerTypeTagType = (value: Api.Scheduler.TriggerType): TagProps['type'] => {
+export const getScheduleTypeTagType = (value: Api.Scheduler.JobScheduleType): TagProps['type'] => {
   switch (value) {
-    case 'Cron':
+    case 'CRON':
       return 'primary'
-    case 'Manual':
+    case 'INTERVAL':
       return 'success'
-    case 'Retry':
+    case 'DELAY':
       return 'warning'
-    default:
-      return 'info'
-  }
-}
-
-export const getScheduleTypeTagType = (value: Api.Scheduler.ScheduleType): TagProps['type'] => {
-  switch (value) {
-    case 'Cron':
-      return 'primary'
-    case 'FixedRate':
-      return 'success'
-    case 'Oneshot':
+    case 'NONE':
       return 'info'
     default:
       return 'info'
@@ -117,21 +111,21 @@ export const CRON_TEMPLATES: CronTemplate[] = [
   { label: '每月 1 号 0 点', value: '0 0 0 1 * *' }
 ]
 
-// ============ 调度参数摘要展示 ============
-
 export const summarizeSchedule = (
-  scheduleType: Api.Scheduler.ScheduleType,
-  cronExpr: string | null,
-  intervalMs: number | null,
-  fireTime: string | null
+  scheduleType: Api.Scheduler.JobScheduleType,
+  cronValue: string | null,
+  intervalSecond: number | null,
+  delaySecond: number | null
 ): string => {
   switch (scheduleType) {
-    case 'Cron':
-      return cronExpr || '-'
-    case 'FixedRate':
-      return intervalMs != null ? `${intervalMs} ms` : '-'
-    case 'Oneshot':
-      return fireTime || '-'
+    case 'CRON':
+      return cronValue || '-'
+    case 'INTERVAL':
+      return intervalSecond != null ? `${intervalSecond} 秒` : '-'
+    case 'DELAY':
+      return delaySecond != null ? `${delaySecond} 秒后` : '-'
+    case 'NONE':
+      return '不自动调度'
     default:
       return '-'
   }

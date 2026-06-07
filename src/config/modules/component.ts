@@ -68,6 +68,14 @@ export const globalComponentsConfig: GlobalComponentConfig[] = [
       () => import('@/components/core/others/art-watermark/index.vue')
     ),
     enabled: true
+  },
+  {
+    name: '问题反馈',
+    key: 'feedback-widget',
+    component: defineAsyncComponent(
+      () => import('@/components/business/feedback-widget/index.vue')
+    ),
+    enabled: true
   }
 ]
 

@@ -1,10 +1,6 @@
-export type RunListItem = Api.Scheduler.JobRunVo
-export type RunDetailData = Api.Scheduler.JobRunVo
+export type RunListItem = Api.Scheduler.JobTask
+export type RunDetailData = Api.Scheduler.JobTask
 
 export interface SearchFormModel {
   jobId?: number
-  traceId?: string
-  triggerType?: Api.Scheduler.TriggerType
-  state?: Api.Scheduler.RunState
-  dateRange?: [string, string] | null
 }

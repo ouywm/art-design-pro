@@ -101,6 +101,29 @@
   border: 1px solid var(--art-card-border);
 }
 
+.art-surface-sm {
+  color: var(--art-gray-900);
+  background: var(--art-surface-bg, var(--default-box-color));
+  border: 1px solid var(--art-surface-border, var(--default-border)) !important;
+  border-radius: var(--art-radius-surface-sm, var(--custom-radius)) !important;
+  box-shadow: var(--art-surface-shadow-sm, 0 1px 2px rgb(16 24 40 / 4%)) !important;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+
+  --el-card-bg-color: var(--art-surface-bg, var(--default-box-color)) !important;
+  --el-card-border-color: var(--art-surface-border, var(--default-border)) !important;
+}
+
+.art-surface-muted {
+  color: var(--art-gray-900);
+  background: var(--art-inner-surface-bg, color-mix(in srgb, var(--art-gray-100) 76%, transparent));
+  border: 1px solid var(--art-inner-surface-border, var(--default-border)) !important;
+  border-radius: var(--art-radius-surface-sm, var(--custom-radius)) !important;
+  box-shadow: none !important;
+}
+
 // 盒子边框
 [data-box-mode='border-mode'] {
   .page-content,

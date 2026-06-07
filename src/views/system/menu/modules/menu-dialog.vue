@@ -391,6 +391,35 @@
     return isEdit.value ? `编辑${label}` : `新建${label}`
   })
 
+  const getFirstValidateMessage = (error: unknown): string => {
+    const fallback = '表单校验失败，请检查输入'
+
+    if (!error || typeof error !== 'object') {
+      return fallback
+    }
+
+    const errorRecord = error as Record<string, any>
+    const fields =
+      errorRecord.fields && typeof errorRecord.fields === 'object'
+        ? errorRecord.fields
+        : errorRecord
+
+    for (const fieldErrors of Object.values(fields)) {
+      if (!Array.isArray(fieldErrors)) {
+        continue
+      }
+
+      const firstMessage = fieldErrors.find((item) => item?.message)?.message
+      if (firstMessage) {
+        return firstMessage
+      }
+    }
+
+    return typeof errorRecord.message === 'string' && errorRecord.message
+      ? errorRecord.message
+      : fallback
+  }
+
   /**
    * 是否禁用类型切换
    * 编辑时锁定；显式 lockType 也锁定（如新增权限入口）
@@ -522,8 +551,8 @@
       }
       emit('submit', menuData, 1)
       handleCancel()
-    } catch {
-      ElMessage.error('表单校验失败，请检查输入')
+    } catch (error) {
+      ElMessage.error(getFirstValidateMessage(error))
     }
   }
 

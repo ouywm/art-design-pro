@@ -8,129 +8,100 @@
     body-class="!pt-2.5"
   >
     <div
-      class="grid h-[min(78vh,860px)] min-h-0 grid-cols-1 gap-[18px] xl:grid-cols-[minmax(0,1fr)_308px]"
+      class="grid h-[min(78vh,820px)] min-h-0 grid-cols-1 gap-[18px] xl:grid-cols-[minmax(0,1fr)_300px]"
     >
-      <!-- 左栏:表单 -->
       <ElScrollbar class="min-h-0 min-w-0">
         <ElForm
           ref="formRef"
           :model="formData"
           :rules="rules"
-          label-width="90px"
+          label-width="108px"
           label-position="right"
           v-loading="detailLoading"
           class="pr-1 pb-1"
         >
-          <!-- Section 1: 基础信息 -->
           <section class="job-section">
             <div class="job-section__head">
               <div>
                 <div class="job-section__title">基础信息</div>
                 <div class="job-section__subtitle">
-                  定义任务身份、分组与处理器。处理器列表来自后端注册表,只能从下方卡片中选择。
+                  真实后端使用 namespace、appName 和 key 标识任务，处理器填写 RatchJob Bean 名称。
                 </div>
               </div>
             </div>
+
             <ElRow :gutter="18">
               <ElCol :span="12">
-                <ElFormItem label="任务名称" prop="name">
+                <ElFormItem label="命名空间" prop="namespace">
+                  <ElInput v-model="formData.namespace" maxlength="128" placeholder="例如 xxl" />
+                </ElFormItem>
+              </ElCol>
+              <ElCol :span="12">
+                <ElFormItem label="应用" prop="appName">
                   <ElInput
-                    v-model="formData.name"
-                    maxlength="100"
-                    placeholder="例如:清理历史操作日志"
+                    v-model="formData.appName"
+                    maxlength="128"
+                    placeholder="例如 summerrs-admin-executor"
                   />
                 </ElFormItem>
               </ElCol>
               <ElCol :span="12">
-                <ElFormItem label="分组" prop="groupName">
+                <ElFormItem label="任务 Key" prop="key">
                   <ElInput
-                    v-model="formData.groupName"
-                    maxlength="100"
-                    placeholder="默认 default"
-                  />
-                </ElFormItem>
-              </ElCol>
-              <ElCol :span="24">
-                <ElFormItem label="任务编码" prop="handler">
-                  <ElInput
-                    :model-value="formData.handler"
-                    readonly
-                    placeholder="请从下方卡片选择处理器"
+                    v-model="formData.key"
+                    maxlength="128"
+                    placeholder="例如 socket-session-gc"
                     class="job-mono-input"
                   />
                 </ElFormItem>
               </ElCol>
+              <ElCol :span="12">
+                <ElFormItem label="运行模式" prop="runMode">
+                  <ElSelect v-model="formData.runMode" placeholder="请选择运行模式" class="w-full">
+                    <ElOption
+                      v-for="item in RUN_MODE_OPTIONS"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                    />
+                  </ElSelect>
+                </ElFormItem>
+              </ElCol>
+              <ElCol :span="24">
+                <ElFormItem label="处理器" prop="handleName">
+                  <ElInput
+                    v-model="formData.handleName"
+                    maxlength="256"
+                    placeholder="BEAN 模式必填，例如 socket_session_gc"
+                    class="job-mono-input"
+                  />
+                </ElFormItem>
+              </ElCol>
+              <ElCol :span="24">
+                <ElFormItem label="任务描述" prop="description">
+                  <ElInput
+                    v-model="formData.description"
+                    maxlength="500"
+                    show-word-limit
+                    placeholder="请输入任务描述"
+                  />
+                </ElFormItem>
+              </ElCol>
             </ElRow>
-            <div
-              v-if="handlerLoading"
-              class="rounded-custom-sm border border-[var(--default-border)] bg-[var(--default-box-color)] px-3 py-6 text-center text-xs text-g-500"
-            >
-              加载处理器列表...
-            </div>
-            <div
-              v-else-if="!handlerOptions.length"
-              class="rounded-custom-sm border border-dashed border-[var(--default-border)] bg-[var(--default-box-color)] px-3 py-6 text-center text-xs text-g-500"
-            >
-              后端未返回任何 handler,请联系后端确认 /api/scheduler/handlers
-            </div>
-            <div v-else class="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <button
-                v-for="opt in handlerOptions"
-                :key="opt.value"
-                type="button"
-                :class="[
-                  'min-h-[116px] cursor-pointer rounded-custom-sm border px-4 py-3.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_28px_rgba(15,23,42,0.05)]',
-                  formData.handler === opt.value
-                    ? 'border-[var(--theme-color)] bg-[color-mix(in_srgb,var(--theme-color)_10%,var(--default-box-color))] shadow-[0_16px_28px_rgba(15,23,42,0.05)]'
-                    : 'border-[var(--default-border)] bg-[var(--default-box-color)] hover:border-[color-mix(in_srgb,var(--theme-color)_35%,var(--default-border))]'
-                ]"
-                @click="selectHandler(opt.value)"
-              >
-                <div class="mb-2 flex items-center justify-between gap-2">
-                  <span class="text-sm font-semibold text-g-900">
-                    {{ getHandlerCardTitle(opt.value) }}
-                  </span>
-                  <span
-                    v-if="getHandlerMeta(opt.value)?.category"
-                    class="rounded-full bg-[color-mix(in_srgb,var(--theme-color)_12%,transparent)] px-2 py-0.5 text-xs text-theme"
-                  >
-                    {{ getHandlerMeta(opt.value)!.category }}
-                  </span>
-                </div>
-                <div
-                  class="line-clamp-2 min-h-10 text-xs leading-[1.7] text-g-700"
-                  :title="getHandlerCardDesc(opt)"
-                >
-                  {{ getHandlerCardDesc(opt) }}
-                </div>
-              </button>
-            </div>
           </section>
 
-          <!-- Section 2: 调度策略 -->
           <section class="job-section">
             <div class="job-section__head">
               <div>
                 <div class="job-section__title">调度策略</div>
-                <div class="job-section__subtitle">配置频率、启停策略与并发行为。</div>
+                <div class="job-section__subtitle"
+                  >按 RatchJob Open API 的调度类型填写对应参数。</div
+                >
               </div>
-              <ElButton
-                link
-                type="primary"
-                class="!px-0"
-                :disabled="!currentMeta"
-                @click="applyRecommended"
-              >
-                应用推荐配置
-              </ElButton>
             </div>
 
             <ElFormItem label="调度类型" prop="scheduleType">
-              <ElSelect
-                v-model="formData.scheduleType"
-                placeholder="请选择调度类型"
-                style="width: 100%"
-              >
+              <ElSelect v-model="formData.scheduleType" placeholder="请选择调度类型" class="w-full">
                 <ElOption
                   v-for="item in SCHEDULE_TYPE_OPTIONS"
                   :key="item.value"
@@ -140,11 +111,15 @@
               </ElSelect>
             </ElFormItem>
 
-            <ElFormItem v-if="formData.scheduleType === 'Cron'" label="Cron 表达式" prop="cronExpr">
+            <ElFormItem
+              v-if="formData.scheduleType === 'CRON'"
+              label="Cron 表达式"
+              prop="cronValue"
+            >
               <div class="flex w-full flex-col gap-2.5">
                 <ElInput
-                  v-model="formData.cronExpr"
-                  placeholder="点击配置 Cron 表达式"
+                  v-model="formData.cronValue"
+                  placeholder="例如 0 */10 * * * *"
                   class="job-mono-input"
                 >
                   <template #prepend>Cron</template>
@@ -174,37 +149,38 @@
             </ElFormItem>
 
             <ElFormItem
-              v-if="formData.scheduleType === 'FixedRate'"
-              label="间隔 (ms)"
-              prop="intervalMs"
+              v-if="formData.scheduleType === 'INTERVAL'"
+              label="间隔秒数"
+              prop="intervalSecond"
             >
               <ElInputNumber
-                v-model="formData.intervalMs"
-                :min="100"
-                :step="1000"
+                v-model="formData.intervalSecond"
+                :min="1"
+                :step="10"
                 controls-position="right"
-                style="width: 100%"
-                placeholder="毫秒"
+                class="w-full"
               />
             </ElFormItem>
 
-            <ElFormItem v-if="formData.scheduleType === 'Oneshot'" label="触发时间" prop="fireTime">
-              <ElDatePicker
-                v-model="formData.fireTime"
-                type="datetime"
-                value-format="YYYY-MM-DDTHH:mm:ss"
-                placeholder="选择一次性触发时间"
-                clearable
-                style="width: 100%"
+            <ElFormItem
+              v-if="formData.scheduleType === 'DELAY'"
+              label="延迟秒数"
+              prop="delaySecond"
+            >
+              <ElInputNumber
+                v-model="formData.delaySecond"
+                :min="1"
+                :step="10"
+                controls-position="right"
+                class="w-full"
               />
             </ElFormItem>
 
             <ElFormItem label="任务状态">
-              <ElSegmented v-model="enabledSeg" :options="ENABLED_SEG_OPTIONS" />
+              <ElSegmented v-model="enableSeg" :options="ENABLE_SEG_OPTIONS" />
             </ElFormItem>
           </section>
 
-          <!-- Section 2.6: 高级设置(默认折叠) -->
           <section class="job-section">
             <ElCollapse>
               <ElCollapseItem name="advanced">
@@ -212,30 +188,77 @@
                   <div>
                     <div class="job-section__title">高级设置</div>
                     <div class="job-section__subtitle">
-                      Misfire 补跑、路由策略、超时、重试、去重、分片 —— 默认值能满足大部分场景。
+                      路由、补跑、阻塞、超时和重试策略；默认值覆盖大部分任务。
                     </div>
                   </div>
                 </template>
                 <ElRow :gutter="18" class="pt-2">
                   <ElCol :span="12">
-                    <ElFormItem label="超时 (ms)" prop="timeoutMs">
+                    <ElFormItem label="路由策略" prop="routerStrategy">
+                      <ElSelect v-model="formData.routerStrategy" class="w-full">
+                        <ElOption
+                          v-for="item in ROUTER_STRATEGY_OPTIONS"
+                          :key="item.value"
+                          :label="item.label"
+                          :value="item.value"
+                        />
+                      </ElSelect>
+                    </ElFormItem>
+                  </ElCol>
+                  <ElCol :span="12">
+                    <ElFormItem label="补跑策略" prop="pastDueStrategy">
+                      <ElSelect v-model="formData.pastDueStrategy" class="w-full">
+                        <ElOption
+                          v-for="item in PAST_DUE_STRATEGY_OPTIONS"
+                          :key="item.value"
+                          :label="item.label"
+                          :value="item.value"
+                        />
+                      </ElSelect>
+                    </ElFormItem>
+                  </ElCol>
+                  <ElCol :span="12">
+                    <ElFormItem label="阻塞策略" prop="blockingStrategy">
+                      <ElSelect v-model="formData.blockingStrategy" class="w-full">
+                        <ElOption
+                          v-for="item in BLOCKING_STRATEGY_OPTIONS"
+                          :key="item.value"
+                          :label="item.label"
+                          :value="item.value"
+                        />
+                      </ElSelect>
+                    </ElFormItem>
+                  </ElCol>
+                  <ElCol :span="12">
+                    <ElFormItem label="超时秒数" prop="timeoutSecond">
                       <ElInputNumber
-                        v-model="formData.timeoutMs"
+                        v-model="formData.timeoutSecond"
                         :min="0"
-                        :step="1000"
+                        :step="10"
                         controls-position="right"
-                        style="width: 100%"
+                        class="w-full"
                       />
                     </ElFormItem>
                   </ElCol>
                   <ElCol :span="12">
-                    <ElFormItem label="最大重试" prop="retryMax">
+                    <ElFormItem label="重试次数" prop="tryTimes">
                       <ElInputNumber
-                        v-model="formData.retryMax"
+                        v-model="formData.tryTimes"
                         :min="0"
                         :step="1"
                         controls-position="right"
-                        style="width: 100%"
+                        class="w-full"
+                      />
+                    </ElFormItem>
+                  </ElCol>
+                  <ElCol :span="12">
+                    <ElFormItem label="重试间隔" prop="retryInterval">
+                      <ElInputNumber
+                        v-model="formData.retryInterval"
+                        :min="0"
+                        :step="5"
+                        controls-position="right"
+                        class="w-full"
                       />
                     </ElFormItem>
                   </ElCol>
@@ -244,123 +267,42 @@
             </ElCollapse>
           </section>
 
-          <!-- Section 3: 任务参数 -->
-          <section class="job-section">
-            <div class="job-section__head">
-              <div>
-                <div class="job-section__title">任务参数</div>
-                <div class="job-section__subtitle">
-                  按处理器能力填写运行参数,建议优先使用默认值。
-                </div>
-              </div>
-              <ElButton
-                link
-                type="primary"
-                class="!px-0"
-                :disabled="!hasParamsSchema"
-                @click="restoreDefaultParams"
-              >
-                恢复默认参数
-              </ElButton>
-            </div>
-
-            <div class="mb-3">
-              <ElSegmented
-                v-model="paramsMode"
-                :options="PARAMS_MODE_OPTIONS"
-                :disabled="!hasParamsSchema"
-              />
-            </div>
-
-            <!-- 卡片表单模式 -->
-            <template v-if="paramsMode === 'form' && hasParamsSchema">
-              <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <div
-                  v-for="schema in currentMeta!.paramsSchema"
-                  :key="schema.key"
-                  class="rounded-custom-sm border border-[var(--default-border)] bg-[var(--g-100,var(--default-box-color))] p-3.5"
-                >
-                  <div class="mb-3">
-                    <div class="mb-1 text-sm font-semibold text-g-900">{{ schema.label }}</div>
-                    <div v-if="schema.description" class="text-xs leading-6 text-g-600">
-                      {{ schema.description }}
-                    </div>
-                  </div>
-                  <ElInputNumber
-                    v-if="schema.type === 'number'"
-                    :model-value="paramsObject[schema.key] as number"
-                    :min="schema.min"
-                    :max="schema.max"
-                    :step="schema.step ?? 1"
-                    controls-position="right"
-                    class="w-full"
-                    @update:model-value="(v) => (paramsObject[schema.key] = v ?? schema.default)"
-                  />
-                  <ElSwitch
-                    v-else-if="schema.type === 'switch'"
-                    :model-value="paramsObject[schema.key] as boolean"
-                    @update:model-value="(v) => (paramsObject[schema.key] = v)"
-                  />
-                  <ElInput
-                    v-else
-                    :model-value="paramsObject[schema.key] as string"
-                    @update:model-value="(v) => (paramsObject[schema.key] = v)"
-                  />
-                </div>
-              </div>
-            </template>
-
-            <!-- JSON 高级模式 / 没 schema 时回退 -->
-            <template v-else>
-              <ElFormItem label="paramsJson" prop="paramsJsonText" label-width="90px">
-                <ElInput
-                  v-model="formData.paramsJsonText"
-                  type="textarea"
-                  :rows="6"
-                  class="json-textarea"
-                  placeholder='任意 JSON,handler 内通过 ctx.params 拿到。例:{"userId": 100}'
-                />
-              </ElFormItem>
-            </template>
-          </section>
-
-          <!-- Section 4: 补充说明 -->
           <section class="job-section">
             <div class="mb-4">
-              <div class="job-section__title">补充说明</div>
-              <div class="job-section__subtitle">记录维护说明、变更背景或特殊执行约束。</div>
+              <div class="job-section__title">任务参数</div>
+              <div class="job-section__subtitle">
+                真实后端字段为 triggerParam，按字符串发送，最长 4000 字符。
+              </div>
             </div>
-            <ElFormItem label="备注" prop="description" class="!mb-0">
+            <ElFormItem label="触发参数" prop="triggerParamText" class="!mb-0">
               <ElInput
-                v-model="formData.description"
+                v-model="formData.triggerParamText"
                 type="textarea"
-                maxlength="500"
+                maxlength="4000"
                 show-word-limit
-                :rows="4"
-                placeholder="请输入任务备注"
+                :rows="6"
+                class="json-textarea"
+                placeholder='例如 {"userId": 100}，也可以留空'
               />
             </ElFormItem>
           </section>
         </ElForm>
       </ElScrollbar>
 
-      <!-- 右栏:侧边栏 -->
       <ElScrollbar class="min-h-0 xl:overflow-hidden">
         <div class="flex min-h-full flex-col gap-3.5 pb-1">
-          <!-- 当前处理器 -->
           <div
             class="rounded-[calc(var(--custom-radius)+4px)] border border-transparent bg-[linear-gradient(135deg,color-mix(in_srgb,var(--theme-color)_78%,#10213a)_0%,var(--theme-color)_100%)] p-4"
           >
             <div class="mb-2 text-xs font-semibold text-white/72">当前处理器</div>
             <div class="mb-2 text-lg font-bold text-white">
-              {{ currentMeta?.label || formData.handler || '未选择' }}
+              {{ formData.handleName || '未填写' }}
             </div>
             <div class="text-[13px] leading-7 text-white/86">
-              {{ currentMeta?.description || '请在左侧选择或填写处理器编码。' }}
+              BEAN 模式会调用执行器中注册的 handleName。
             </div>
           </div>
 
-          <!-- 配置摘要 -->
           <div
             class="rounded-[calc(var(--custom-radius)+4px)] border border-[var(--default-border)] bg-[var(--default-box-color)] p-4"
           >
@@ -379,33 +321,14 @@
             </ul>
           </div>
 
-          <!-- 推荐设置 -->
           <div
             class="rounded-[calc(var(--custom-radius)+4px)] border border-[var(--default-border)] bg-[var(--default-box-color)] p-4"
           >
-            <div class="mb-3 text-xs font-semibold text-g-600">推荐设置</div>
+            <div class="mb-3 text-xs font-semibold text-g-600">字段提示</div>
             <div class="flex flex-col gap-2.5 text-[13px] leading-7 text-g-700">
-              <div v-for="(line, idx) in recommendedTips" :key="idx">{{ line }}</div>
-            </div>
-          </div>
-
-          <!-- 默认参数 -->
-          <div
-            v-if="hasParamsSchema"
-            class="rounded-[calc(var(--custom-radius)+4px)] border border-[var(--default-border)] bg-[var(--default-box-color)] p-4"
-          >
-            <div class="mb-3 text-xs font-semibold text-g-600">默认参数</div>
-            <div class="flex flex-col gap-2.5">
-              <div
-                v-for="schema in currentMeta!.paramsSchema"
-                :key="schema.key"
-                class="flex items-center justify-between gap-3 text-[13px] text-g-700"
-              >
-                <span>{{ schema.label }}</span>
-                <strong class="max-w-[160px] truncate text-right text-g-900">
-                  {{ formatDefault(schema.default) }}
-                </strong>
-              </div>
+              <div>appName 与 namespace 必填，长度 1-128。</div>
+              <div>CRON 必填 cronValue，INTERVAL/DELAY 必填对应秒数。</div>
+              <div>第一版真实后端暂不提供手动触发接口。</div>
             </div>
           </div>
         </div>
@@ -420,8 +343,8 @@
 
   <CronConfigDialog
     v-model:visible="cronDialogVisible"
-    :cron="formData.cronExpr"
-    @confirm="(value) => (formData.cronExpr = value)"
+    :cron="formData.cronValue"
+    @confirm="(value) => (formData.cronValue = value)"
   />
 </template>
 
@@ -430,21 +353,29 @@
   import { ElMessage, type FormInstance, type FormItemRule, type FormRules } from 'element-plus'
   import { fetchCreateJob, fetchGetJobDetail, fetchUpdateJob } from '@/api/scheduler-job'
   import type { DialogType } from '@/types'
-  import { SCHEDULE_TYPE_OPTIONS, summarizeSchedule } from '../../constants'
+  import {
+    BLOCKING_STRATEGY_OPTIONS,
+    PAST_DUE_STRATEGY_OPTIONS,
+    ROUTER_STRATEGY_OPTIONS,
+    RUN_MODE_OPTIONS,
+    SCHEDULE_TYPE_OPTIONS,
+    getRunModeLabel,
+    getScheduleTypeLabel,
+    summarizeSchedule
+  } from '../../constants'
   import { computeNextFires, humanizeCron, validateCron } from '../../utils/cron-preview'
-  import { HANDLER_META, getHandlerMeta } from '../handler-meta'
-  // 注意:HANDLER_META 仅用于补全后端 handler 的描述/类别/参数 schema(可选元数据)
-  // 处理器卡片本身从 props.handlerOptions 来,以后端为准
-  void HANDLER_META
-  import type { FormModel, HandlerOption, JobListItem } from '../types'
+  import type { FormModel, JobListItem } from '../types'
+  import {
+    buildCreateJobPayload,
+    buildUpdateJobPayload,
+    createDefaultFormData
+  } from '../job-payload'
   import CronConfigDialog from './cron-config-dialog.vue'
 
   interface Props {
     visible: boolean
     type: DialogType
     jobData?: Partial<JobListItem>
-    handlerOptions: HandlerOption[]
-    handlerLoading?: boolean
   }
 
   interface Emits {
@@ -471,293 +402,103 @@
   })
 
   const dialogType = computed(() => props.type)
-
-  // ============ 表单模型 ============
-
-  const createDefaultFormData = (): FormModel => ({
-    name: '',
-    groupName: 'default',
-    description: '',
-    handler: '',
-    scheduleType: 'Cron',
-    cronExpr: '',
-    intervalMs: undefined,
-    fireTime: '',
-    paramsJsonText: '{}',
-    enabled: true,
-    timeoutMs: 0,
-    retryMax: 0,
-    tenantId: undefined
-  })
-
   const formData = reactive<FormModel>(createDefaultFormData())
 
-  // ============ 启用/停用 segmented(双向同步 enabled boolean) ============
-
-  const ENABLED_SEG_OPTIONS = [
+  const ENABLE_SEG_OPTIONS = [
     { label: '启用', value: 'on' },
     { label: '停用', value: 'off' }
   ]
 
-  const enabledSeg = computed({
-    get: () => (formData.enabled ? 'on' : 'off'),
-    set: (v: string) => {
-      formData.enabled = v === 'on'
+  const enableSeg = computed({
+    get: () => (formData.enable ? 'on' : 'off'),
+    set: (value: string) => {
+      formData.enable = value === 'on'
     }
   })
 
-  // ============ 任务参数模式切换 ============
-
-  const PARAMS_MODE_OPTIONS = [
-    { label: '卡片表单', value: 'form' },
-    { label: 'JSON 高级', value: 'json' }
-  ]
-
-  const paramsMode = ref<'form' | 'json'>('form')
-  const paramsObject = reactive<Record<string, unknown>>({})
-
-  const currentMeta = computed(() => getHandlerMeta(formData.handler))
-  const hasParamsSchema = computed(
-    () => !!currentMeta.value && currentMeta.value.paramsSchema.length > 0
-  )
-
-  // ============ 处理器卡片选中 ============
-
-  const selectHandler = (name: string) => {
-    formData.handler = name
-  }
-
-  // ============ 处理器卡片显示文案(后端 name → 前端 meta 兜底) ============
-
-  const getHandlerCardTitle = (name: string): string => {
-    return getHandlerMeta(name)?.label || name
-  }
-
-  // 描述优先级:后端 description > 本地 meta > 默认兜底
-  const getHandlerCardDesc = (opt: HandlerOption): string => {
-    return (
-      opt.description?.trim() ||
-      getHandlerMeta(opt.value)?.description ||
-      '该处理器暂无介绍,可直接使用并自定义参数。'
-    )
-  }
-
-  // ============ 应用推荐配置 ============
-
-  const applyRecommended = () => {
-    const meta = currentMeta.value
-    if (!meta) return
-    formData.scheduleType = 'Cron'
-    formData.cronExpr = meta.recommendedCron
-    ElMessage.success('已应用推荐配置')
-  }
-
-  // ============ 恢复默认参数 ============
-
-  const restoreDefaultParams = () => {
-    if (!currentMeta.value) return
-    Object.keys(paramsObject).forEach((k) => delete paramsObject[k])
-    currentMeta.value.paramsSchema.forEach((s) => {
-      paramsObject[s.key] = s.default
-    })
-    syncParamsObjectToJson()
-    ElMessage.success('已恢复默认参数')
-  }
-
-  // ============ 卡片 ↔ JSON 双向同步 ============
-
-  const syncParamsObjectToJson = () => {
-    try {
-      formData.paramsJsonText = JSON.stringify(paramsObject, null, 2)
-    } catch {
-      // 忽略
-    }
-  }
-
-  watch(
-    paramsObject,
-    () => {
-      if (paramsMode.value === 'form') syncParamsObjectToJson()
-    },
-    { deep: true }
-  )
-
-  watch(paramsMode, (mode, prev) => {
-    if (mode === 'form' && prev === 'json') {
-      // JSON → 表单:尝试解析,失败则切回 json
-      try {
-        const parsed = JSON.parse(formData.paramsJsonText || '{}')
-        if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
-          Object.keys(paramsObject).forEach((k) => delete paramsObject[k])
-          Object.assign(paramsObject, parsed)
-        }
-      } catch {
-        ElMessage.warning('当前 JSON 格式无效,已保留 JSON 模式')
-        nextTick(() => (paramsMode.value = 'json'))
-      }
-    }
-  })
-
-  // 处理器变化:若卡片模式且 schema 存在,初始化 paramsObject
-  watch(
-    () => formData.handler,
-    (handler) => {
-      const meta = getHandlerMeta(handler)
-      // 切到没 schema 的 handler:回退到 JSON
-      if (!meta || meta.paramsSchema.length === 0) {
-        paramsMode.value = 'json'
-        return
-      }
-      // 有 schema:用现有 JSON 解析填充,缺失键用 default 兜底
-      let parsed: Record<string, unknown> = {}
-      try {
-        parsed = JSON.parse(formData.paramsJsonText || '{}') || {}
-      } catch {
-        parsed = {}
-      }
-      Object.keys(paramsObject).forEach((k) => delete paramsObject[k])
-      meta.paramsSchema.forEach((s) => {
-        paramsObject[s.key] = s.key in parsed ? parsed[s.key] : s.default
-      })
-      syncParamsObjectToJson()
-    }
-  )
-
-  // ============ 校验 ============
-
-  const validateScheduleField: FormItemRule['validator'] = (_rule, value, callback) => {
-    const type = formData.scheduleType
-    if (type === 'Cron') {
-      if (!String(value || '').trim()) {
-        callback(new Error('Cron 任务必须填写表达式'))
-        return
-      }
-    } else if (type === 'FixedRate') {
-      if (typeof formData.intervalMs !== 'number' || formData.intervalMs <= 0) {
-        callback(new Error('固定频率任务必须填写大于 0 的间隔'))
-        return
-      }
-    } else if (type === 'Oneshot') {
-      if (!String(value || '').trim()) {
-        callback(new Error('一次性任务必须填写触发时间'))
-        return
-      }
+  const validateBeanHandle: FormItemRule['validator'] = (_rule, value, callback) => {
+    if (formData.runMode === 'BEAN' && !String(value || '').trim()) {
+      callback(new Error('BEAN 运行模式必须填写处理器名称'))
+      return
     }
     callback()
   }
 
-  const validateParamsJson: FormItemRule['validator'] = (_rule, value, callback) => {
-    const text = String(value || '').trim()
-    if (!text) {
-      callback()
+  const validateScheduleField: FormItemRule['validator'] = (_rule, value, callback) => {
+    const type = formData.scheduleType
+    if (type === 'CRON' && !String(value || '').trim()) {
+      callback(new Error('CRON 调度必须填写 Cron 表达式'))
       return
     }
-    try {
-      JSON.parse(text)
-      callback()
-    } catch {
-      callback(new Error('JSON 格式不合法'))
+    if (type === 'INTERVAL' && (!formData.intervalSecond || formData.intervalSecond <= 0)) {
+      callback(new Error('固定间隔任务必须填写大于 0 的间隔秒数'))
+      return
     }
+    if (type === 'DELAY' && (!formData.delaySecond || formData.delaySecond <= 0)) {
+      callback(new Error('延迟任务必须填写大于 0 的延迟秒数'))
+      return
+    }
+    callback()
   }
 
   const rules: FormRules = {
-    name: [
-      { required: true, message: '请输入任务名称', trigger: 'blur' },
-      { min: 1, max: 128, message: '名称长度 1-128', trigger: 'blur' }
+    appName: [
+      { required: true, message: '请输入应用名称', trigger: 'blur' },
+      { min: 1, max: 128, message: '长度 1-128', trigger: 'blur' }
     ],
-    handler: [{ required: true, message: '请填写或选择任务编码', trigger: 'change' }],
+    namespace: [
+      { required: true, message: '请输入命名空间', trigger: 'blur' },
+      { min: 1, max: 128, message: '长度 1-128', trigger: 'blur' }
+    ],
+    key: [{ max: 128, message: '最长 128 个字符', trigger: 'blur' }],
+    description: [{ max: 500, message: '最长 500 个字符', trigger: 'blur' }],
+    handleName: [
+      { validator: validateBeanHandle, trigger: 'blur' },
+      { max: 256, message: '最长 256 个字符', trigger: 'blur' }
+    ],
     scheduleType: [{ required: true, message: '请选择调度类型', trigger: 'change' }],
-    cronExpr: [{ validator: validateScheduleField, trigger: 'change' }],
-    intervalMs: [{ validator: validateScheduleField, trigger: 'change' }],
-    fireTime: [{ validator: validateScheduleField, trigger: 'change' }],
-    paramsJsonText: [{ validator: validateParamsJson, trigger: 'blur' }]
+    cronValue: [{ validator: validateScheduleField, trigger: 'change' }],
+    intervalSecond: [{ validator: validateScheduleField, trigger: 'change' }],
+    delaySecond: [{ validator: validateScheduleField, trigger: 'change' }],
+    triggerParamText: [{ max: 4000, message: '最长 4000 个字符', trigger: 'blur' }]
   }
 
-  // ============ Cron 描述 / 下次执行 ============
-
   const cronDescription = computed(() => {
-    if (!formData.cronExpr) return '请先填写或配置 Cron 表达式'
-    const v = validateCron(formData.cronExpr)
-    return v.valid ? humanizeCron(formData.cronExpr) : v.reason || '表达式不合法'
+    if (!formData.cronValue) return '请先填写或配置 Cron 表达式'
+    const result = validateCron(formData.cronValue)
+    return result.valid ? humanizeCron(formData.cronValue) : result.reason || '表达式不合法'
   })
 
   const nextFireText = computed(() => {
-    if (!formData.cronExpr) return '-'
+    if (!formData.cronValue) return '-'
     try {
-      const list = computeNextFires(formData.cronExpr, 1)
+      const list = computeNextFires(formData.cronValue, 1)
       return list[0]?.local || '-'
     } catch {
       return '-'
     }
   })
 
-  // ============ 配置摘要 / 推荐说明 ============
-
   type SummaryItem = { label: string; value: string }
-  const summaryItems = computed<SummaryItem[]>(() => {
-    const items: SummaryItem[] = [
-      { label: '任务编码', value: formData.handler || '-' },
-      { label: '执行状态', value: formData.enabled ? '启用' : '停用' },
-      {
-        label: '分组',
-        value: formData.groupName || 'default'
-      },
-      {
-        label: 'Cron',
-        value:
-          formData.scheduleType === 'Cron'
-            ? formData.cronExpr || '-'
-            : summarizeSchedule(
-                formData.scheduleType,
-                formData.cronExpr,
-                formData.intervalMs ?? null,
-                formData.fireTime || null
-              ) || '-'
-      }
-    ]
-    if (currentMeta.value && hasParamsSchema.value) {
-      items.push({ label: '参数项数', value: String(currentMeta.value.paramsSchema.length) })
+  const summaryItems = computed<SummaryItem[]>(() => [
+    { label: '命名空间', value: formData.namespace || '-' },
+    { label: '应用', value: formData.appName || '-' },
+    { label: '运行模式', value: getRunModeLabel(formData.runMode) },
+    { label: '处理器', value: formData.handleName || '-' },
+    { label: '状态', value: formData.enable ? '启用' : '停用' },
+    {
+      label: getScheduleTypeLabel(formData.scheduleType),
+      value: summarizeSchedule(
+        formData.scheduleType,
+        formData.cronValue || null,
+        formData.intervalSecond ?? null,
+        formData.delaySecond ?? null
+      )
     }
-    return items
-  })
-
-  const recommendedTips = computed(() => {
-    const meta = currentMeta.value
-    if (!meta) {
-      return [
-        '选择处理器后,这里会显示对应分类的推荐执行策略。',
-        '日志清理类任务建议安排在业务低峰期执行。',
-        '任务编码建议长期稳定,便于后续接入告警与审计检索。'
-      ]
-    }
-    return [
-      `${meta.category}类任务推荐 Cron: ${meta.recommendedCron} (${humanizeCron(meta.recommendedCron) || '自定义'})`,
-      '任务编码建议长期稳定,便于后续接入告警、监控与审计检索。'
-    ]
-  })
-
-  const formatDefault = (v: unknown): string => {
-    if (typeof v === 'boolean') return v ? '是' : '否'
-    if (v === null || v === undefined) return '-'
-    return String(v)
-  }
-
-  // ============ 加载详情 ============
-
-  const stringifyJson = (value: unknown) => {
-    if (value === undefined || value === null) return ''
-    if (typeof value === 'string') return value
-    try {
-      return JSON.stringify(value, null, 2)
-    } catch {
-      return ''
-    }
-  }
+  ])
 
   const resetFormData = () => {
     Object.assign(formData, createDefaultFormData())
-    Object.keys(paramsObject).forEach((k) => delete paramsObject[k])
-    paramsMode.value = 'form'
   }
 
   const initFormData = async () => {
@@ -770,19 +511,24 @@
     try {
       const detail = await fetchGetJobDetail(props.jobData!.id!)
       Object.assign(formData, {
-        name: detail.name,
-        groupName: detail.groupName || 'default',
+        appName: detail.appName,
+        namespace: detail.namespace,
+        key: detail.key || '',
         description: detail.description || '',
-        handler: detail.handler,
         scheduleType: detail.scheduleType,
-        cronExpr: detail.cronExpr || '',
-        intervalMs: detail.intervalMs ?? undefined,
-        fireTime: detail.fireTime || '',
-        paramsJsonText: stringifyJson(detail.paramsJson),
-        enabled: detail.enabled,
-        timeoutMs: detail.timeoutMs ?? 0,
-        retryMax: detail.retryMax ?? 0,
-        tenantId: detail.tenantId ?? undefined
+        cronValue: detail.cronValue || '',
+        delaySecond: detail.delaySecond || undefined,
+        intervalSecond: detail.intervalSecond || undefined,
+        runMode: detail.runMode,
+        handleName: detail.handleName || '',
+        triggerParamText: detail.triggerParam || '',
+        routerStrategy: detail.routerStrategy,
+        pastDueStrategy: detail.pastDueStrategy,
+        blockingStrategy: detail.blockingStrategy,
+        timeoutSecond: detail.timeoutSecond,
+        tryTimes: detail.tryTimes,
+        retryInterval: detail.retryInterval,
+        enable: detail.enable
       })
     } finally {
       detailLoading.value = false
@@ -799,25 +545,6 @@
     }
   )
 
-  // ============ 提交 ============
-
-  const buildSchedulePayload = () => {
-    const type = formData.scheduleType
-    return {
-      cronExpr: type === 'Cron' ? formData.cronExpr.trim() || null : null,
-      intervalMs: type === 'FixedRate' ? Number(formData.intervalMs ?? 0) || null : null,
-      fireTime: type === 'Oneshot' ? formData.fireTime || null : null
-    }
-  }
-
-  const buildParamsJson = (): unknown => {
-    if (paramsMode.value === 'form' && hasParamsSchema.value) {
-      return { ...paramsObject }
-    }
-    const text = formData.paramsJsonText.trim()
-    return text ? JSON.parse(text) : {}
-  }
-
   const handleSubmit = async () => {
     if (!formRef.value) return
     try {
@@ -828,26 +555,8 @@
 
     submitLoading.value = true
     try {
-      const paramsJson = buildParamsJson()
-      const schedule = buildSchedulePayload()
-
       if (dialogType.value === 'add') {
-        const createPayload: Api.Scheduler.CreateJobParams = {
-          name: formData.name.trim(),
-          groupName: formData.groupName.trim() || undefined,
-          description: formData.description.trim() || undefined,
-          handler: formData.handler,
-          scheduleType: formData.scheduleType,
-          cronExpr: schedule.cronExpr ?? undefined,
-          intervalMs: schedule.intervalMs ?? undefined,
-          fireTime: schedule.fireTime ?? undefined,
-          paramsJson,
-          enabled: formData.enabled,
-          timeoutMs: formData.timeoutMs,
-          retryMax: formData.retryMax,
-          tenantId: formData.tenantId
-        }
-        await fetchCreateJob(createPayload)
+        await fetchCreateJob(buildCreateJobPayload(formData))
         ElMessage.success('新增成功')
         dialogVisible.value = false
         emit('submit', dialogType.value)
@@ -855,21 +564,7 @@
       }
 
       if (props.jobData?.id) {
-        const updatePayload: Api.Scheduler.UpdateJobParams = {
-          name: formData.name.trim(),
-          groupName: formData.groupName.trim(),
-          description: formData.description.trim(),
-          handler: formData.handler,
-          scheduleType: formData.scheduleType,
-          cronExpr: schedule.cronExpr,
-          intervalMs: schedule.intervalMs,
-          fireTime: schedule.fireTime,
-          paramsJson,
-          enabled: formData.enabled,
-          timeoutMs: formData.timeoutMs,
-          retryMax: formData.retryMax
-        }
-        await fetchUpdateJob(props.jobData.id, updatePayload)
+        await fetchUpdateJob(props.jobData.id, buildUpdateJobPayload(formData))
         ElMessage.success('更新成功')
         dialogVisible.value = false
         emit('submit', dialogType.value)
@@ -918,14 +613,13 @@
     }
   }
 
-  .job-mono-input :deep(.el-input__inner) {
+  .job-mono-input :deep(.el-input__inner),
+  .json-textarea :deep(.el-textarea__inner) {
     font-family:
       ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, 'Courier New', monospace;
   }
 
   .json-textarea :deep(.el-textarea__inner) {
-    font-family:
-      ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, 'Courier New', monospace;
     font-size: 12.5px;
     line-height: 1.55;
   }

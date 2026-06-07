@@ -1,80 +1,83 @@
 <template>
   <ElDrawer v-model="drawerVisible" :size="drawerSize" title="执行记录详情" destroy-on-close>
-    <div v-loading="loading" class="run-detail">
-      <template v-if="detail">
-        <div class="run-detail__header">
-          <ElTag size="large" :type="getRunStateTagType(detail.state)">
-            {{ getRunStateLabel(detail.state) }}
-          </ElTag>
-          <ElTag size="large" type="info">
-            {{ getTriggerTypeLabel(detail.triggerType) }}
-          </ElTag>
-          <span v-if="detail.retryCount > 0" class="run-detail__retry">
-            重试 #{{ detail.retryCount }}
-          </span>
-        </div>
+    <div v-if="runData" class="run-detail">
+      <div class="run-detail__header">
+        <ElTag size="large" :type="getTaskStatusTagType(runData.status)">
+          {{ getTaskStatusLabel(runData.status) }}
+        </ElTag>
+        <span v-if="runData.retryCount > 0" class="run-detail__retry">
+          重试 #{{ runData.retryCount }}
+        </span>
+      </div>
 
-        <ElDescriptions :column="2" border>
-          <ElDescriptionsItem label="Run ID">{{ detail.id }}</ElDescriptionsItem>
-          <ElDescriptionsItem label="任务 ID">{{ detail.jobId }}</ElDescriptionsItem>
-          <ElDescriptionsItem label="Trace ID" :span="2">
-            <span class="trace-id">{{ detail.traceId }}</span>
-            <ElButton link type="primary" @click="copyTraceId">复制</ElButton>
-          </ElDescriptionsItem>
-          <ElDescriptionsItem label="触发来源" :span="2">
-            {{ formatTriggerBy(detail) }}
+      <ElDescriptions :column="2" border>
+        <ElDescriptionsItem label="记录 ID">{{ runData.taskId }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="任务 ID">{{ runData.jobId }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="执行器地址" :span="2">
+          <span class="mono-text">{{ formatEmpty(runData.instanceAddr) }}</span>
+        </ElDescriptionsItem>
+        <ElDescriptionsItem label="触发来源">{{
+          formatEmpty(runData.triggerFrom)
+        }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="尝试次数">{{ runData.tryTimes }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="重试次数">{{ runData.retryCount }}</ElDescriptionsItem>
+        <ElDescriptionsItem label="重试间隔">{{ runData.retryInterval }} 秒</ElDescriptionsItem>
+        <ElDescriptionsItem label="超时秒数">{{ runData.timeoutSecond }} 秒</ElDescriptionsItem>
+        <ElDescriptionsItem label="执行耗时">
+          {{ formatDuration(runData.executionTime) }}
+        </ElDescriptionsItem>
+      </ElDescriptions>
+
+      <h4 class="run-detail__title">执行时间线</h4>
+      <ElTimeline>
+        <ElTimelineItem
+          :timestamp="formatMillis(runData.triggerTime)"
+          placement="top"
+          type="primary"
+        >
+          触发任务
+        </ElTimelineItem>
+        <ElTimelineItem
+          v-if="runData.finishTime"
+          :timestamp="formatMillis(runData.finishTime)"
+          placement="top"
+          :type="finishTimelineType"
+        >
+          执行结束
+          <span class="elapsed"> (耗时 {{ formatDuration(runData.executionTime) }}) </span>
+        </ElTimelineItem>
+      </ElTimeline>
+
+      <h4 class="run-detail__title">触发消息</h4>
+      <pre class="run-detail__code">{{ formatEmpty(runData.triggerMessage) }}</pre>
+
+      <h4 class="run-detail__title">回调消息</h4>
+      <pre class="run-detail__code">{{ formatEmpty(runData.callbackMessage) }}</pre>
+
+      <template v-if="runData.tryLogs?.length">
+        <h4 class="run-detail__title">尝试日志</h4>
+        <ElDescriptions :column="1" border>
+          <ElDescriptionsItem
+            v-for="(log, index) in runData.tryLogs"
+            :key="index"
+            :label="`#${index + 1}`"
+          >
+            <span class="mono-text">{{ formatMillis(log.executionTime) }} · {{ log.addr }}</span>
           </ElDescriptionsItem>
         </ElDescriptions>
-
-        <h4 class="run-detail__title">执行时间线</h4>
-        <ElTimeline>
-          <ElTimelineItem :timestamp="detail.scheduledAt" placement="top" type="primary">
-            计划触发
-          </ElTimelineItem>
-          <ElTimelineItem
-            v-if="detail.startedAt"
-            :timestamp="detail.startedAt"
-            placement="top"
-            type="warning"
-          >
-            开始执行
-            <span class="elapsed">
-              (等待 {{ elapsed(detail.scheduledAt, detail.startedAt) }})
-            </span>
-          </ElTimelineItem>
-          <ElTimelineItem
-            v-if="detail.finishedAt"
-            :timestamp="detail.finishedAt"
-            placement="top"
-            :type="finishTimelineType"
-          >
-            执行结束
-            <span class="elapsed"> (耗时 {{ elapsed(detail.startedAt, detail.finishedAt) }}) </span>
-          </ElTimelineItem>
-        </ElTimeline>
-
-        <template v-if="detail.errorMessage">
-          <h4 class="run-detail__title">错误信息</h4>
-          <ElAlert type="error" :closable="false" :title="detail.errorMessage" show-icon />
-        </template>
-
-        <h4 class="run-detail__title">结果 JSON</h4>
-        <pre class="run-detail__code">{{ formatJson(detail.resultJson) }}</pre>
       </template>
     </div>
   </ElDrawer>
 </template>
 
 <script setup lang="ts">
-  import { useClipboard, useWindowSize } from '@vueuse/core'
-  import { ElMessage } from 'element-plus'
-  import { fetchGetRunDetail } from '@/api/scheduler-run'
-  import { getRunStateLabel, getRunStateTagType, getTriggerTypeLabel } from '../../constants'
+  import { useWindowSize } from '@vueuse/core'
+  import { getTaskStatusLabel, getTaskStatusTagType } from '../../constants'
   import type { RunDetailData } from '../types'
 
   interface Props {
     visible: boolean
-    runId?: number
+    runData?: RunDetailData
   }
 
   interface Emits {
@@ -92,13 +95,8 @@
     set: (value) => emit('update:visible', value)
   })
 
-  const loading = ref(false)
-  const detail = ref<RunDetailData>()
-  const { copy } = useClipboard()
-
   const finishTimelineType = computed(() => {
-    if (!detail.value) return 'info'
-    const tag = getRunStateTagType(detail.value.state)
+    const tag = getTaskStatusTagType(props.runData?.status)
     return (tag === 'success' || tag === 'danger' || tag === 'warning' ? tag : 'info') as
       | 'success'
       | 'danger'
@@ -106,85 +104,22 @@
       | 'info'
   })
 
-  const loadDetail = async (id: number) => {
-    loading.value = true
-    try {
-      detail.value = await fetchGetRunDetail(id)
-    } finally {
-      loading.value = false
-    }
+  const formatEmpty = (value: unknown) => {
+    if (value === undefined || value === null || value === '') return '-'
+    return String(value)
   }
 
-  watch(
-    () => [props.visible, props.runId],
-    async ([visible, runId]) => {
-      if (!visible || typeof runId !== 'number') return
-      await loadDetail(runId)
-    }
-  )
-
-  watch(
-    () => props.visible,
-    (visible) => {
-      if (!visible) detail.value = undefined
-    }
-  )
-
-  const copyTraceId = async () => {
-    if (!detail.value?.traceId) return
-    await copy(detail.value.traceId)
-    ElMessage.success('Trace ID 已复制')
+  const formatMillis = (value: number | null | undefined) => {
+    if (!value) return '-'
+    return new Date(value).toLocaleString()
   }
 
-  const formatTriggerBy = (run: RunDetailData) => {
-    const label = getTriggerTypeLabel(run.triggerType)
-    if (run.triggerType === 'Manual') {
-      if (run.triggerByName) return `${label} · ${run.triggerByName}`
-      if (run.triggerBy != null) return `${label} · 用户 #${run.triggerBy}(已删除)`
-      return label
-    }
-    if (run.triggerType === 'Retry' && run.triggerBy != null) {
-      return `${label} · 源 Run #${run.triggerBy}`
-    }
-    return label
-  }
-
-  const formatJson = (value: unknown) => {
-    if (value === undefined || value === null) return '-'
-    try {
-      return JSON.stringify(value, null, 2)
-    } catch {
-      return String(value)
-    }
-  }
-
-  // 后端时间是本地时间无时区(YYYY-MM-DDTHH:mm:ss[.fff]),拆字段构造 Date 避免被当成 UTC
-  const parseLocalTime = (value: string): Date | null => {
-    const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?$/.exec(value)
-    if (!m) return null
-    const [, y, mo, d, h, mi, s, ms] = m
-    return new Date(
-      Number(y),
-      Number(mo) - 1,
-      Number(d),
-      Number(h),
-      Number(mi),
-      Number(s),
-      ms ? Number(ms.padEnd(3, '0').slice(0, 3)) : 0
-    )
-  }
-
-  const elapsed = (start: string | null, end: string | null) => {
-    if (!start || !end) return '-'
-    const startDate = parseLocalTime(start)
-    const endDate = parseLocalTime(end)
-    if (!startDate || !endDate) return '-'
-    const diff = endDate.getTime() - startDate.getTime()
-    if (diff < 0) return '-'
-    if (diff < 1000) return `${diff} ms`
-    if (diff < 60_000) return `${(diff / 1000).toFixed(2)} s`
-    if (diff < 3_600_000) return `${(diff / 60_000).toFixed(1)} min`
-    return `${(diff / 3_600_000).toFixed(2)} h`
+  const formatDuration = (value: number | null | undefined) => {
+    if (value === undefined || value === null || value < 0) return '-'
+    if (value < 1000) return `${value} ms`
+    if (value < 60_000) return `${(value / 1000).toFixed(2)} s`
+    if (value < 3_600_000) return `${(value / 60_000).toFixed(1)} min`
+    return `${(value / 3_600_000).toFixed(2)} h`
   }
 </script>
 
@@ -225,8 +160,7 @@
       border-radius: 6px;
     }
 
-    .trace-id {
-      margin-right: 8px;
+    .mono-text {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Courier New', monospace;
       font-size: 12.5px;
     }

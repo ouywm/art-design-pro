@@ -46,6 +46,13 @@
         :menuTree="tableData"
         @submit="handleSubmit"
       />
+
+      <ResourceBindDialog
+        v-model:visible="resourceBindDialogVisible"
+        :action-menu-id="resourceBindAction.id"
+        :action-title="resourceBindAction.title"
+        :auth-mark="resourceBindAction.authMark"
+      />
     </ElCard>
   </div>
 </template>
@@ -56,6 +63,7 @@
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import type { AppRouteRecord } from '@/types/router'
   import MenuDialog from './modules/menu-dialog.vue'
+  import ResourceBindDialog from './modules/resource-bind-dialog.vue'
   import {
     fetchGetAllMenuList,
     fetchDeleteMenu,
@@ -78,6 +86,12 @@
   const dialogType = ref<Api.SystemManage.MenuType>(1)
   const editData = ref<AppRouteRecord | any>(null)
   const lockMenuType = ref(false)
+  const resourceBindDialogVisible = ref(false)
+  const resourceBindAction = reactive({
+    id: undefined as number | undefined,
+    title: '',
+    authMark: ''
+  })
 
   // 搜索相关
   const initialSearchState = {
@@ -209,6 +223,12 @@
 
         if (row.meta?.isAuthButton) {
           return h('div', buttonStyle, [
+            h(ArtButtonTable, {
+              type: 'view',
+              icon: 'ri:link',
+              onClick: () => handleBindResource(row),
+              title: '绑定资源'
+            }),
             h(ArtButtonTable, {
               type: 'edit',
               onClick: () => handleEditAuth(row)
@@ -423,6 +443,21 @@
       sort: row.meta?.sort || 1,
       enabled: row.meta?.enabled ?? true
     })
+
+  /**
+   * 绑定按钮权限对应的后端资源
+   */
+  const handleBindResource = (row: AppRouteRecord): void => {
+    if (!row.id) {
+      ElMessage.error('按钮权限 ID 不存在')
+      return
+    }
+
+    resourceBindAction.id = Number(row.id)
+    resourceBindAction.title = formatMenuTitle(row.meta?.title || '')
+    resourceBindAction.authMark = row.meta?.authMark || ''
+    resourceBindDialogVisible.value = true
+  }
 
   /**
    * 提交表单数据

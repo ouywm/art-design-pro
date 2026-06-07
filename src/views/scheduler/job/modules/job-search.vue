@@ -9,12 +9,10 @@
 </template>
 
 <script setup lang="ts">
-  import { SCHEDULE_TYPE_OPTIONS, ENABLED_OPTIONS } from '../../constants'
-  import type { HandlerOption, SearchFormModel } from '../types'
+  import type { SearchFormModel } from '../types'
 
   interface Props {
     modelValue: SearchFormModel
-    handlerOptions: HandlerOption[]
   }
 
   interface Emits {
@@ -34,55 +32,31 @@
 
   const formItems = computed(() => [
     {
-      label: '名称',
-      key: 'name',
+      label: '命名空间',
+      key: 'namespace',
       type: 'input',
-      placeholder: '请输入任务名',
+      placeholder: '例如 xxl',
       clearable: true
     },
     {
-      label: '分组',
-      key: 'groupName',
+      label: '应用',
+      key: 'appName',
       type: 'input',
-      placeholder: '请输入分组名',
+      placeholder: '请输入 appName',
       clearable: true
     },
     {
-      label: 'Handler',
-      key: 'handler',
-      type: 'select',
-      props: {
-        placeholder: '请选择 handler',
-        clearable: true,
-        filterable: true,
-        options: props.handlerOptions
-      }
-    },
-    {
-      label: '调度类型',
-      key: 'scheduleType',
-      type: 'select',
-      props: {
-        placeholder: '请选择调度类型',
-        clearable: true,
-        options: SCHEDULE_TYPE_OPTIONS
-      }
-    },
-    {
-      label: '状态',
-      key: 'enabled',
-      type: 'select',
-      props: {
-        placeholder: '请选择状态',
-        clearable: true,
-        options: ENABLED_OPTIONS
-      }
-    },
-    {
-      label: '租户 ID',
-      key: 'tenantId',
+      label: '任务描述',
+      key: 'likeDescription',
       type: 'input',
-      placeholder: '可选',
+      placeholder: '模糊搜索描述',
+      clearable: true
+    },
+    {
+      label: '处理器',
+      key: 'likeHandleName',
+      type: 'input',
+      placeholder: '模糊搜索 handleName',
       clearable: true
     }
   ])

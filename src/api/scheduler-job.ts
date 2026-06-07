@@ -1,71 +1,66 @@
 import request from '@/utils/http'
 
-export function fetchGetJobList(params: Api.Scheduler.JobQueryParams) {
+export function fetchGetJobList(params: Api.Scheduler.JobListQuery) {
   return request.get<Api.Scheduler.JobList>({
-    url: '/api/scheduler/jobs',
+    url: '/api/job/list',
     params
   })
 }
 
 export function fetchGetJobDetail(id: number) {
-  return request.get<Api.Scheduler.JobDetailVo>({
-    url: `/api/scheduler/jobs/${id}`
+  return request.get<Api.Scheduler.Job>({
+    url: `/api/job/${id}`
   })
 }
 
-export function fetchCreateJob(params: Api.Scheduler.CreateJobParams) {
-  return request.post<Api.Scheduler.JobDetailVo>({
-    url: '/api/scheduler/jobs',
+export function fetchCreateJob(params: Api.Scheduler.CreateJobPayload) {
+  return request.post<null>({
+    url: '/api/job',
     params
   })
 }
 
-export function fetchUpdateJob(id: number, params: Api.Scheduler.UpdateJobParams) {
-  return request.put<Api.Scheduler.JobDetailVo>({
-    url: `/api/scheduler/jobs/${id}`,
+export function fetchUpdateJob(id: number, params: Api.Scheduler.UpdateJobPayload) {
+  return request.put<null>({
+    url: `/api/job/${id}`,
     params
   })
 }
 
 export function fetchDeleteJob(id: number) {
   return request.del<null>({
-    url: `/api/scheduler/jobs/${id}`
+    url: `/api/job/${id}`
   })
 }
 
-export function fetchToggleJob(id: number, params: Api.Scheduler.ToggleJobEnabledParams) {
-  return request.post<Api.Scheduler.JobDetailVo>({
-    url: `/api/scheduler/jobs/${id}/toggle`,
+export function fetchToggleJob(id: number, enable: boolean) {
+  return request.put<null>({
+    url: `/api/job/${id}/${enable ? 'enable' : 'disable'}`
+  })
+}
+
+export function fetchGetJobNamespaces() {
+  return request.get<Api.Scheduler.JobNamespace[]>({
+    url: '/api/job/namespaces'
+  })
+}
+
+export function fetchGetJobApps() {
+  return request.get<string[]>({
+    url: '/api/job/apps'
+  })
+}
+
+export function fetchGetJobIdByKey(params: Api.Scheduler.JobKeyQuery) {
+  return request.get<number>({
+    url: '/api/job/query-id-by-key',
     params
   })
 }
 
-export function fetchTriggerJob(id: number, params: Api.Scheduler.TriggerJobParams) {
-  return request.post<null>({
-    url: `/api/scheduler/jobs/${id}/trigger`,
-    params
-  })
-}
-
-// ============ 批量操作 ============
-
-export function fetchBatchToggleJobs(params: Api.Scheduler.BatchToggleParams) {
-  return request.post<Api.Scheduler.BatchResultVo>({
-    url: '/api/scheduler/jobs/batch/toggle',
-    params
-  })
-}
-
-export function fetchBatchTriggerJobs(params: Api.Scheduler.BatchIdsParams) {
-  return request.post<Api.Scheduler.BatchResultVo>({
-    url: '/api/scheduler/jobs/batch/trigger',
-    params
-  })
-}
-
-export function fetchBatchDeleteJobs(params: Api.Scheduler.BatchIdsParams) {
-  return request.del<Api.Scheduler.BatchResultVo>({
-    url: '/api/scheduler/jobs/batch',
+export function fetchGetJobByKey(params: Api.Scheduler.JobKeyQuery) {
+  return request.get<Api.Scheduler.Job>({
+    url: '/api/job/query-by-key',
     params
   })
 }

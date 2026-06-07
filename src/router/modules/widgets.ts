@@ -100,6 +100,26 @@ export const widgetsRoutes: AppRouteRecord = {
       }
     },
     {
+      path: 'data-select',
+      name: 'WidgetsDataSelect',
+      component: '/widgets/data-select',
+      meta: {
+        title: 'menus.widgets.dataSelect',
+        icon: 'ri:list-check-3',
+        keepAlive: true
+      }
+    },
+    {
+      path: 'resource-select',
+      name: 'WidgetsResourceSelect',
+      component: '/widgets/resource-select',
+      meta: {
+        title: 'menus.widgets.resourceSelect',
+        icon: 'ri:folder-image-line',
+        keepAlive: true
+      }
+    },
+    {
       path: 'drag',
       name: 'Drag',
       component: '/widgets/drag',

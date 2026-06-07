@@ -61,12 +61,41 @@ export const systemRoutes: AppRouteRecord = {
       }
     },
     {
+      path: 'resource-permission',
+      name: 'ResourcePermission',
+      component: '/system/resource-permission',
+      meta: {
+        title: 'menus.system.resourcePermission',
+        icon: 'ri:shield-keyhole-line',
+        keepAlive: true,
+        roles: ['R_SUPER'],
+        authList: [
+          { title: '新增', authMark: 'create' },
+          { title: '编辑', authMark: 'update' },
+          { title: '删除', authMark: 'delete' },
+          { title: '绑定资源', authMark: 'bind' },
+          { title: '刷新策略', authMark: 'reload' }
+        ]
+      }
+    },
+    {
       path: 'config',
       name: 'Config',
       component: '/system/config',
       meta: {
         title: 'menus.system.config',
         icon: 'ri:settings-3-line',
+        keepAlive: true,
+        roles: ['R_SUPER', 'R_ADMIN']
+      }
+    },
+    {
+      path: 'feedback',
+      name: 'SystemFeedback',
+      component: '/system/feedback',
+      meta: {
+        title: 'menus.system.feedback',
+        icon: 'ri:chat-3-line',
         keepAlive: true,
         roles: ['R_SUPER', 'R_ADMIN']
       }

@@ -1,7 +1,11 @@
 <template>
-  <div class="art-full-height config-page">
+  <div class="config-page art-page-view">
+    <ConfigHero :stats="configStats" />
+
+    <ConfigStats class="config-page__stats" :stats="configStats" />
+
     <ConfigSearch
-      v-show="showSearchBar"
+      class="config-page__search"
       v-model="searchForm"
       :group-options="configGroupOptions"
       :dict-type-options="dictTypeOptions"
@@ -9,148 +13,32 @@
       @reset="handleResetSearch"
     />
 
-    <ElCard class="art-table-card config-page-card" shadow="never">
-      <ArtTableHeader
-        v-model:showSearchBar="showSearchBar"
-        layout="search,refresh,fullscreen"
+    <ElCard class="art-table-card config-table-card" shadow="never">
+      <ConfigTableToolbar
+        v-model:columns="columnChecks"
+        :groups="groupedConfigSections"
+        :active-group-id="searchForm.configGroupId"
+        :page-count="paginatedConfigList.length"
+        :selected-count="selectedRows.length"
         :loading="loading"
+        @add-config="showFormPanel('add')"
+        @batch-delete="handleBatchDelete"
+        @refresh-cache="handleRefreshCache"
         @refresh="refreshPage"
-      >
-        <template #left>
-          <ElSpace wrap>
-            <ElButton @click="showGroupFormPanel('add')" v-ripple>新增配置分组</ElButton>
-            <ElButton type="primary" @click="showFormPanel('add')" v-ripple>
-              新增系统参数配置
-            </ElButton>
-          </ElSpace>
-        </template>
-      </ArtTableHeader>
+        @group-change="handleGroupChange"
+      />
 
-      <div v-loading="loading" class="config-layout">
-        <aside class="config-sidebar">
-          <div class="config-sidebar__search">
-            <ElInput v-model="groupKeyword" placeholder="搜索分组" clearable size="default">
-              <template #prefix>
-                <ArtSvgIcon icon="ri:search-line" class="text-g-500" />
-              </template>
-            </ElInput>
-          </div>
-
-          <ul v-if="filteredSidebarSections.length" class="config-sidebar__list">
-            <li
-              v-for="section in filteredSidebarSections"
-              :key="section.groupId"
-              :class="['config-sidebar__item', { 'is-active': activeGroupId === section.groupId }]"
-              @click="scrollToGroup(section.groupId)"
-            >
-              <ArtSvgIcon icon="ri:arrow-right-s-line" class="config-sidebar__arrow text-base" />
-              <span class="config-sidebar__name truncate">{{ section.groupName }}</span>
-              <span class="config-sidebar__count">{{ section.items.length }}</span>
-            </li>
-          </ul>
-          <div v-else class="config-sidebar__empty">未匹配到分组</div>
-        </aside>
-
-        <div ref="mainRef" class="config-main">
-          <template v-if="groupedConfigSections.length > 0">
-            <section
-              v-for="section in groupedConfigSections"
-              :key="section.groupId"
-              :ref="(el) => setSectionRef(el, section.groupId)"
-              :id="`config-group-${section.groupId}`"
-              class="config-group-section"
-            >
-              <div class="config-group-header">
-                <div class="config-group-header__title">
-                  <h3>{{ section.groupName }}</h3>
-                  <span class="config-group-header__code">
-                    {{ section.groupCode || '未设置分组编码' }}
-                  </span>
-                </div>
-                <div class="config-group-header__actions">
-                  <ElTag effect="plain" round type="info">{{ section.items.length }} 项</ElTag>
-                  <ElButton
-                    link
-                    type="primary"
-                    :disabled="!getGroupDataById(section.groupId)"
-                    @click="showGroupFormPanel('edit', getGroupDataById(section.groupId))"
-                  >
-                    编辑
-                  </ElButton>
-                  <ElButton link type="danger" @click="handleDeleteGroup(section)"> 删除 </ElButton>
-                </div>
-              </div>
-
-              <div class="config-item-grid">
-                <article
-                  v-for="item in section.items"
-                  :key="item.id"
-                  class="config-item-card"
-                  :class="{ 'is-disabled': !item.enabled }"
-                >
-                  <div class="config-item-card__main">
-                    <div class="config-item-card__heading">
-                      <h4 class="config-item-card__title truncate" :title="item.configName">
-                        {{ item.configName }}
-                      </h4>
-                      <div class="config-item-card__tags">
-                        <ElTag size="small" :type="getValueTypeTagType(item.valueType)">
-                          {{ getValueTypeLabel(item.valueType) }}
-                        </ElTag>
-                        <ElTag size="small" :type="item.enabled ? 'success' : 'info'">
-                          {{ item.enabled ? '启用' : '停用' }}
-                        </ElTag>
-                        <ElTag v-if="item.isSystem" size="small" type="warning">内置</ElTag>
-                      </div>
-                    </div>
-
-                    <p class="config-item-card__key truncate" :title="item.configKey">
-                      {{ item.configKey }}
-                    </p>
-
-                    <div class="config-item-card__value">
-                      <ConfigValueDisplay
-                        compact
-                        :value="item.configValue"
-                        :value-type="item.valueType"
-                        :option-dict-type="item.optionDictType"
-                      />
-
-                      <ElTooltip v-if="needMetaTooltip(item)" placement="top-end" :show-after="200">
-                        <template #content>
-                          <div class="config-item-meta-tip">
-                            <div v-if="item.defaultValue">
-                              <span class="label">默认值</span>
-                              <span class="value">{{ item.defaultValue }}</span>
-                            </div>
-                            <div v-if="item.optionDictType">
-                              <span class="label">候选字典</span>
-                              <span class="value">{{ item.optionDictType }}</span>
-                            </div>
-                            <div v-if="item.remark">
-                              <span class="label">备注</span>
-                              <span class="value">{{ item.remark }}</span>
-                            </div>
-                          </div>
-                        </template>
-                        <ArtSvgIcon icon="ri:information-line" class="config-item-card__info" />
-                      </ElTooltip>
-                    </div>
-                  </div>
-
-                  <div class="config-item-card__actions">
-                    <ElButton link type="primary" @click="showFormPanel('edit', item)">
-                      编辑
-                    </ElButton>
-                    <ElButton link type="danger" @click="handleDelete(item)">删除</ElButton>
-                  </div>
-                </article>
-              </div>
-            </section>
-          </template>
-
-          <ElEmpty v-else description="暂无系统参数配置数据" :image-size="120" />
-        </div>
+      <div class="config-table-wrap">
+        <ArtTable
+          :loading="loading"
+          :data="paginatedConfigList"
+          :columns="columns"
+          :pagination="pagination"
+          row-key="id"
+          @selection-change="handleSelectionChange"
+          @pagination:size-change="handleSizeChange"
+          @pagination:current-change="handleCurrentChange"
+        />
       </div>
     </ElCard>
 
@@ -173,6 +61,8 @@
 </template>
 
 <script setup lang="ts">
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import type { ColumnOption } from '@/types/component'
   import {
     fetchDeleteConfig,
     fetchDeleteConfigGroup,
@@ -181,13 +71,20 @@
   } from '@/api/config'
   import { fetchGetDictTypeList } from '@/api/dict-manage'
   import { dictClassToTagType, useDict } from '@/utils/dict'
-  import { ElMessage, ElMessageBox } from 'element-plus'
-  import { CONFIG_VALUE_TYPE } from './constants'
-  import type { ConfigGroupSection, ConfigListItem, SearchFormModel } from './types'
+  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
+  import type {
+    ConfigGroupSection,
+    ConfigListItem,
+    ConfigStatsModel,
+    LocalPaginationModel,
+    SearchFormModel
+  } from './types'
   import ConfigFormPanel from './modules/config-form-panel.vue'
   import ConfigGroupFormPanel from './modules/config-group-form-panel.vue'
+  import ConfigHero from './modules/config-hero.vue'
   import ConfigSearch from './modules/config-search.vue'
-  import ConfigValueDisplay from './modules/config-value-display.vue'
+  import ConfigStats from './modules/config-stats.vue'
+  import ConfigTableToolbar from './modules/config-table-toolbar.vue'
 
   defineOptions({ name: 'Config' })
 
@@ -198,16 +95,13 @@
   const { getDictClass, getDictLabel } = useDict()
 
   const createDefaultSearchForm = (): SearchFormModel => ({
-    configName: undefined,
-    configKey: undefined,
+    keyword: undefined,
     configGroupId: undefined,
     valueType: undefined,
-    optionDictType: undefined,
     enabled: undefined,
     isSystem: undefined
   })
 
-  const showSearchBar = ref(false)
   const loading = ref(false)
   const formPanelVisible = ref(false)
   const groupFormPanelVisible = ref(false)
@@ -215,70 +109,17 @@
   const groupFormPanelMode = ref<'add' | 'edit'>('add')
   const currentConfigData = ref<ConfigListItem | undefined>(undefined)
   const currentGroupData = ref<ConfigGroupVo | undefined>(undefined)
-
-  const searchForm = reactive<SearchFormModel>(createDefaultSearchForm())
   const groupedConfigBlocks = ref<Api.Config.ConfigGroupedList>([])
   const configGroupOptions = ref<ConfigGroupVo[]>([])
   const dictTypeOptions = ref<DictTypeVo[]>([])
-  const configGroupMap = computed(() => {
-    return new Map(configGroupOptions.value.map((item) => [item.id, item] as const))
+  const selectedRows = ref<ConfigListItem[]>([])
+  const searchForm = reactive<SearchFormModel>(createDefaultSearchForm())
+  const pagination = reactive<LocalPaginationModel>({
+    page: 1,
+    size: 10,
+    total: 0
   })
 
-  // ==================== 布局：侧边导航 ====================
-  const groupKeyword = ref('')
-  const activeGroupId = ref<number | null>(null)
-  const mainRef = ref<HTMLElement | null>(null)
-  const sectionRefs = new Map<number, HTMLElement>()
-  let observer: IntersectionObserver | null = null
-
-  const setSectionRef = (el: Element | any, groupId: number) => {
-    if (el instanceof HTMLElement) {
-      sectionRefs.set(groupId, el)
-    } else {
-      sectionRefs.delete(groupId)
-    }
-  }
-
-  const filteredSidebarSections = computed(() => {
-    const kw = groupKeyword.value.trim().toLowerCase()
-    if (!kw) return groupedConfigSections.value
-    return groupedConfigSections.value.filter(
-      (s) =>
-        s.groupName.toLowerCase().includes(kw) || (s.groupCode ?? '').toLowerCase().includes(kw)
-    )
-  })
-
-  const scrollToGroup = (groupId: number) => {
-    const el = sectionRefs.get(groupId)
-    if (!el) return
-    activeGroupId.value = groupId
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
-  const rebuildObserver = async () => {
-    await nextTick()
-    observer?.disconnect()
-    if (!mainRef.value) return
-    observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
-        if (visible) {
-          const id = Number((visible.target as HTMLElement).id.replace('config-group-', ''))
-          if (!Number.isNaN(id)) activeGroupId.value = id
-        }
-      },
-      {
-        root: mainRef.value,
-        rootMargin: '0px 0px -60% 0px',
-        threshold: [0, 0.2, 0.5, 1]
-      }
-    )
-    sectionRefs.forEach((el) => observer?.observe(el))
-  }
-
-  // ==================== 数据排序 / 结构化 ====================
   const sortConfigGroups = (left: ConfigGroupVo, right: ConfigGroupVo): number => {
     if (left.groupSort !== right.groupSort) {
       return left.groupSort - right.groupSort
@@ -325,15 +166,25 @@
     return left.groupId - right.groupId
   }
 
+  const configGroupMap = computed(() => {
+    return new Map(configGroupOptions.value.map((item) => [item.id, item] as const))
+  })
+
   const mapConfigItem = (
     block: ConfigGroupBlockVo,
     item: Api.Config.ConfigGroupItemVo
-  ): ConfigListItem => ({
-    ...item,
-    configGroupId: block.groupId,
-    configGroupName: block.groupName,
-    configGroupCode: block.groupCode
-  })
+  ): ConfigListItem => {
+    const groupData = configGroupMap.value.get(block.groupId)
+
+    return {
+      ...item,
+      configGroupId: block.groupId,
+      configGroupName: block.groupName,
+      configGroupCode: block.groupCode,
+      updateTime: groupData?.updateTime,
+      updateBy: groupData?.updateBy
+    }
+  }
 
   const groupedConfigSections = computed<ConfigGroupSection[]>(() => {
     return [...groupedConfigBlocks.value].sort(sortConfigBlocks).map((block) => ({
@@ -345,29 +196,198 @@
     }))
   })
 
+  const allConfigList = computed(() => {
+    return groupedConfigSections.value.flatMap((section) => section.items)
+  })
+
+  const normalizedKeyword = computed(() => searchForm.keyword?.trim().toLowerCase() || '')
+
+  const filteredConfigList = computed(() => {
+    return allConfigList.value.filter((item) => {
+      if (searchForm.configGroupId && item.configGroupId !== searchForm.configGroupId) {
+        return false
+      }
+
+      if (searchForm.valueType && item.valueType !== searchForm.valueType) {
+        return false
+      }
+
+      if (searchForm.enabled !== undefined && item.enabled !== searchForm.enabled) {
+        return false
+      }
+
+      if (searchForm.isSystem !== undefined && item.isSystem !== searchForm.isSystem) {
+        return false
+      }
+
+      if (!normalizedKeyword.value) {
+        return true
+      }
+
+      return [item.configName, item.configKey, item.remark]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(normalizedKeyword.value))
+    })
+  })
+
+  const paginatedConfigList = computed(() => {
+    const start = (pagination.page - 1) * pagination.size
+    return filteredConfigList.value.slice(start, start + pagination.size)
+  })
+
+  const latestUpdate = computed(() => {
+    const dates = configGroupOptions.value
+      .map((item) => item.updateTime)
+      .filter((value): value is string => Boolean(value))
+      .sort((left, right) => right.localeCompare(left))
+
+    return dates[0] || '-'
+  })
+
+  const configStats = computed<ConfigStatsModel>(() => ({
+    total: allConfigList.value.length,
+    enabled: allConfigList.value.filter((item) => item.enabled).length,
+    builtIn: allConfigList.value.filter((item) => item.isSystem).length,
+    groupCount: groupedConfigSections.value.length,
+    latestUpdate: latestUpdate.value
+  }))
+
   watch(
-    groupedConfigSections,
-    (list) => {
-      if (list.length && activeGroupId.value == null) {
-        activeGroupId.value = list[0].groupId
+    () => filteredConfigList.value.length,
+    (total) => {
+      pagination.total = total
+      const maxPage = Math.max(1, Math.ceil(total / pagination.size))
+      if (pagination.page > maxPage) {
+        pagination.page = maxPage
       }
-      if (list.length && !list.find((s) => s.groupId === activeGroupId.value)) {
-        activeGroupId.value = list[0].groupId
-      }
-      rebuildObserver()
     },
-    { flush: 'post' }
+    { immediate: true }
   )
 
-  const needMetaTooltip = (item: ConfigListItem) => {
-    return Boolean(
-      item.remark ||
-        (item.optionDictType && item.valueType !== CONFIG_VALUE_TYPE.IMAGE) ||
-        (item.defaultValue && item.defaultValue !== item.configValue)
-    )
+  const getValueTypeLabel = (valueType: ConfigListItem['valueType']) => {
+    return getDictLabel('config_value_type', valueType)
   }
 
-  // ==================== 数据加载 ====================
+  const getValueTypeTagType = (valueType: ConfigListItem['valueType']) => {
+    return dictClassToTagType(getDictClass('config_value_type', valueType))
+  }
+
+  const getGroupDataById = (groupId: number): ConfigGroupVo | undefined => {
+    return configGroupMap.value.get(groupId)
+  }
+
+  const columnChecks = ref<ColumnOption<ConfigListItem>[]>([])
+
+  const columns = computed<ColumnOption<ConfigListItem>[]>(() => [
+    {
+      type: 'selection',
+      width: 48,
+      selectable: (row: ConfigListItem) => !row.isSystem
+    },
+    {
+      type: 'globalIndex',
+      width: 60,
+      label: '序号'
+    },
+    {
+      prop: 'configName',
+      label: '参数名称',
+      minWidth: 180
+    },
+    {
+      prop: 'configKey',
+      label: '参数键名',
+      minWidth: 220,
+      formatter: (row) => h('span', { class: 'config-code-cell' }, row.configKey)
+    },
+    {
+      prop: 'configGroupName',
+      label: '分组',
+      width: 120,
+      formatter: (row) =>
+        h(ElTag, { type: 'info', effect: 'plain' }, () => row.configGroupName || '-')
+    },
+    {
+      prop: 'valueType',
+      label: '类型',
+      width: 110,
+      formatter: (row) =>
+        h(ElTag, { type: getValueTypeTagType(row.valueType) }, () =>
+          getValueTypeLabel(row.valueType)
+        )
+    },
+    {
+      prop: 'configValue',
+      label: '当前值',
+      minWidth: 240,
+      formatter: (row) =>
+        h(
+          'span',
+          {
+            class: 'config-value-cell',
+            title: row.configValue || '-'
+          },
+          row.configValue || '-'
+        )
+    },
+    {
+      prop: 'enabled',
+      label: '状态',
+      width: 100,
+      formatter: (row) =>
+        h(ElTag, { type: row.enabled ? 'success' : 'info' }, () => (row.enabled ? '启用' : '停用'))
+    },
+    {
+      prop: 'isSystem',
+      label: '属性',
+      width: 100,
+      formatter: (row) =>
+        h(ElTag, { type: row.isSystem ? 'warning' : 'info' }, () =>
+          row.isSystem ? '内置' : '扩展'
+        )
+    },
+    {
+      prop: 'updateTime',
+      label: '最后更新',
+      width: 180,
+      formatter: (row) => row.updateTime || '-'
+    },
+    {
+      prop: 'updateBy',
+      label: '更新人',
+      width: 120,
+      formatter: (row) => row.updateBy || '-'
+    },
+    {
+      prop: 'operation',
+      label: '操作',
+      width: 140,
+      fixed: 'right',
+      formatter: (row) =>
+        h('div', { class: 'config-action-cell' }, [
+          h(ArtButtonTable, {
+            type: 'edit',
+            onClick: () => showFormPanel('edit', row)
+          }),
+          h(ArtButtonTable, {
+            type: 'delete',
+            iconClass: row.isSystem ? 'bg-error/12 text-error opacity-50 cursor-not-allowed' : '',
+            onClick: () => handleDelete(row)
+          })
+        ])
+    }
+  ])
+
+  watch(
+    columns,
+    (list) => {
+      if (columnChecks.value.length === 0) {
+        columnChecks.value = list.map((item) => ({ ...item }))
+      }
+    },
+    { immediate: true }
+  )
+
   const loadFilterOptions = async () => {
     const [groupResponse, dictTypeResponse] = await Promise.all([
       fetchGetConfigGroupList({ page: 1, size: 1000 }),
@@ -381,7 +401,7 @@
   const loadConfigData = async () => {
     loading.value = true
     try {
-      groupedConfigBlocks.value = await fetchGetGroupedConfigList({ ...searchForm })
+      groupedConfigBlocks.value = await fetchGetGroupedConfigList({})
     } finally {
       loading.value = false
     }
@@ -389,18 +409,6 @@
 
   const refreshPage = async () => {
     await Promise.all([loadFilterOptions(), loadConfigData()])
-  }
-
-  const getValueTypeLabel = (valueType: ConfigListItem['valueType']) => {
-    return getDictLabel('config_value_type', valueType)
-  }
-
-  const getValueTypeTagType = (valueType: ConfigListItem['valueType']) => {
-    return dictClassToTagType(getDictClass('config_value_type', valueType))
-  }
-
-  const getGroupDataById = (groupId: number): ConfigGroupVo | undefined => {
-    return configGroupMap.value.get(groupId)
   }
 
   const showGroupFormPanel = (type: 'add' | 'edit', row?: ConfigGroupVo) => {
@@ -416,11 +424,30 @@
   }
 
   const handleSearch = async () => {
-    await loadConfigData()
+    pagination.page = 1
   }
 
-  const handleResetSearch = async () => {
-    await loadConfigData()
+  const handleResetSearch = () => {
+    Object.assign(searchForm, createDefaultSearchForm())
+    pagination.page = 1
+  }
+
+  const handleGroupChange = (groupId?: number) => {
+    searchForm.configGroupId = groupId
+    pagination.page = 1
+  }
+
+  const handleSizeChange = (size: number) => {
+    pagination.size = size
+    pagination.page = 1
+  }
+
+  const handleCurrentChange = (page: number) => {
+    pagination.page = page
+  }
+
+  const handleSelectionChange = (rows: ConfigListItem[]) => {
+    selectedRows.value = rows
   }
 
   const handleConfigFormSuccess = async () => {
@@ -429,6 +456,11 @@
 
   const handleGroupFormSuccess = async () => {
     await refreshPage()
+  }
+
+  const handleRefreshCache = async () => {
+    await refreshPage()
+    ElMessage.success('缓存已刷新')
   }
 
   const handleDeleteGroup = (section: ConfigGroupSection) => {
@@ -455,7 +487,12 @@
   }
 
   const handleDelete = (row: ConfigListItem) => {
-    ElMessageBox.confirm(`确定删除系统参数配置"${row.configName}"吗？`, '删除确认', {
+    if (row.isSystem) {
+      ElMessage.warning('内置参数不允许删除')
+      return
+    }
+
+    ElMessageBox.confirm(`确定删除系统参数"${row.configName}"吗？`, '删除确认', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
@@ -466,373 +503,88 @@
     })
   }
 
+  const handleBatchDelete = () => {
+    const removableRows = selectedRows.value.filter((item) => !item.isSystem)
+    if (removableRows.length === 0) {
+      ElMessage.warning('请选择可删除的扩展参数')
+      return
+    }
+
+    ElMessageBox.confirm(`确定删除选中的 ${removableRows.length} 个系统参数吗？`, '批量删除', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(async () => {
+      await Promise.all(removableRows.map((item) => fetchDeleteConfig(item.id)))
+      ElMessage.success('批量删除成功')
+      selectedRows.value = []
+      await loadConfigData()
+    })
+  }
+
   onMounted(() => {
     void refreshPage()
   })
 
-  onBeforeUnmount(() => {
-    observer?.disconnect()
-    observer = null
+  defineExpose({
+    showGroupFormPanel,
+    handleDeleteGroup
   })
 </script>
 
 <style scoped lang="scss">
   .config-page {
-    min-height: 0;
-
-    .config-page-card {
-      min-height: 0;
-
-      :deep(.el-card__body) {
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-      }
-    }
-
-    // 顶部 header 与下方内容分隔
-    :deep(.art-table-header) {
-      flex-shrink: 0;
-    }
-
-    .config-layout {
-      display: grid;
-      flex: 1;
-      grid-template-columns: 220px 1fr;
-      gap: 16px;
-      min-height: 0;
-      margin-top: 12px;
-    }
-
-    // ==================== 侧边导航 ====================
-    .config-sidebar {
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
-      background-color: var(--art-main-bg-color);
-      border: 1px solid var(--default-border);
-      border-radius: calc(var(--custom-radius) / 2 + 2px);
-
-      &__search {
-        flex-shrink: 0;
-        padding: 10px;
-        border-bottom: 1px solid var(--default-border);
-      }
-
-      &__list {
-        flex: 1;
-        min-height: 0;
-        padding: 6px;
-        margin: 0;
-        overflow-y: auto;
-        list-style: none;
-      }
-
-      &__item {
-        display: flex;
-        gap: 6px;
-        align-items: center;
-        padding: 8px 10px;
-        font-size: 13px;
-        color: var(--el-text-color-regular);
-        cursor: pointer;
-        border-radius: 6px;
-        transition: all 0.2s;
-
-        & + & {
-          margin-top: 2px;
-        }
-
-        &:hover {
-          color: var(--el-color-primary);
-          background-color: var(--el-color-primary-light-9);
-        }
-
-        &.is-active {
-          font-weight: 600;
-          color: var(--el-color-primary);
-          background-color: var(--el-color-primary-light-9);
-
-          .config-sidebar__arrow {
-            color: var(--el-color-primary);
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-      }
-
-      &__arrow {
-        flex-shrink: 0;
-        color: var(--el-text-color-placeholder);
-        opacity: 0;
-        transition: all 0.2s;
-        transform: translateX(-4px);
-      }
-
-      &__name {
-        flex: 1;
-        min-width: 0;
-      }
-
-      &__count {
-        flex-shrink: 0;
-        min-width: 22px;
-        padding: 0 6px;
-        font-size: 11px;
-        line-height: 18px;
-        color: var(--el-text-color-secondary);
-        text-align: center;
-        background-color: var(--el-fill-color);
-        border-radius: 9px;
-      }
-
-      &__empty {
-        padding: 24px 12px;
-        font-size: 12px;
-        color: var(--el-text-color-placeholder);
-        text-align: center;
-      }
-    }
-
-    // ==================== 右侧内容（独立滚动容器） ====================
-    .config-main {
-      min-width: 0;
-      min-height: 0;
-      padding: 0 4px 16px 0;
-      overflow-y: auto;
-    }
-
-    .config-group-section {
-      scroll-margin-top: 8px;
-
-      & + .config-group-section {
-        margin-top: 28px;
-      }
-    }
-
-    .config-group-header {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      display: flex;
-      gap: 12px;
-      align-items: flex-end;
-      justify-content: space-between;
-      padding: 4px 0 10px;
-      margin-bottom: 12px;
-      background-color: var(--art-main-bg-color);
-      border-bottom: 1px solid var(--default-border);
-
-      &__title {
-        display: flex;
-        gap: 10px;
-        align-items: baseline;
-        min-width: 0;
-
-        h3 {
-          margin: 0;
-          font-size: 16px;
-          font-weight: 700;
-          color: var(--el-text-color-primary);
-        }
-      }
-
-      &__code {
-        font-family: 'JetBrains Mono', SFMono-Regular, Consolas, monospace;
-        font-size: 12px;
-        color: var(--el-text-color-placeholder);
-      }
-
-      &__actions {
-        display: flex;
-        flex-shrink: 0;
-        gap: 6px;
-        align-items: center;
-      }
-    }
-
-    // ==================== 紧凑卡片 ====================
-    .config-item-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 12px;
-    }
-
-    .config-item-card {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      padding: 12px 14px;
-      background-color: var(--default-box-color);
-      border: 1px solid var(--default-border);
-      border-radius: calc(var(--custom-radius) / 2 + 2px);
-      transition: all 0.2s;
-
-      &:hover {
-        border-color: var(--el-color-primary-light-5);
-        box-shadow: 0 2px 12px -2px rgb(0 0 0 / 6%);
-
-        .config-item-card__actions {
-          pointer-events: auto;
-          opacity: 1;
-        }
-      }
-
-      &.is-disabled {
-        opacity: 0.75;
-      }
-
-      &__main {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        min-width: 0;
-      }
-
-      &__heading {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        justify-content: space-between;
-        min-width: 0;
-      }
-
-      &__title {
-        flex: 1;
-        min-width: 0;
-        margin: 0;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--el-text-color-primary);
-      }
-
-      &__tags {
-        display: flex;
-        flex-shrink: 0;
-        gap: 4px;
-      }
-
-      &__key {
-        margin: 0;
-        overflow: hidden;
-        font-family: 'JetBrains Mono', SFMono-Regular, Consolas, monospace;
-        font-size: 11px;
-        color: var(--el-text-color-placeholder);
-      }
-
-      &__value {
-        display: flex;
-        gap: 6px;
-        align-items: center;
-        justify-content: space-between;
-        padding-top: 6px;
-        margin-top: 4px;
-        border-top: 1px dashed var(--default-border);
-      }
-
-      &__info {
-        flex-shrink: 0;
-        color: var(--el-text-color-placeholder);
-        cursor: help;
-        transition: color 0.2s;
-
-        &:hover {
-          color: var(--el-color-primary);
-        }
-      }
-
-      &__actions {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        display: flex;
-        gap: 4px;
-        padding: 2px 6px;
-        pointer-events: none;
-        background-color: var(--default-box-color);
-        border-radius: 6px;
-        box-shadow: 0 0 0 1px var(--default-border);
-        opacity: 0;
-        transition: opacity 0.2s;
-      }
-    }
-
-    .truncate {
-      display: block;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
-  .config-item-meta-tip {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    max-width: 280px;
-    font-size: 12px;
+    padding-bottom: 20px;
+  }
 
-    .label {
-      display: inline-block;
-      min-width: 56px;
-      margin-right: 8px;
-      color: var(--el-color-primary-light-7);
-    }
+  .config-page__stats,
+  .config-page__search {
+    margin-top: 16px;
+  }
 
-    .value {
-      color: inherit;
-      word-break: break-word;
+  .config-table-card {
+    overflow: hidden;
+
+    :deep(.el-card__body) {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding: 0;
     }
   }
 
-  // ==================== 响应式 ====================
-  @media (width <= 992px) {
-    .config-page {
-      .config-layout {
-        grid-template-columns: 1fr;
-      }
+  .config-table-wrap {
+    flex: 1;
+    min-height: 520px;
+    padding: 16px;
+  }
 
-      .config-sidebar {
-        max-height: 200px;
+  :deep(.config-code-cell),
+  :deep(.config-value-cell) {
+    display: block;
+    overflow: hidden;
+    font-family: 'JetBrains Mono', SFMono-Regular, Consolas, monospace;
+    font-size: 12px;
+    color: var(--art-gray-700);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-        &__list {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-          padding: 10px;
-        }
+  :deep(.config-value-cell) {
+    max-width: 360px;
+  }
 
-        &__item {
-          padding: 4px 10px;
+  :deep(.config-action-cell) {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+  }
 
-          & + & {
-            margin-top: 0;
-          }
-
-          .config-sidebar__arrow {
-            display: none;
-          }
-        }
-      }
-
-      .config-group-header {
-        position: static;
-        flex-direction: column;
-        gap: 6px;
-        align-items: flex-start;
-      }
-
-      .config-item-card__actions {
-        position: static;
-        padding: 0;
-        margin-top: 4px;
-        pointer-events: auto;
-        background-color: transparent;
-        box-shadow: none;
-        opacity: 1;
-      }
+  @media screen and (width <= 768px) {
+    .config-table-wrap {
+      padding: 12px;
     }
   }
 </style>

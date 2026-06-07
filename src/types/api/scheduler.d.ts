@@ -1,172 +1,132 @@
 declare namespace Api {
   namespace Scheduler {
-    // ============ 枚举(v3 后端 SCREAMING_SNAKE_CASE) ============
+    // ============ 枚举(RatchJob Open API) ============
 
-    type ScheduleType = 'Cron' | 'FixedRate' | 'Oneshot'
+    type JobScheduleType = 'CRON' | 'INTERVAL' | 'DELAY' | 'NONE'
 
-    type TriggerType = 'Cron' | 'Manual' | 'Retry'
+    type JobRunMode =
+      | 'BEAN'
+      | 'GLUE_GROOVY'
+      | 'GLUE_SHELL'
+      | 'GLUE_PYTHON'
+      | 'GLUE_PHP'
+      | 'GLUE_NODEJS'
+      | 'GLUE_POWERSHELL'
 
-    type RunState = 'Running' | 'Succeeded' | 'Failed' | 'Timeout' | 'Discarded'
+    type JobRouterStrategy =
+      | 'FIRST'
+      | 'LAST'
+      | 'ROUND_ROBIN'
+      | 'RANDOM'
+      | 'CONSISTENT_HASH'
+      | 'SHARDING_BROADCAST'
 
-    // ============ 通用分页 ============
-    // 后端 Rust 返回 { content, page, size, total },
-    // defaultResponseAdapter 会把 total 映射为 totalElements,
-    // 所以前端统一用 Api.Common.PaginatedResponse 做类型,
-    // 保证 useTable 的 InferRecordType<T> 能正确推导出 TRecord。
+    type JobPastDueStrategy = 'DEFAULT' | 'IGNORE' | 'EXECUTE'
+
+    type JobBlockingStrategy = 'SERIAL_EXECUTION' | 'DISCARD_LATER' | 'COVER_EARLY' | 'OTHER'
 
     // ============ Job ============
 
-    interface JobVo {
+    interface Job {
       id: number
-      tenantId: number | null
-      name: string
-      groupName: string
-      handler: string
-      scheduleType: ScheduleType
-      cronExpr: string | null
-      enabled: boolean
-      createTime: string
-      updateTime: string
-    }
-
-    interface JobDetailVo {
-      id: number
-      tenantId: number | null
-      name: string
-      groupName: string
+      enable: boolean
+      appName: string
+      namespace: string
+      key?: string | null
       description: string
-      handler: string
-      scheduleType: ScheduleType
-      cronExpr: string | null
-      intervalMs: number | null
-      fireTime: string | null
-      paramsJson: unknown
-      enabled: boolean
-      timeoutMs: number
-      retryMax: number
-      version: number
-      createdBy: number | null
-      createTime: string
-      updateTime: string
+      scheduleType: JobScheduleType
+      cronValue: string
+      delaySecond: number
+      intervalSecond: number
+      runMode: JobRunMode
+      handleName: string
+      triggerParam: string
+      routerStrategy: JobRouterStrategy
+      pastDueStrategy: JobPastDueStrategy
+      blockingStrategy: JobBlockingStrategy
+      timeoutSecond: number
+      tryTimes: number
+      versionId: number
+      lastModifiedMillis: number
+      createTime: number
+      retryInterval: number
     }
 
-    type JobList = Api.Common.PaginatedResponse<JobVo>
+    type JobList = Api.Common.PaginatedResponse<Job>
 
-    interface JobQueryFilters {
-      name?: string
-      groupName?: string
-      handler?: string
-      scheduleType?: ScheduleType
-      enabled?: boolean
-      tenantId?: number
+    interface JobNamespace {
+      namespace: string
+      namespaceDesc: string
     }
 
-    interface JobQueryParams extends JobQueryFilters {
+    interface JobListQuery {
+      namespace?: string
+      appName?: string
+      likeDescription?: string
+      likeHandleName?: string
       page?: number
       size?: number
     }
 
-    interface CreateJobParams {
-      name: string
-      groupName?: string
+    interface JobKeyQuery {
+      namespace: string
+      appName: string
+      key: string
+    }
+
+    interface CreateJobPayload {
+      appName: string
+      namespace: string
+      key?: string
+      handleName?: string
+      scheduleType?: JobScheduleType
+      cronValue?: string
+      delaySecond?: number
+      intervalSecond?: number
+      runMode?: JobRunMode
       description?: string
-      handler: string
-      scheduleType: ScheduleType
-      cronExpr?: string
-      intervalMs?: number
-      fireTime?: string
-      paramsJson?: unknown
-      enabled?: boolean
-      timeoutMs?: number
-      retryMax?: number
-      tenantId?: number
+      triggerParam?: string
+      routerStrategy?: JobRouterStrategy
+      pastDueStrategy?: JobPastDueStrategy
+      blockingStrategy?: JobBlockingStrategy
+      timeoutSecond?: number
+      tryTimes?: number
+      retryInterval?: number
+      enable?: boolean
     }
 
-    // PATCH 语义:所有字段可选;可空字段(cronExpr 等)传 null 表示显式置空
-    interface UpdateJobParams {
-      name?: string
-      groupName?: string
-      description?: string
-      handler?: string
-      scheduleType?: ScheduleType
-      cronExpr?: string | null
-      intervalMs?: number | null
-      fireTime?: string | null
-      paramsJson?: unknown
-      enabled?: boolean
-      timeoutMs?: number
-      retryMax?: number
+    type UpdateJobPayload = Partial<CreateJobPayload>
+
+    interface JobTasksQuery {
+      page?: number
+      size?: number
     }
 
-    interface TriggerJobParams {
-      paramsOverride?: unknown
+    // ============ Task / Run History ============
+
+    interface JobTryLog {
+      executionTime: number
+      addr: string
     }
 
-    interface ToggleJobEnabledParams {
-      enabled: boolean
-    }
-
-    interface HandlerVo {
-      name: string
-      description?: string
-    }
-
-    // ============ 批量操作 ============
-
-    interface BatchToggleParams {
-      ids: number[] // 1-100
-      enabled: boolean
-    }
-
-    interface BatchIdsParams {
-      ids: number[] // 1-100
-    }
-
-    interface BatchFailure {
-      id: number
-      reason: string
-    }
-
-    interface BatchResultVo {
-      successCount: number
-      failedCount: number
-      failures: BatchFailure[]
-    }
-
-    // ============ Run ============
-
-    interface JobRunVo {
-      id: number
+    interface JobTask {
+      taskId: number
       jobId: number
-      traceId: string
-      triggerType: TriggerType
-      triggerBy: number | null
-      // 详情接口独有:手动触发时填 sys.user.nick_name,用户删除或非手动触发时不返回
-      triggerByName?: string
-      state: RunState
-      scheduledAt: string
-      startedAt: string | null
-      finishedAt: string | null
+      triggerTime: number
+      instanceAddr: string
+      triggerMessage: string
+      status: string
+      finishTime: number
+      callbackMessage: string
+      executionTime: number
+      triggerFrom: string
+      tryTimes: number
+      tryLogs: JobTryLog[]
+      retryInterval: number
       retryCount: number
-      resultJson: unknown
-      errorMessage: string | null
-      createTime: string
+      timeoutSecond: number
     }
 
-    type JobRunList = Api.Common.PaginatedResponse<JobRunVo>
-
-    interface JobRunQueryFilters {
-      jobId?: number
-      traceId?: string
-      triggerType?: TriggerType
-      state?: RunState
-      startTime?: string
-      endTime?: string
-    }
-
-    interface JobRunQueryParams extends JobRunQueryFilters {
-      page?: number
-      size?: number
-    }
+    type JobTaskList = Api.Common.PaginatedResponse<JobTask>
   }
 }

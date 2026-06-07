@@ -1,12 +1,27 @@
 <template>
   <div class="scheduler-run-page art-full-height">
-    <RunSearch v-model="searchForm" @search="handleSearch" @reset="handleReset" />
+    <RunSearch
+      v-show="showSearchBar"
+      v-model="searchForm"
+      @search="handleSearch"
+      @reset="handleReset"
+    />
 
-    <ElCard class="art-table-card scheduler-run-page-card" shadow="never">
-      <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
+    <ElCard
+      class="art-table-card scheduler-run-page-card"
+      shadow="never"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
+      <ArtTableHeader
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        :loading="loading"
+        @refresh="refreshData"
+      >
         <template #left>
           <ElSpace wrap>
-            <ElCheckbox v-model="autoRefresh">每 10 秒自动刷新</ElCheckbox>
+            <ElTag v-if="searchForm.jobId" type="primary">任务 #{{ searchForm.jobId }}</ElTag>
+            <ElText v-else type="info">请输入任务 ID 查询执行记录</ElText>
           </ElSpace>
         </template>
       </ArtTableHeader>
@@ -20,56 +35,54 @@
         @pagination:current-change="handleCurrentChange"
       />
 
-      <RunDetailDialog v-model:visible="detailVisible" :run-id="currentRunId" />
+      <RunDetailDialog v-model:visible="detailVisible" :run-data="currentRunData" />
     </ElCard>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { useIntervalFn } from '@vueuse/core'
+  import { useRoute } from 'vue-router'
   import { fetchGetRunList } from '@/api/scheduler-run'
   import { useTable } from '@/hooks/core/useTable'
   import { ElTag } from 'element-plus'
-  import {
-    getRunStateLabel,
-    getRunStateTagType,
-    getTriggerTypeLabel,
-    getTriggerTypeTagType
-  } from '../constants'
+  import { getTaskStatusLabel, getTaskStatusTagType } from '../constants'
   import RunSearch from './modules/run-search.vue'
   import RunDetailDialog from './modules/run-detail-dialog.vue'
   import type { RunListItem, SearchFormModel } from './types'
 
   defineOptions({ name: 'SchedulerRun' })
 
+  const route = useRoute()
   const detailVisible = ref(false)
-  const currentRunId = ref<number>()
-  const autoRefresh = ref(false)
+  const currentRunData = ref<RunListItem>()
+  const showSearchBar = ref(false)
+
+  const parseJobId = (value: unknown) => {
+    const raw = Array.isArray(value) ? value[0] : value
+    const parsed = Number(raw)
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+  }
 
   const searchForm = ref<SearchFormModel>({
-    jobId: undefined,
-    traceId: undefined,
-    triggerType: undefined,
-    state: undefined,
-    dateRange: null
+    jobId: parseJobId(route.query.jobId)
   })
 
-  const flattenSearch = (params: SearchFormModel) => {
-    const { dateRange, ...rest } = params
-    return {
-      ...rest,
-      startTime: dateRange?.[0] || undefined,
-      endTime: dateRange?.[1] || undefined
-    }
+  const formatEmpty = (value: unknown) => {
+    if (value === undefined || value === null || value === '') return '-'
+    return String(value)
   }
 
-  const formatRunTime = (row: RunListItem) => {
-    return row.finishedAt || row.startedAt || row.scheduledAt
+  const formatMillis = (value: number | null | undefined) => {
+    if (!value) return '-'
+    return new Date(value).toLocaleString()
   }
 
-  const truncateTraceId = (traceId: string) => {
-    if (!traceId) return '-'
-    return traceId.length > 12 ? `${traceId.slice(0, 8)}…` : traceId
+  const formatDuration = (value: number | null | undefined) => {
+    if (value === undefined || value === null || value < 0) return '-'
+    if (value < 1000) return `${value} ms`
+    if (value < 60_000) return `${(value / 1000).toFixed(2)} s`
+    if (value < 3_600_000) return `${(value / 60_000).toFixed(1)} min`
+    return `${(value / 3_600_000).toFixed(2)} h`
   }
 
   const {
@@ -90,52 +103,63 @@
       apiParams: {
         page: 1,
         size: 20,
-        ...flattenSearch(searchForm.value)
+        ...searchForm.value
       },
       columnsFactory: () => [
-        { type: 'index', width: 60, label: '序号' },
         {
-          prop: 'jobId',
-          label: '任务',
-          width: 120,
-          formatter: (row) => `#${row.jobId}`
+          prop: 'taskId',
+          label: '任务记录 ID',
+          minWidth: 130,
+          formatter: (row) => h('span', { class: 'run-log-no' }, `#${row.taskId}`)
         },
+        { prop: 'jobId', label: '任务 ID', width: 100 },
         {
-          prop: 'state',
+          prop: 'status',
           label: '状态',
-          width: 100,
-          formatter: (row) =>
-            h(ElTag, { type: getRunStateTagType(row.state), size: 'small' }, () =>
-              getRunStateLabel(row.state)
-            )
-        },
-        {
-          prop: 'triggerType',
-          label: '触发来源',
           width: 110,
           formatter: (row) =>
-            h(ElTag, { type: getTriggerTypeTagType(row.triggerType), size: 'small' }, () =>
-              getTriggerTypeLabel(row.triggerType)
+            h(ElTag, { type: getTaskStatusTagType(row.status), size: 'small' }, () =>
+              getTaskStatusLabel(row.status)
             )
         },
         {
-          prop: 'scheduledAt',
-          label: '时间',
+          prop: 'instanceAddr',
+          label: '执行器',
+          minWidth: 170,
+          formatter: (row) => h('span', { class: 'run-handler' }, formatEmpty(row.instanceAddr))
+        },
+        {
+          prop: 'triggerTime',
+          label: '触发时间',
+          minWidth: 170,
+          formatter: (row) => formatMillis(row.triggerTime)
+        },
+        {
+          prop: 'finishTime',
+          label: '完成时间',
+          minWidth: 170,
+          formatter: (row) => formatMillis(row.finishTime)
+        },
+        {
+          prop: 'executionTime',
+          label: '执行耗时',
+          width: 120,
+          formatter: (row) => formatDuration(row.executionTime)
+        },
+        { prop: 'tryTimes', label: '尝试次数', width: 100 },
+        { prop: 'retryCount', label: '重试次数', width: 100 },
+        {
+          prop: 'triggerFrom',
+          label: '触发来源',
+          minWidth: 130,
+          formatter: (row) => formatEmpty(row.triggerFrom)
+        },
+        {
+          prop: 'triggerMessage',
+          label: '触发消息',
           minWidth: 180,
-          formatter: (row) => formatRunTime(row)
-        },
-        {
-          prop: 'traceId',
-          label: 'Trace',
-          width: 130,
-          formatter: (row) =>
-            h('span', { class: 'run-trace', title: row.traceId }, truncateTraceId(row.traceId))
-        },
-        {
-          prop: 'retryCount',
-          label: '重试',
-          width: 70,
-          formatter: (row) => (row.retryCount > 0 ? `#${row.retryCount}` : '-')
+          showOverflowTooltip: true,
+          formatter: (row) => formatEmpty(row.triggerMessage)
         },
         {
           prop: 'operation',
@@ -147,8 +171,8 @@
               'a',
               {
                 class: 'run-link',
-                onClick: (e: Event) => {
-                  e.preventDefault()
+                onClick: (event: Event) => {
+                  event.preventDefault()
                   showDetail(row)
                 }
               },
@@ -160,43 +184,33 @@
   })
 
   const handleSearch = (params: SearchFormModel) => {
-    // 把 dateRange 拍平为 startTime/endTime,且不发 dateRange 字段
-    replaceSearchParams(flattenSearch(params))
+    replaceSearchParams(params)
     getData()
   }
 
   const handleReset = () => {
-    Object.assign(searchForm.value, {
-      jobId: undefined,
-      traceId: undefined,
-      triggerType: undefined,
-      state: undefined,
-      dateRange: null
-    })
+    searchForm.value.jobId = undefined
     resetSearchParams()
   }
 
   const showDetail = (row: RunListItem) => {
-    currentRunId.value = row.id
+    currentRunData.value = row
     detailVisible.value = true
   }
 
-  const { pause, resume } = useIntervalFn(refreshData, 10_000, {
-    immediate: false,
-    immediateCallback: false
-  })
-
-  watch(autoRefresh, (v) => {
-    if (v) resume()
-    else pause()
-  })
+  watch(
+    () => route.query.jobId,
+    (jobId) => {
+      const parsed = parseJobId(jobId)
+      if (parsed === searchForm.value.jobId) return
+      searchForm.value.jobId = parsed
+      replaceSearchParams(searchForm.value)
+      getData()
+    }
+  )
 
   onMounted(() => {
     getData()
-  })
-
-  onUnmounted(() => {
-    pause()
   })
 </script>
 
@@ -204,14 +218,14 @@
   .scheduler-run-page {
     display: flex;
     flex-direction: column;
-    gap: 16px;
   }
 
   .scheduler-run-page-card {
     flex: 1;
   }
 
-  :deep(.run-trace) {
+  :deep(.run-log-no),
+  :deep(.run-handler) {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Courier New', monospace;
     font-size: 12px;
     color: var(--art-text-gray-500);

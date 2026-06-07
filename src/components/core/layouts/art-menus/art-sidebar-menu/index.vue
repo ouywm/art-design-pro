@@ -64,7 +64,7 @@
       v-show="menuList.length > 0"
       class="menu-left"
       :class="`menu-left-${getMenuTheme.theme} menu-left-${!menuOpen ? 'close' : 'open'}`"
-      :style="{ background: getMenuTheme.background }"
+      :style="menuLeftStyle"
     >
       <!-- Logo、系统名称 -->
       <div
@@ -91,7 +91,7 @@
           :class="'el-menu-' + getMenuTheme.theme"
           :collapse="!menuOpen"
           :default-active="routerPath"
-          :text-color="getMenuTheme.textColor"
+          text-color="var(--theme-menu-text)"
           :unique-opened="uniqueOpened"
           :background-color="getMenuTheme.background"
           :default-openeds="defaultOpenedMenus"
@@ -207,6 +207,12 @@
     const currentMenu = allMenus.find((menu) => menu.path === currentTopPath)
     return currentMenu?.children ?? []
   })
+
+  const menuLeftStyle = computed(() => ({
+    background: getMenuTheme.value.background,
+    '--theme-menu-text': getMenuTheme.value.textColor,
+    '--theme-menu-icon': getMenuTheme.value.iconColor
+  }))
 
   // 双列菜单收起时的滚动条样式
   const scrollbarStyle = computed(() => {

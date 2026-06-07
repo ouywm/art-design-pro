@@ -2,7 +2,7 @@
 
 // 菜单样式变量
 $menu-height: 42px;
-$menu-icon-size: 20px;
+$menu-icon-size: 18px;
 $menu-font-size: 14px;
 $hover-bg-color: var(--art-gray-200);
 $popup-menu-height: 40px;
@@ -157,8 +157,30 @@ $popup-menu-radius: 6px;
     @include menu-active(var(--theme-color), var(--el-color-primary-light-9));
     @include menu-hover($hover-bg-color);
 
+    .el-sub-menu__title,
+    .el-menu-item {
+      .menu-name {
+        font-weight: 400;
+        -webkit-font-smoothing: antialiased;
+      }
+    }
+
+    .el-sub-menu__title,
+    .el-menu-item:not(.is-active) {
+      .menu-name {
+        color: var(--theme-menu-text) !important;
+        opacity: 0.96;
+      }
+
+      .menu-icon .art-svg-icon {
+        color: var(--theme-menu-icon) !important;
+        opacity: 0.88;
+      }
+    }
+
     .el-sub-menu__icon-arrow {
-      color: var(--art-gray-600);
+      color: var(--theme-menu-icon);
+      opacity: 0.88;
     }
   }
 

@@ -1,41 +1,27 @@
 <template>
   <div class="scheduler-job-page art-full-height">
     <JobSearch
+      v-show="showSearchBar"
       v-model="searchForm"
-      :handler-options="handlerOptions"
       @search="handleSearch"
       @reset="handleReset"
     />
 
-    <ElCard class="art-table-card scheduler-job-page-card" shadow="never">
-      <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
+    <ElCard
+      class="art-table-card scheduler-job-page-card"
+      shadow="never"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
+      <ArtTableHeader
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        :loading="loading"
+        @refresh="refreshData"
+      >
         <template #left>
           <ElSpace wrap>
             <ElButton type="primary" @click="showFormPanel('add')" v-ripple>新增任务</ElButton>
             <ElButton plain @click="goRunListAll">任务日志</ElButton>
-            <ElDivider direction="vertical" />
-            <ElButton
-              type="success"
-              plain
-              :disabled="!selectedIds.length"
-              @click="batchToggle(true)"
-            >
-              批量启用 ({{ selectedIds.length }})
-            </ElButton>
-            <ElButton
-              type="warning"
-              plain
-              :disabled="!selectedIds.length"
-              @click="batchToggle(false)"
-            >
-              批量停用
-            </ElButton>
-            <ElButton plain :disabled="!selectedIds.length" @click="batchTrigger">
-              批量执行
-            </ElButton>
-            <ElButton type="danger" plain :disabled="!selectedIds.length" @click="batchDelete">
-              批量删除
-            </ElButton>
           </ElSpace>
         </template>
       </ArtTableHeader>
@@ -45,7 +31,6 @@
         :data="data"
         :columns="columns"
         :pagination="pagination"
-        @selection-change="handleSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
@@ -54,15 +39,7 @@
         v-model:visible="formVisible"
         :type="dialogType"
         :job-data="currentJobData"
-        :handler-options="handlerOptions"
-        :handler-loading="handlerLoading"
         @submit="handleFormSubmit"
-      />
-
-      <JobTriggerDialog
-        v-model:visible="triggerVisible"
-        :job-id="currentJobId"
-        :job-name="currentJobName"
       />
     </ElCard>
   </div>
@@ -73,23 +50,19 @@
   import ArtButtonMore, {
     type ButtonMoreItem
   } from '@/components/core/forms/art-button-more/index.vue'
-  import {
-    fetchBatchDeleteJobs,
-    fetchBatchToggleJobs,
-    fetchBatchTriggerJobs,
-    fetchDeleteJob,
-    fetchGetJobList,
-    fetchToggleJob
-  } from '@/api/scheduler-job'
-  import { fetchGetHandlers } from '@/api/scheduler-handler'
+  import { fetchDeleteJob, fetchGetJobList, fetchToggleJob } from '@/api/scheduler-job'
   import { useTable } from '@/hooks/core/useTable'
   import type { DialogType } from '@/types'
   import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
-  import { getHandlerLabel } from './handler-meta'
+  import {
+    getScheduleTypeLabel,
+    getScheduleTypeTagType,
+    getRunModeLabel,
+    summarizeSchedule
+  } from '../constants'
   import JobSearch from './modules/job-search.vue'
   import JobFormPanel from './modules/job-form-panel.vue'
-  import JobTriggerDialog from './modules/job-trigger-dialog.vue'
-  import type { HandlerOption, JobListItem, SearchFormModel } from './types'
+  import type { JobListItem, SearchFormModel } from './types'
 
   defineOptions({ name: 'SchedulerJob' })
 
@@ -97,37 +70,16 @@
 
   const dialogType = ref<DialogType>('add')
   const formVisible = ref(false)
-  const triggerVisible = ref(false)
+  const showSearchBar = ref(false)
 
   const currentJobData = ref<Partial<JobListItem>>({})
-  const currentJobId = ref<number>()
-  const currentJobName = ref<string>()
-
-  const handlerOptions = ref<HandlerOption[]>([])
-  const handlerLoading = ref(false)
 
   const searchForm = ref<SearchFormModel>({
-    name: undefined,
-    groupName: undefined,
-    handler: undefined,
-    scheduleType: undefined,
-    enabled: undefined,
-    tenantId: undefined
+    namespace: undefined,
+    appName: undefined,
+    likeDescription: undefined,
+    likeHandleName: undefined
   })
-
-  const loadHandlers = async () => {
-    handlerLoading.value = true
-    try {
-      const result = await fetchGetHandlers()
-      handlerOptions.value = result.map((item) => ({
-        label: getHandlerLabel(item.name),
-        value: item.name,
-        description: item.description
-      }))
-    } finally {
-      handlerLoading.value = false
-    }
-  }
 
   const goRunListAll = () => {
     router.push('/scheduler/run')
@@ -141,8 +93,8 @@
       case 'toggle':
         toggleEnabled(row)
         break
-      case 'trigger':
-        showTriggerDialog(row)
+      case 'runs':
+        goRunList(row)
         break
       case 'delete':
         deleteJob(row)
@@ -156,14 +108,26 @@
         { key: 'edit', label: '编辑', icon: 'ri:edit-2-line' },
         {
           key: 'toggle',
-          label: row.enabled ? '停用' : '启用',
-          icon: row.enabled ? 'ri:pause-circle-line' : 'ri:play-circle-line'
+          label: row.enable ? '停用' : '启用',
+          icon: row.enable ? 'ri:pause-circle-line' : 'ri:play-circle-line'
         },
-        { key: 'trigger', label: '手动触发', icon: 'ri:flashlight-line' },
+        { key: 'runs', label: '执行记录', icon: 'ri:file-list-3-line' },
         { key: 'delete', label: '删除', icon: 'ri:delete-bin-4-line', color: '#f56c6c' }
       ],
       onClick: (item: ButtonMoreItem) => handleMoreClick(item, row)
     })
+
+  const formatEmpty = (value: unknown) => {
+    if (value === undefined || value === null || value === '') return '-'
+    return String(value)
+  }
+
+  const formatMillis = (value: number | null | undefined) => {
+    if (!value) return '-'
+    return new Date(value).toLocaleString()
+  }
+
+  const getJobTitle = (row: JobListItem) => row.description || row.key || `#${row.id}`
 
   const {
     columns,
@@ -178,7 +142,8 @@
     refreshCreate,
     refreshUpdate,
     refreshRemove,
-    searchParams
+    replaceSearchParams,
+    resetSearchParams
   } = useTable({
     core: {
       apiFn: fetchGetJobList,
@@ -188,34 +153,76 @@
         ...searchForm.value
       },
       columnsFactory: () => [
-        { type: 'selection', width: 50, fixed: 'left', align: 'center' },
-        { prop: 'name', label: '任务名称', minWidth: 180 },
         {
-          prop: 'handler',
+          prop: 'description',
+          label: '任务描述',
+          minWidth: 200,
+          showOverflowTooltip: true,
+          formatter: (row) => formatEmpty(row.description)
+        },
+        {
+          prop: 'key',
+          label: '任务 Key',
+          minWidth: 150,
+          formatter: (row) => h('span', { class: 'job-code' }, row.key || `#${row.id}`)
+        },
+        { prop: 'namespace', label: '命名空间', minWidth: 120 },
+        { prop: 'appName', label: '应用', minWidth: 180, showOverflowTooltip: true },
+        {
+          prop: 'handleName',
           label: '处理器',
           minWidth: 200,
           formatter: (row) =>
             h('div', { class: 'handler-cell' }, [
-              h('div', { class: 'handler-cell__code' }, row.handler)
+              h('div', { class: 'handler-cell__code' }, row.handleName)
             ])
         },
         {
-          prop: 'cronExpr',
-          label: 'Cron 表达式',
-          minWidth: 160,
-          formatter: (row) => h('span', { class: 'job-cron' }, row.cronExpr || '-')
+          prop: 'scheduleType',
+          label: '调度类型',
+          width: 120,
+          formatter: (row) =>
+            h(ElTag, { type: getScheduleTypeTagType(row.scheduleType), size: 'small' }, () =>
+              getScheduleTypeLabel(row.scheduleType)
+            )
         },
         {
-          prop: 'enabled',
+          prop: 'cronValue',
+          label: '调度参数',
+          minWidth: 160,
+          formatter: (row) =>
+            h(
+              'span',
+              { class: 'job-cron' },
+              summarizeSchedule(
+                row.scheduleType,
+                row.cronValue,
+                row.intervalSecond,
+                row.delaySecond
+              )
+            )
+        },
+        {
+          prop: 'runMode',
+          label: '运行模式',
+          width: 120,
+          formatter: (row) => getRunModeLabel(row.runMode)
+        },
+        {
+          prop: 'enable',
           label: '状态',
           width: 90,
           formatter: (row) =>
-            h(ElTag, { type: row.enabled ? 'success' : 'info', size: 'small' }, () =>
-              row.enabled ? '启用' : '停用'
+            h(ElTag, { type: row.enable ? 'success' : 'info', size: 'small' }, () =>
+              row.enable ? '启用' : '停用'
             )
         },
-        { prop: 'groupName', label: '分组', width: 120 },
-        { prop: 'updateTime', label: '更新时间', minWidth: 170 },
+        {
+          prop: 'lastModifiedMillis',
+          label: '最后修改',
+          minWidth: 170,
+          formatter: (row) => formatMillis(row.lastModifiedMillis)
+        },
         {
           prop: 'operation',
           label: '操作',
@@ -229,21 +236,18 @@
   })
 
   const handleSearch = (params: SearchFormModel) => {
-    Object.assign(searchParams, params)
+    replaceSearchParams(params)
     getData()
   }
 
   const handleReset = () => {
     Object.assign(searchForm.value, {
-      name: undefined,
-      groupName: undefined,
-      handler: undefined,
-      scheduleType: undefined,
-      enabled: undefined,
-      tenantId: undefined
+      namespace: undefined,
+      appName: undefined,
+      likeDescription: undefined,
+      likeHandleName: undefined
     })
-    Object.assign(searchParams, searchForm.value)
-    getData()
+    resetSearchParams()
   }
 
   const showFormPanel = (type: DialogType, row?: JobListItem) => {
@@ -252,114 +256,36 @@
     formVisible.value = true
   }
 
-  const showTriggerDialog = (row: JobListItem) => {
-    currentJobId.value = row.id
-    currentJobName.value = row.name
-    triggerVisible.value = true
+  const goRunList = (row: JobListItem) => {
+    router.push({ path: '/scheduler/run', query: { jobId: String(row.id) } })
   }
 
   const toggleEnabled = (row: JobListItem) => {
-    const next = !row.enabled
+    const next = !row.enable
     const action = next ? '启用' : '停用'
-    ElMessageBox.confirm(`确定${action}任务「${row.name}」吗?`, `${action}任务`, {
+    ElMessageBox.confirm(`确定${action}任务「${getJobTitle(row)}」吗?`, `${action}任务`, {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     }).then(async () => {
-      await fetchToggleJob(row.id, { enabled: next })
+      await fetchToggleJob(row.id, next)
       ElMessage.success(`${action}成功`)
       await refreshUpdate()
     })
   }
 
   const deleteJob = (row: JobListItem) => {
-    ElMessageBox.confirm(`确定删除任务「${row.name}」吗?如有依赖关系会被后端拒绝。`, '删除任务', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }).then(async () => {
+    ElMessageBox.confirm(
+      `确定删除任务「${getJobTitle(row)}」吗?如有依赖关系会被后端拒绝。`,
+      '删除任务',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    ).then(async () => {
       await fetchDeleteJob(row.id)
       ElMessage.success('删除成功')
-      await refreshRemove()
-    })
-  }
-
-  // ============ 批量操作 ============
-
-  const selectedRows = ref<JobListItem[]>([])
-  const selectedIds = computed(() => selectedRows.value.map((r) => r.id))
-
-  const handleSelectionChange = (rows: JobListItem[]) => {
-    selectedRows.value = rows
-  }
-
-  const showBatchResult = (result: Api.Scheduler.BatchResultVo, action: string) => {
-    if (result.failedCount === 0) {
-      ElMessage.success(`${action}成功 ${result.successCount} 条`)
-      return
-    }
-    const lines = result.failures
-      .slice(0, 5)
-      .map((f) => `#${f.id}: ${f.reason}`)
-      .join('<br/>')
-    const more = result.failures.length > 5 ? `<br/>...其余 ${result.failures.length - 5} 条` : ''
-    ElMessageBox.alert(
-      `成功 ${result.successCount} 条,失败 ${result.failedCount} 条<br/><br/>${lines}${more}`,
-      `${action}部分失败`,
-      { dangerouslyUseHTMLString: true, type: 'warning' }
-    )
-  }
-
-  const ensureBatchSize = () => {
-    if (selectedIds.value.length === 0) {
-      ElMessage.warning('请先选择任务')
-      return false
-    }
-    if (selectedIds.value.length > 100) {
-      ElMessage.warning('单次批量操作上限 100 条')
-      return false
-    }
-    return true
-  }
-
-  const batchToggle = (enabled: boolean) => {
-    if (!ensureBatchSize()) return
-    const action = enabled ? '启用' : '停用'
-    ElMessageBox.confirm(
-      `确定${action}选中的 ${selectedIds.value.length} 个任务吗?`,
-      `批量${action}`,
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
-    ).then(async () => {
-      const result = await fetchBatchToggleJobs({ ids: selectedIds.value, enabled })
-      showBatchResult(result, `批量${action}`)
-      selectedRows.value = []
-      await refreshUpdate()
-    })
-  }
-
-  const batchTrigger = () => {
-    if (!ensureBatchSize()) return
-    ElMessageBox.confirm(`确定执行选中的 ${selectedIds.value.length} 个任务吗?`, '批量执行', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }).then(async () => {
-      const result = await fetchBatchTriggerJobs({ ids: selectedIds.value })
-      showBatchResult(result, '批量执行')
-      selectedRows.value = []
-    })
-  }
-
-  const batchDelete = () => {
-    if (!ensureBatchSize()) return
-    ElMessageBox.confirm(
-      `确定删除选中的 ${selectedIds.value.length} 个任务吗?有依赖关系的任务会被拒绝。`,
-      '批量删除',
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
-    ).then(async () => {
-      const result = await fetchBatchDeleteJobs({ ids: selectedIds.value })
-      showBatchResult(result, '批量删除')
-      selectedRows.value = []
       await refreshRemove()
     })
   }
@@ -373,7 +299,7 @@
   }
 
   onMounted(async () => {
-    await Promise.all([loadHandlers(), getData()])
+    await getData()
   })
 </script>
 
@@ -381,7 +307,6 @@
   .scheduler-job-page {
     display: flex;
     flex-direction: column;
-    gap: 16px;
   }
 
   .scheduler-job-page-card {
