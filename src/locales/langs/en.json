@@ -290,10 +290,6 @@
         "pageVisibility": "Super Admin Visibility"
       }
     },
-    "devTools": {
-      "title": "Dev Tools",
-      "aiGenerator": "AI Code Generator"
-    },
     "file": {
       "title": "File Management",
       "manage": "File Manage",

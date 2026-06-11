@@ -290,10 +290,6 @@
         "pageVisibility": "超级管理员可见"
       }
     },
-    "devTools": {
-      "title": "开发工具",
-      "aiGenerator": "AI代码生成器"
-    },
     "file": {
       "title": "文件管理",
       "manage": "文件管理",

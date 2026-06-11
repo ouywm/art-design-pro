@@ -47,10 +47,9 @@
   import {
     fetchDeleteResource,
     fetchGetResourceList,
-    fetchReloadResourcePermission,
-    fetchUpdateResourceEnabled
+    fetchReloadResourcePermission
   } from '@/api/resource-permission'
-  import { ElMessage, ElMessageBox, ElSwitch, ElTag } from 'element-plus'
+  import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
   import ResourceSearch from './modules/resource-search.vue'
   import ResourceDialog from './modules/resource-dialog.vue'
   import ResourceActionDialog from './modules/resource-action-dialog.vue'
@@ -72,7 +71,6 @@
   const dialogMode = ref<ResourceFormMode>('add')
   const currentRow = ref<Partial<ResourceListItem>>({})
   const reloadLoading = ref(false)
-  const switchLoadingMap = reactive<Record<number, boolean>>({})
 
   const {
     columns,
@@ -128,15 +126,9 @@
           label: '状态',
           width: 110,
           formatter: (row) =>
-            h(ElSwitch, {
-              modelValue: row.enabled,
-              loading: switchLoadingMap[row.id],
-              activeText: '启用',
-              inactiveText: '停用',
-              inlinePrompt: true,
-              onChange: (value: string | number | boolean) =>
-                handleToggleEnabled(row, value === true)
-            })
+            h(ElTag, { type: row.enabled ? 'success' : 'info' }, () =>
+              row.enabled ? '启用' : '停用'
+            )
         },
         {
           prop: 'updateTime',
@@ -212,20 +204,6 @@
     }
 
     refreshUpdate()
-  }
-
-  const handleToggleEnabled = async (row: ResourceListItem, enabled: boolean) => {
-    switchLoadingMap[row.id] = true
-    try {
-      await fetchUpdateResourceEnabled(row.id, { enabled })
-      ElMessage.success(enabled ? '资源已启用' : '资源已停用')
-      row.enabled = enabled
-    } catch (error) {
-      row.enabled = !enabled
-      throw error
-    } finally {
-      switchLoadingMap[row.id] = false
-    }
   }
 
   const handleDelete = (row: ResourceListItem) => {

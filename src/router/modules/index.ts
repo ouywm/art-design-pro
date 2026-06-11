@@ -11,7 +11,6 @@ import { exceptionRoutes } from './exception'
 import { safeguardRoutes } from './safeguard'
 import { monitorRoutes } from './monitor'
 import { helpRoutes } from './help'
-import { devToolsRoutes } from './dev-tools'
 
 /**
  * 导出所有模块化路由
@@ -21,7 +20,6 @@ export const routeModules: AppRouteRecord[] = [
   templateRoutes,
   widgetsRoutes,
   examplesRoutes,
-  devToolsRoutes,
   schedulerRoutes,
   systemRoutes,
   articleRoutes,

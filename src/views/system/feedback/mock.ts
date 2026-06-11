@@ -52,19 +52,6 @@ export const feedbackList: FeedbackItem[] = [
     description: '希望反馈列表可以快速定位待处理的问题，并支持后续跟进记录。'
   },
   {
-    id: 'FDB176275602274',
-    title: 'fgdfg',
-    type: 'feature',
-    status: 'pending',
-    priority: 'medium',
-    contactName: '真的帅',
-    contactWay: 'Super',
-    pagePath: '/dev-tools/ai-generator',
-    submitTime: '2026-06-05 10:15:56',
-    submitUser: 'Super',
-    description: 'AI 生成器页面交互需要更顺一点，按钮状态希望更清楚。'
-  },
-  {
     id: 'FDB17710218566017',
     title: '21312',
     type: 'experience',
